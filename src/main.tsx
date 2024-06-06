@@ -1,12 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider } from 'react-router-dom'
-import { router } from './router'
+import { Auth0Provider } from '@auth0/auth0-react';
+import { AppRouter } from './router'
 import './index.css'
 import 'unfonts.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Auth0Provider
+      domain="dev-85h1fnlvqdv1rdt4.us.auth0.com"
+      clientId="OsczPJLpO7ff8tRzIda8Q31pus3HEPk6"
+      authorizationParams={{
+        redirect_uri: window.location.origin
+      }}
+    >
+      <AppRouter />
+    </Auth0Provider>
   </React.StrictMode>
-)
+);
+
+
