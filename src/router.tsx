@@ -6,7 +6,6 @@ import ProtectedPage from './protectedPage';
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0();
-
   return isAuthenticated ? element : <Navigate to="/" />;
 };
 

@@ -10,8 +10,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Auth0Provider
       domain="dev-85h1fnlvqdv1rdt4.us.auth0.com"
       clientId="OsczPJLpO7ff8tRzIda8Q31pus3HEPk6"
+      cacheLocation="localstorage" 
+      useRefreshTokens={true} 
       authorizationParams={{
-        redirect_uri: window.location.origin
+        redirect_uri: window.location.origin + '/',
       }}
     >
       <AppRouter />
