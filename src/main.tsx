@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       cacheLocation="localstorage" 
       useRefreshTokens={true} 
       authorizationParams={{
-        redirect_uri: window.location.origin + '/',
+        redirect_uri: window.location.origin,
       }}
     >
       <AppRouter />
