@@ -5,18 +5,18 @@ export default function CoverCarousel() {
   const slides = [
     {
       id: 1,
-      imageUrl: "/new_york.jpg",
+      imageUrl: "/carouselImg/japan.jpeg",
       caption: "Welcome to Ticketsaver!",
     },
     {
       id: 2,
-      imageUrl: "/japan.jpeg",
+      imageUrl: "/carouselImg/monterrey.jpg",
       caption: "Discover amazing events!",
     },
     {
       id: 3,
       imageUrl:
-        "https://daisyui.com/images/stock/photo-1414694762283-acccc27bca85.jpg",
+        "/carouselImg/new_york.jpg",
       caption: "Join us for great deals!",
     },
   ];

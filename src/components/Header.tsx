@@ -1,6 +1,18 @@
+import { useAuth0 } from '@auth0/auth0-react';
+
 export default function Header() {
 
-  const username = 'User'; // TO DO: AppSync connection fix
+  const { loginWithRedirect, isAuthenticated, user, logout} = useAuth0();
+  
+  const handleLogout = () => {
+    logout();
+  };
+
+  const handleLogin = async () => {
+    await loginWithRedirect();
+  };
+
+  console.log(user);
 
   return (
     <header className='bg-neutral py-2 sticky top-0 z-50'>
@@ -8,7 +20,7 @@ export default function Header() {
         <div className="navbar px-0">
           <div className="navbar-start">
             <a href='/'>
-              <img src="/ticketsaver-logo.svg" className="max-h-12"/>
+              <img src="logos/ticketsaver-logo.svg" className="max-h-12" />
             </a>
           </div>
           <div className="navbar-center hidden lg:flex">
@@ -19,7 +31,7 @@ export default function Header() {
             </ul>
           </div>
           <div className="navbar-end">
-            {username?(
+            {isAuthenticated? (
               <div className='dropdown dropdown-end'>
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                   <div className="w-10 rounded-full">
@@ -29,21 +41,25 @@ export default function Header() {
                 <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                   <li>
                     <a className="justify-between">
-                      {username}
+                      {user?.name}
+                      <span className="badge">user</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a className="justify-between">
+                      {user?.phone_number}
                       <span className="badge">user</span>
                     </a>
                   </li>
                   <li><a >My tickets</a></li>
-                  <li><a >Logout</a></li>
+                  <li><a onClick={handleLogout}>Logout</a></li>
                 </ul>
               </div>
-            ):(
-              <></>
-              // TO DO: AppSync connection fix
-              // <a href="/login">
-              //   <button className="btn btn-primary btn-outline mr-100">Log In</button>
-              // </a>
-              )
+            ) : (
+              <a>
+                <button className="btn btn-primary btn-outline mr-100" onClick={handleLogin}>Log In</button>
+              </a>
+            )
             }
             <div className="dropdown">
               <label tabIndex={0} className="btn btn-circle btn-primary lg:hidden mr-1">

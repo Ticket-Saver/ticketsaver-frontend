@@ -11,7 +11,7 @@ export default function FeaturedEvents() {
     artistName: 'India Yuridia',
     tour: 'Por que Asi Soy',
     description: '¡Llega por primera vez a New Jersey la comediante femenina #1 de América Latina! ¡La India Yuridia!',
-    cardImage: 'IndiaYuridia.png',
+    cardImage: 'events/IndiaYuridia.png',
     venue: "The Ritz Theatre",
     date: "September 08, 2024",
     city: "Elizabeth, NJ"
@@ -23,7 +23,7 @@ export default function FeaturedEvents() {
     artistName: 'India Yuridia',
     tour: 'Por que Asi Soy',
     description: '¡Regresa a San José CA, la comediante femenina #1 de América Latina! ¡La India Yuridia!',
-    cardImage: 'IndiaYuridia.png',
+    cardImage: 'events/IndiaYuridia.png',
     venue: "San José, CA",
     date: "November 17, 2024",
     city: "San José"
