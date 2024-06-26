@@ -44,8 +44,8 @@ export default function FeaturedEvents() {
     city: 'McAllen, TX'
   }/*/
 
-  const [events, setEvents] = useState<any>([eventYuridia, eventYuridiaSJ])
-  const [sessionId, setSessionId] = useState<string>('') // State to store sessionId
+  const [events, _setEvents] = useState<any>([eventYuridia, eventYuridiaSJ])
+  const [_sessionId, setSessionId] = useState<string>('') // State to store sessionId
 
   // Function to get cookie by name
   const getCookie = (name: string) => {
