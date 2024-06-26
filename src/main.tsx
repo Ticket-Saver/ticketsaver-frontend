@@ -8,8 +8,8 @@ import 'unfonts.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Auth0Provider
-      domain='dev-85h1fnlvqdv1rdt4.us.auth0.com'
-      clientId='OsczPJLpO7ff8tRzIda8Q31pus3HEPk6'
+      domain='dev-4pb0l0ucwn1g88hs.us.auth0.com'
+      clientId='jFPEy892pL5zwgp10PxicJGv6ww5FnTP'
       cacheLocation='localstorage'
       useRefreshTokens={true}
       authorizationParams={{

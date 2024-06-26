@@ -20,28 +20,28 @@ export default function Sidebar() {
       </div>
       <nav className='flex flex-col space-y-5 px-4'>
         <Link
-          to='#!'
+          to='/dashboard/tickets'
           className='p-2 px-5 rounded-xl flex items-center bg-[#1A0F40] text-white hover:bg-[#221551] focus:bg-[#221551]'
         >
           <img src={TicketIcon} alt='Ticket Icon' className='h-6 w-6 text-white mr-2' />
           My Tickets
         </Link>
         <Link
-          to='#!'
+          to='/dashboard/profile'
           className='p-2 px-5 rounded-xl flex items-center text-white bg-[#1A0F40] hover:bg-[#221551] focus:bg-[#221551]'
         >
           <img src={ProfileIcon} alt='Profile Icon' className='h-6 w-6 text-white mr-2' />
           My Profile
         </Link>
         <Link
-          to='#!'
+          to='/dashboard/settings'
           className='p-2 px-5 rounded-xl flex items-center text-white bg-[#1A0F40] hover:bg-[#221551] focus:bg-[#221551]'
         >
           <img src={SettingsIcon} alt='Settings Icon' className='h-6 w-6 text-white mr-2' />
           My Settings
         </Link>
         <Link
-          to='#!'
+          to='/dashboard/help'
           className='p-2 px-5 rounded-xl flex items-center text-white bg-[#1A0F40] hover:bg-[#221551] focus:bg-[#221551]'
         >
           <img src={HelpIcon} alt='Help Icon' className='h-6 w-6 text-white mr-2' />
