@@ -24,17 +24,15 @@ export default function MyProfile() {
   }, [getAccessTokenSilently])
 
   return (
-    <div>
-      <p>Welcome, {user?.name || 'Guest'}!</p>
-      <p>Email: {user?.email || 'Not provided'}</p>
-      <p>Phone: {user?.phone_number || 'Not provided'}</p>
-      <p>sub id: {user?.sub || 'Guest'}</p>
+    <div className='flex flex-col gap-4'>
+      <p className='text-xl font-bold'>Welcome, {user?.name || 'Guest'}!</p>
+      <p className='text-gray-500'>Email: {user?.email || 'Not provided'}</p>
+      <p className='text-gray-500'>Phone: {user?.phone_number || 'Not provided'}</p>
+      <p className='text-gray-500'>sub id: {user?.sub || 'Guest'}</p>
       {/* Display the token for demonstration; remove or secure this in production */}
-      <p>
-        Your access token: <code>{token}</code>
+      <p className='text-gray-500'>
+        Your access token: <code className='bg-gray-200 px-2 rounded-md'>{token}</code>
       </p>
-
-      <button onClick={handleLogout}>Log Out</button>
     </div>
   )
 }
