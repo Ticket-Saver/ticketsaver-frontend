@@ -1,7 +1,5 @@
-import CoverCarousel from './CoverCarousel';
+import CoverCarousel from './CoverCarousel'
 
 export default function Hero() {
-  return (
-    <CoverCarousel/>
-  )
+  return <CoverCarousel />
 }

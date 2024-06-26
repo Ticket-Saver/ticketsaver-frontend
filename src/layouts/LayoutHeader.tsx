@@ -1,15 +1,15 @@
-import React, { ReactNode } from 'react';
-import Header from '../components/Header'; 
+import React, { ReactNode } from 'react'
+import Header from '../components/Header'
 
 interface LayoutProps {
-    children: ReactNode;
+  children: ReactNode
 }
 
 const LayoutHeader: React.FC<LayoutProps> = ({ children }) => (
-    <div data-theme="synthwave">
-        <Header />
-        {children}
-    </div>
-);
+  <div data-theme='synthwave'>
+    <Header />
+    {children}
+  </div>
+)
 
-export default LayoutHeader;
+export default LayoutHeader
