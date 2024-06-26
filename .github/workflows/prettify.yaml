@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main # Adjust this branch name according to your main branch
+      - minimal-new-front
 
 jobs:
   prettify:
