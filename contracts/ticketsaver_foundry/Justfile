@@ -1,0 +1,19 @@
+set dotenv-load := true
+
+RPC_URL     := env_var('BASE_SEPOLIA_RPC')
+ETHSCAN_API := env_var('ETHERSCAN_APIKEY')
+
+# deploy a contract on a blockchain
+deploy CONTRACT:
+  @forge create --rpc-url {{RPC_URL}} \
+    --account deployer \
+    --etherscan-api-key {{ETHSCAN_API}} --verify \
+    ./src/{{CONTRACT}}.sol:{{CONTRACT}} 
+
+# call without publishing a transaction
+call ADDRESS ACTION ARGS:
+  @cast call {{ADDRESS}} --rpc-url {{RPC_URL}} "{{ACTION}}" {{ARGS}}
+
+# sign and publish a transaction
+send ADDRESS ACTION ARGS:
+  @cast send {{ADDRESS}} --rpc-url {{RPC_URL}} "{{ACTION}}" {{ARGS}} --account deployer
