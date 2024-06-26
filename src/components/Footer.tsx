@@ -8,7 +8,7 @@ export default function Footer() {
           <div>
             <span className="footer-title">Company</span>
             <a href="#!" className="link link-hover">About us</a>
-            <a href="/footer/Contact" className="link link-hover">Contact</a> // TO DO: Create Contact page
+            <a href="/footer/Contact" className="link link-hover">Contact</a>
           </div>
           <div>
             <span className="footer-title">Legal</span>
