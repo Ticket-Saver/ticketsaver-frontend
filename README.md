@@ -5,9 +5,10 @@
 0. `Zora` is a track sponsor.
 1. The project must be build on `Base`
 2. `Zora` network is available on `Base`
-3. 
+3.
 
 ### Stack
+
 - `Base` [docs](https://docs.base.org/): an Ethereum Layer-2 blockchain network
   developed by Coinbase
 - `Zora` [docs](https://docs.zora.co/docs/intro): The Zora Network is a

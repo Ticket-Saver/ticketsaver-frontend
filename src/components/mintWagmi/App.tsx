@@ -10,7 +10,7 @@ export function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <BlueCreateWalletButton/>
+        <BlueCreateWalletButton />
         <WalletOptions />
         <MintNFT />
       </QueryClientProvider>
