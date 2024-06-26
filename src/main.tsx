@@ -6,7 +6,7 @@ import './index.css'
 import 'unfonts.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  <React.StrictMode >
     <Auth0Provider
       domain="dev-85h1fnlvqdv1rdt4.us.auth0.com"
       clientId="OsczPJLpO7ff8tRzIda8Q31pus3HEPk6"

@@ -4,6 +4,8 @@ import { ReactNode } from 'react';
 import ProtectedPage from '../protectedPage';
 import HomeUnlogin from '../pages/HomeUnlogin';
 import LayoutHeaderFooter from '../layouts/LayoutHeaderFooter';
+import LayoutHeader from '../layouts/LayoutHeader';
+import Dashbord from '../pages/Dashboard';
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0();
@@ -20,6 +22,14 @@ export const AppRouter = () => (
 
       <Route path="/protected" element={
         <ProtectedRoute element={<ProtectedPage />} />
+      } />
+
+      <Route path="/dashboard" element={
+        <ProtectedRoute element={
+          <LayoutHeader>
+            <Dashbord />
+          </LayoutHeader>
+        } />
       } />
     </Routes>
   </Router>
