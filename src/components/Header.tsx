@@ -52,10 +52,10 @@ export default function Header() {
                   className='mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52'
                 >
                   <li>
-                    <a className='justify-between'>
+                    <Link to='/dashboard/profile' className='justify-between'>
                       {user?.name}
                       <span className='badge'>user</span>
-                    </a>
+                    </Link>
                   </li>
                   <li>
                     <a className='justify-between'>{user?.phone_number}</a>
