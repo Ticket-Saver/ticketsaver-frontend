@@ -1,0 +1,6 @@
+[submodule "contracts/ticketsaver/lib/forge-std"]
+	path = contracts/ticketsaver/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "contracts/ticketsaver_foundry/lib/forge-std"]
+	path = contracts/ticketsaver_foundry/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std.git
