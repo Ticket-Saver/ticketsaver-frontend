@@ -1,5 +1,3 @@
 export default function MyTickets() {
-    return (
-      <div>MyTickets</div>
-    )
-  }
+  return <div>MyTickets</div>
+}

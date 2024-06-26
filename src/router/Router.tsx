@@ -30,14 +30,23 @@ export const AppRouter = () => (
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
-      <Route 
-        path='/dashboard' element={<ProtectedRoute element={<LayoutHeader><Dashboard /></LayoutHeader>} />}>
+      <Route
+        path='/dashboard'
+        element={
+          <ProtectedRoute
+            element={
+              <LayoutHeader>
+                <Dashboard />
+              </LayoutHeader>
+            }
+          />
+        }
+      >
         <Route path='profile' element={<MyProfile />} />
         <Route path='tickets' element={<MyTickets />} />
         <Route path='settings' element={<MySettings />} />
         <Route path='help' element={<YouNeedHelp />} />
       </Route>
-
     </Routes>
   </Router>
 )
