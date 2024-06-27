@@ -1,15 +1,14 @@
-import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { abi } from './abi';
+import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { abi } from './abi'
 
 export function MintNFT() {
-  const {isConnected } = useAccount();  // Estado de conexión
-  const { data: hash, error, isPending, writeContract } = useWriteContract();  // Estado de la transacción
+  const { isConnected } = useAccount() // Estado de conexión
+  const { data: hash, error, isPending, writeContract } = useWriteContract() // Estado de la transacción
 
   async function getNextTokenId() {
     //Harcodeada
     return 100
   }
-
 
   async function mintNFT() {
     if (!isConnected) {
@@ -17,10 +16,7 @@ export function MintNFT() {
       return
     }
 
-
-    
-
-    const tokenId = await getNextTokenId();
+    const tokenId = await getNextTokenId()
 
     // Función writeContract para enviar la transacción
     try {
@@ -28,8 +24,8 @@ export function MintNFT() {
         address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smartContract Harcodeada
         abi,
         functionName: 'mint',
-        args: [tokenId],
-      });
+        args: [tokenId]
+      })
     } catch (error) {
       console.error(error)
       alert('An error occurred during minting. Please check the console for details.')
@@ -41,11 +37,11 @@ export function MintNFT() {
   })
 
   return (
-    <div className="mint-nft-container">
+    <div className='mint-nft-container'>
       {!isConnected && (
         <div className='alert alert-warning'>Please connect your wallet to mint an NFT.</div>
       )}
-      <button className="mint-btn" disabled={isPending || !isConnected} onClick={mintNFT}>
+      <button className='mint-btn' disabled={isPending || !isConnected} onClick={mintNFT}>
         {isPending ? 'Confirming...' : 'Mint NFT'}
       </button>
       {hash && <div className='transaction-hash'>Transaction Hash: {hash}</div>}
@@ -53,7 +49,11 @@ export function MintNFT() {
       {isConfirmed && (
         <div className='confirmed-msg'>Transaction confirmed. Your NFT is minted!</div>
       )}
-      {error && <div className="alert alert-danger">Error: {(error as BaseError).shortMessage || error.message}</div>}
+      {error && (
+        <div className='alert alert-danger'>
+          Error: {(error as BaseError).shortMessage || error.message}
+        </div>
+      )}
     </div>
-  );
+  )
 }
