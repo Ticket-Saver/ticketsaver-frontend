@@ -11,7 +11,7 @@ export default function Wallet() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <BlueCreateWalletButton/>
+        <BlueCreateWalletButton />
         <WalletOptions />
         <MintNFT />
       </QueryClientProvider>
