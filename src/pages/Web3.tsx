@@ -13,9 +13,12 @@ export default function Web3() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
+      <div className="container"> 
         <BlueCreateWalletButton />
         <WalletOptions />
+
         <MintNFT />
+      </div>
       </QueryClientProvider>
     </WagmiProvider>
   )
