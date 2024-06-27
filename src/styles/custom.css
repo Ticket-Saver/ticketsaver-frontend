@@ -73,18 +73,18 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid #510ad4;
   border-radius: 10px;
   max-width: 400px;
   margin: 0 auto;
-  background-color: #f9f9f9;
+  background-color: #6a0c86;
 }
 
 .mint-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  background-color: #007bff;
+  background-color: #0056b3;
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -109,7 +109,7 @@
 }
 
 .alert-warning {
-  background-color: #ff9800;
+  background-color: #7c068b;
   color: white;
 }
 
