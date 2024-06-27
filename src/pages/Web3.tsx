@@ -5,6 +5,8 @@ import { WalletOptions } from '../components/mintWagmi/wallet-options'
 import { MintNFT } from '../components/mintWagmi/mint-nft'
 import { BlueCreateWalletButton } from '../components/mintWagmi/SmartWalletButton/walletButton'
 
+import '../styles/custom.css'
+
 const queryClient = new QueryClient()
 
 export default function Web3() {
