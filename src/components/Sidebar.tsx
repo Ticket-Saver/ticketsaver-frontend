@@ -4,6 +4,7 @@ import TicketIcon from '../assets/icons/ticket.svg'
 import ProfileIcon from '../assets/icons/profile.svg'
 import SettingsIcon from '../assets/icons/settings.svg'
 import HelpIcon from '../assets/icons/help.svg'
+import WalletIcon from '../assets/icons/wallet.svg'
 
 export default function Sidebar() {
   const { isAuthenticated, user } = useAuth0()
@@ -44,7 +45,7 @@ export default function Sidebar() {
           to='/dashboard/web3'
           className='p-2 px-5 rounded-xl flex items-center text-white bg-[#1A0F40] hover:bg-[#221551] focus:bg-[#221551]'
         >
-          <img src={SettingsIcon} alt='Settings Icon' className='h-6 w-6 text-white mr-2' />
+          <img src={WalletIcon} alt='Settings Icon' className='h-6 w-6 text-white mr-2' />
           Web3
         </Link>
         <Link
