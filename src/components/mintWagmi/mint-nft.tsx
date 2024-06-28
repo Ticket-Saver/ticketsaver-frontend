@@ -1,43 +1,41 @@
 import { useState } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { ethers } from 'ethers';
+import { type BaseError, useAccount, useConnect, Connector, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { abi } from './abi';
 
-export function MintNFT() {
 
-  const { address: connectedAddress, isConnected } = useAccount();  //Estado de conexión
-  const { data: hash, error, isPending, write: writeContract } = useWriteContract();  //estado de la transacción
 
+export function MintNFT() { 
   
+  const { isConnected } = useAccount();
 
-  const [tokenId, setTokenId] = useState('');
-  const [value, setValue] = useState('');
+  //transacción
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
 
-  const handleTokenIdChange = (e) => setTokenId(e.target.value);
-  const handleValueChange = (e) => setValue(e.target.value);
+  const [showConnectOptions, setShowConnectOptions] = useState(false);
 
-  async function submit(e) {
-    e.preventDefault();
+  // Configuración de conexión
+  const { connect, connectors } = useConnect(); //Aqupi debería poder importar los de mi config, pero no he dado con la documentación correcta.
+
+  async function getNextTokenId() {
+    //funcion harcodeada para obtener el siguiente ID
+    return 100;
+  }
+
+  // Función para mintear el NFT
+  async function mintNFT() {
     if (!isConnected) {
       alert('Please connect your wallet to mint an NFT.');
       return;
     }
 
-    if (!tokenId || !value) {
-      alert('Please enter a valid token ID and value.');
-      return;
-    }
- // función writeContract para enviar la transacción 
+    const tokenId = await getNextTokenId();
+
     try {
       await writeContract({
-        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smartContract
+        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada también
         abi,
         functionName: 'mint',
-        args: [BigInt(tokenId)],
-        overrides: {
-          from: connectedAddress,
-          value: ethers.utils.parseEther(value), // Convertir valor a ETH
-        },
+        args: [tokenId],
       });
     } catch (error) {
       console.error(error);
@@ -49,45 +47,54 @@ export function MintNFT() {
     hash,
   });
 
+  const handleButtonClick = () => {
+    if (!isConnected) {
+      setShowConnectOptions(prev => !prev);
+    } else {
+      mintNFT();
+    }
+  };
+
+  const handleConnect = async (connector: Connector) => {
+    await connect({ connector });
+    
+    setShowConnectOptions(false);
+  };
+
   return (
-    <form className="mint-nft-form" onSubmit={submit}>
-      {!isConnected && (
-        <div className="alert alert-warning">Please connect your wallet to mint an NFT.</div>
-      )}
-      <div className="form-group">
-        <label htmlFor="tokenId">Token ID:</label>
-        <input
-          id="tokenId"
-          name="tokenId"
-          type="number"
-          placeholder="Enter Token ID"
-          value={tokenId}
-          onChange={handleTokenIdChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="value">Value (ETH):</label>
-        <input
-          id="value"
-          name="value"
-          type="number"
-          step="any"
-          placeholder="Enter ETH Value"
-          value={value}
-          onChange={handleValueChange}
-          required
-        />
-      </div>
-      <button className="submit-btn" disabled={isPending || !isConnected} type="submit">
-        {isPending ? 'Confirming...' : 'Mint NFT'}
+    
+    <div className="mint-nft-container">
+      {/* Botón principal para conectar o mintear */}
+      <button className="mint-btn" disabled={isPending} onClick={handleButtonClick}>
+        {!isConnected ? 'Connect Wallet' : isPending ? 'Confirming...' : 'Mint NFT'}
       </button>
+
+      {/* Opciones de conexión de la Wallet, metamask, etc. */}
+      {!isConnected && showConnectOptions && (
+        <div className="connect-options">
+          <h3>Connect your wallet</h3>
+          {connectors.map((connector) => (
+            <button
+              key={connector.id}
+              className="wallet-option-button"
+              onClick={() => handleConnect(connector)}
+            >
+              {connector.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      
       {hash && <div className="transaction-hash">Transaction Hash: {hash}</div>}
       {isConfirming && <div className="confirming-msg">Waiting for confirmation...</div>}
-      {isConfirmed && (
-        <div className="confirmed-msg">Transaction confirmed. Your NFT is minted!</div>
+      {isConfirmed && <div className="confirmed-msg">Transaction confirmed. Your NFT is minted!</div>}
+      {error && (
+        <div className="alert alert-danger">
+          Error: {(error as BaseError)?.shortMessage || error.message}
+        </div>
       )}
-      {error && <div className="alert alert-danger">Error: { error.message}</div>}
-    </form>
+    </div>
+  
   );
 }
