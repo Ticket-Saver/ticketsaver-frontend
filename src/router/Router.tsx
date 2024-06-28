@@ -11,6 +11,9 @@ import MyTickets from '../pages/MyTickets'
 import MySettings from '../pages/MySettings'
 import YouNeedHelp from '../pages/YouNeedHelp'
 import Wallet from '../pages/Web3'
+import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
+import PastEvent from '../pages/dashboardTabs/PastEvent'
+import Collectibles from '../pages/dashboardTabs/Collectibles'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
@@ -44,7 +47,11 @@ export const AppRouter = () => (
         }
       >
         <Route path='profile' element={<MyProfile />} />
-        <Route path='tickets' element={<MyTickets />} />
+        <Route path='tickets' element={<MyTickets />}>
+          <Route path='upcomingevent' element={<UpcomingEvent />} />
+          <Route path='pastevent' element={<PastEvent />} />
+          <Route path='collectibles' element={<Collectibles />} />
+        </Route>
         <Route path='settings' element={<MySettings />} />
         <Route path='help' element={<YouNeedHelp />} />
         <Route path='web3' element={<Wallet />} />

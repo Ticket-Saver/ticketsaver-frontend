@@ -15,15 +15,14 @@ export default function Header() {
   console.log(user)
 
   return (
-    <header className='bg-neutral py-0 sticky top-0 z-50'>
+    <header className='bg-neutral py-0 sticky top-0 z-50 '>
       <div className='container'>
         <div className='navbar px-0'>
-          <div className='navbar-start'>
+          <div className='navbar-start space-x-10'>
             <a href='/'>
               <img src='logos/ticketsaver-logo.svg' className='max-h-12' />
             </a>
-          </div>
-          <div className='navbar-center hidden lg:flex'>
+            <div className='navbar-center hidden lg:flex'>
             <ul className='menu menu-horizontal p-0 font-medium'>
               <li>
                 <a href='/events'>Events</a>
@@ -35,6 +34,7 @@ export default function Header() {
                 <a href='#!'>About</a>
               </li>
             </ul>
+          </div>
           </div>
           <div className='navbar-end'>
             {isAuthenticated ? (
@@ -71,7 +71,7 @@ export default function Header() {
               </div>
             ) : (
               <a>
-                <button className='btn btn-primary btn-outline mr-100' onClick={handleLogin}>
+                <button className='btn btn-primary btn-outline mr-100 px-10' onClick={handleLogin}>
                   Log In
                 </button>
               </a>
