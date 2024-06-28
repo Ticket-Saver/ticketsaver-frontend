@@ -21,8 +21,6 @@ export function WalletOptions() {
           </button>
         )}
       </div>
-      
-     </div>
+    </div>
   )
-};
-
+}

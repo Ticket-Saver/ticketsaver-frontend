@@ -21,7 +21,6 @@
   pointer-events: none;
 }
 
-
 /* General container styles */
 .mint-nft-container {
   display: flex;
@@ -30,10 +29,10 @@
   padding: 20px;
   background-color: transparent;
   border-radius: 10px;
-  box-shadow: none; 
-  width: 300px; 
+  box-shadow: none;
+  width: 300px;
   margin: 0 auto;
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 /* Main button styles */
@@ -45,9 +44,11 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #0077b6; 
+  background-color: #0077b6;
   color: #ffffff;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .mint-btn:hover {
@@ -71,7 +72,7 @@
 .connect-options h3 {
   margin-bottom: 20px;
   font-size: 20px;
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .wallet-option-button {
@@ -84,14 +85,16 @@
   font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #333333; 
+  background-color: #333333;
   border: 1px solid #444444;
-  color: #ffffff; 
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  color: #ffffff;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .wallet-option-button:hover {
-  background-color: #00c853; 
+  background-color: #00c853;
   transform: scale(1.05);
 }
 
@@ -107,7 +110,7 @@
 }
 
 .alert-danger {
-  background-color: #ff7675; 
+  background-color: #ff7675;
 }
 .wallet-options-container {
   display: flex;
