@@ -10,6 +10,7 @@ import MyProfile from '../pages/MyProfile'
 import MyTickets from '../pages/MyTickets'
 import MySettings from '../pages/MySettings'
 import YouNeedHelp from '../pages/YouNeedHelp'
+import Web3 from '../pages/Web3'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
@@ -46,6 +47,7 @@ export const AppRouter = () => (
         <Route path='tickets' element={<MyTickets />} />
         <Route path='settings' element={<MySettings />} />
         <Route path='help' element={<YouNeedHelp />} />
+        <Route path='web3' element={<Web3 />} />
       </Route>
     </Routes>
   </Router>
