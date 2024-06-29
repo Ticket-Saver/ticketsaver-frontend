@@ -1,9 +1,9 @@
 import { http, createConfig } from 'wagmi'
-import { mainnet, sepolia, baseSepolia } from 'wagmi/chains'
+import { mainnet, sepolia, baseSepolia, zoraTestnet } from 'wagmi/chains'
 import { coinbaseWallet, injected } from 'wagmi/connectors'
 
 export const config = createConfig({
-  chains: [mainnet, sepolia, baseSepolia], //Define las cadenas principales y secundarias a utilizar
+  chains: [mainnet, sepolia, baseSepolia, zoraTestnet], //Define las cadenas principales y secundarias a utilizar
   connectors: [
     injected(),
     coinbaseWallet({ appName: 'TDT', appLogoUrl: 'URL', preference: 'smartWalletOnly' })
@@ -11,7 +11,8 @@ export const config = createConfig({
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
-    [baseSepolia.id]: http()
+    [baseSepolia.id]: http(),
+    [zoraTestnet.id]: http()
   }
 })
 
