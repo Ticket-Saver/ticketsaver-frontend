@@ -1,5 +1,5 @@
-import { Outlet } from 'react-router-dom';
-import Tabs from '../components/dashboard/Tabs';
+import { Outlet } from 'react-router-dom'
+import Tabs from '../components/dashboard/Tabs'
 
 export default function MyTickets() {
   return (

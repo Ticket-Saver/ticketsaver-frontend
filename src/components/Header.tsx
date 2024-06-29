@@ -23,18 +23,18 @@ export default function Header() {
               <img src='logos/ticketsaver-logo.svg' className='max-h-12' />
             </a>
             <div className='navbar-center hidden lg:flex'>
-            <ul className='menu menu-horizontal p-0 font-medium'>
-              <li>
-                <a href='/events'>Events</a>
-              </li>
-              <li>
-                <a href='#!'>Venues</a>
-              </li>
-              <li>
-                <a href='#!'>About</a>
-              </li>
-            </ul>
-          </div>
+              <ul className='menu menu-horizontal p-0 font-medium'>
+                <li>
+                  <a href='/events'>Events</a>
+                </li>
+                <li>
+                  <a href='#!'>Venues</a>
+                </li>
+                <li>
+                  <a href='#!'>About</a>
+                </li>
+              </ul>
+            </div>
           </div>
           <div className='navbar-end'>
             {isAuthenticated ? (
