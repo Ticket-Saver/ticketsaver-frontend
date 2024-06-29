@@ -1,8 +1,16 @@
 import TicketsClaim from "../../components/TicketsClaim";
+import { BlueCreateWalletButton } from '../../components/mintWagmi/SmartWalletButton/walletButton'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { config } from '../../components/mintWagmi/wagmi'
+import { WagmiProvider } from 'wagmi';
+
+const queryClient = new QueryClient();
 
 export default function PastEvent() {
     return (
-        <div className="space-y-5">
+        <WagmiProvider config={config}>
+            <QueryClientProvider client={queryClient}>
+            <div className="space-y-5">
             <div className="w-full h-56 bg-neutral rounded-xl flex flex-col justify-between p-4 py-8">
                 <div className="flex justify-between items-center">
                     <div className='text-3xl font-semibold'>
@@ -10,9 +18,7 @@ export default function PastEvent() {
                     </div>
                     <div className="flex space-x-4">
                         <a>
-                            <button className='btn btn-primary btn-outline px-10'>
-                                Create wallet
-                            </button>
+                            <BlueCreateWalletButton />
                         </a>
                         <a>
                             <button className='btn btn-primary btn-outline px-10'>
@@ -33,5 +39,7 @@ export default function PastEvent() {
                 <TicketsClaim />
             </div>
         </div>
+            </QueryClientProvider>
+        </WagmiProvider>
     );
 }

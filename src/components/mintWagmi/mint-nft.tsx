@@ -6,7 +6,7 @@ export function MintNFT() {
   const { data: hash, error, isPending, writeContract } = useWriteContract() // Estado de la transacción
 
   async function getNextTokenId() {
-    //Harcodeada
+    // Harcodeada
     return 100
   }
 
@@ -37,12 +37,9 @@ export function MintNFT() {
   })
 
   return (
-    <div className='mint-nft-container'>
-      {!isConnected && (
-        <div className='alert alert-warning'>Please connect your wallet to mint an NFT.</div>
-      )}
-      <button className='mint-btn' disabled={isPending || !isConnected} onClick={mintNFT}>
-        {isPending ? 'Confirming...' : 'Mint NFT'}
+    <div className=''>
+      <button className='btn btn-primary btn-outline px-10' disabled={isPending} onClick={mintNFT}>
+        {isPending ? 'Confirming...' : isConnected ? 'Mint NFT' : 'Connect Wallet to Mint NFT'}
       </button>
       {hash && <div className='transaction-hash'>Transaction Hash: {hash}</div>}
       {isConfirming && <div className='confirming-msg'>Waiting for confirmation...</div>}
