@@ -59,11 +59,6 @@
   margin-top: 10px;
 }
 
-
-
-
-
-
 /* MintNFT.css */
 .mint-nft-container {
   display: flex;
@@ -115,7 +110,9 @@
   color: white;
 }
 
-.transaction-hash, .confirming-msg, .confirmed-msg {
+.transaction-hash,
+.confirming-msg,
+.confirmed-msg {
   margin-top: 15px;
   padding: 10px;
   border-radius: 5px;
