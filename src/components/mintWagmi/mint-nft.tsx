@@ -1,103 +1,65 @@
-import { useState } from 'react'
-import {
-  type BaseError,
-  useAccount,
-  useConnect,
-  Connector,
-  useWriteContract,
-  useWaitForTransactionReceipt
-} from 'wagmi'
-import { abi } from './abi'
+import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { abi } from './abi';
 
 export function MintNFT() {
-  const { isConnected } = useAccount()
-
-  //transacción
-  const { data: hash, error, isPending, writeContract } = useWriteContract()
-
-  const [showConnectOptions, setShowConnectOptions] = useState(false)
-
-  // Configuración de conexión
-  const { connect, connectors } = useConnect() //Aqupi debería poder importar los de mi config, pero no he dado con la documentación correcta.
+  const { isConnected } = useAccount();
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
 
   async function getNextTokenId() {
-    //funcion harcodeada para obtener el siguiente ID
-    return 100
+    return 100; // Función harcodeada para obtener el siguiente ID
   }
 
-  // Función para mintear el NFT
   async function mintNFT() {
     if (!isConnected) {
-      alert('Please connect your wallet to mint an NFT.')
-      return
+      alert('Please connect your wallet to mint an NFT.');
+      return;
     }
 
-    const tokenId = await getNextTokenId()
+    const tokenId = await getNextTokenId();
 
     try {
       await writeContract({
-        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada también
+        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada
         abi,
         functionName: 'mint',
-        args: [tokenId]
-      })
+        args: [tokenId],
+      });
     } catch (error) {
-      console.error(error)
-      alert('An error occurred during minting. Please check the console for details.')
+      console.error(error);
+      alert('An error occurred during minting. Please check the console for details.');
     }
   }
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash
-  })
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const handleButtonClick = () => {
-    if (!isConnected) {
-      setShowConnectOptions((prev) => !prev)
+    if (isConnected) {
+      mintNFT();
     } else {
-      mintNFT()
+      alert('Please connect your wallet to mint an NFT.');
     }
-  }
-
-  const handleConnect = async (connector: Connector) => {
-    await connect({ connector })
-
-    setShowConnectOptions(false)
-  }
+  };
 
   return (
-    <div className='mint-nft-container'>
-      {/* Botón principal para conectar o mintear */}
-      <button className='mint-btn' disabled={isPending} onClick={handleButtonClick}>
-        {!isConnected ? 'Connect Wallet' : isPending ? 'Confirming...' : 'Mint NFT'}
+    <div className="flex flex-col items-center p-5 bg-transparent rounded-lg shadow-none w-full max-w-md mx-auto text-white">
+      <button
+        className={`mt-4 py-3 px-8 text-lg font-bold border-none rounded-lg cursor-pointer transition duration-300 transform ${
+          isPending ? 'bg-gray-500 cursor-not-allowed' : isConnected ? 'bg-blue-600 hover:bg-blue-400 hover:scale-105' : 'bg-gray-400'
+        }`}
+        disabled={!isConnected || isPending} // Deshabilita el botón si no está conectado o está pendiente
+        onClick={handleButtonClick}
+      >
+        {!isConnected ? 'Mint NFT' : isPending ? 'Confirming...' : 'Mint NFT'}
       </button>
 
-      {/* Opciones de conexión de la Wallet, metamask, etc. */}
-      {!isConnected && showConnectOptions && (
-        <div className='connect-options'>
-          <h3>Connect your wallet</h3>
-          {connectors.map((connector) => (
-            <button
-              key={connector.id}
-              className='wallet-option-button'
-              onClick={() => handleConnect(connector)}
-            >
-              {connector.name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {hash && <div className='transaction-hash'>Transaction Hash: {hash}</div>}
-      {isConfirming && <div className='confirming-msg'>Waiting for confirmation...</div>}
-      {isConfirmed && (
-        <div className='confirmed-msg'>Transaction confirmed. Your NFT is minted!</div>
-      )}
+      {hash && <div className="mt-2 text-sm sm:text-base">Transaction Hash: {hash}</div>}
+      {isConfirming && <div className="mt-2 text-sm sm:text-base">Waiting for confirmation...</div>}
+      {isConfirmed && <div className="mt-2 text-sm sm:text-base">Transaction confirmed. Your NFT is minted!</div>}
       {error && (
-        <div className='alert alert-danger'>
+        <div className="mt-2 p-2 bg-red-400 rounded-lg">
           Error: {(error as BaseError)?.shortMessage || error.message}
         </div>
       )}
     </div>
-  )
+  );
 }
