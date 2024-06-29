@@ -12,7 +12,7 @@ export const config = createConfig({
     [mainnet.id]: http(),
     [sepolia.id]: http(),
     [baseSepolia.id]: http(),
-    [zoraTestnet]: http()
+    [zoraTestnet.id]: http()
   }
 })
 
