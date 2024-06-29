@@ -2,7 +2,11 @@ const defaultContainerStyles = {
   paddingTop: 2
 }
 
-export function CoinbaseWalletLogo({ size = 26, containerStyles = defaultContainerStyles, className = '' }) {
+export function CoinbaseWalletLogo({
+  size = 26,
+  containerStyles = defaultContainerStyles,
+  className = ''
+}) {
   return (
     <div style={containerStyles} className={className}>
       <svg
