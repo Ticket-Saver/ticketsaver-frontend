@@ -11,19 +11,19 @@ import '../styles/custom.css'
 const nftData = [
   {
     id: 1,
-    image: '../public/events/IndiaYuridia.png',
+    image: '../events/IndiaYuridia.png',
     title: 'Ticket 1',
     description: 'evento 1',
   },
   {
     id: 2,
-    image: '../public/events/IndiaYuridia.png',
+    image: '../events/IndiaYuridia.png',
     title: 'Ticket 2',
     description: 'evento 2',
   },
   {
     id: 3,
-    image: '../public/events/IndiaYuridia.png',
+    image: '../events/IndiaYuridia.png',
     title: 'Ticket 3',
     description: 'evento 3',
   },
