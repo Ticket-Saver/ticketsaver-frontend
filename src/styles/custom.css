@@ -20,7 +20,6 @@
   border-radius: 8px;
   pointer-events: none;
 }
-
 .wallet-options-container {
   display: flex;
   justify-content: space-between;
@@ -60,24 +59,29 @@
   margin-top: 10px;
 }
 
+
+
+
+
+
 /* MintNFT.css */
 .mint-nft-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  border: 1px solid #510ad4;
+  border: 1px solid #ccc;
   border-radius: 10px;
   max-width: 400px;
   margin: 0 auto;
-  background-color: #6a0c86;
+  background-color: #f9f9f9;
 }
 
 .mint-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  background-color: #0056b3;
+  background-color: #007bff;
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -102,7 +106,7 @@
 }
 
 .alert-warning {
-  background-color: #7c068b;
+  background-color: #ff9800;
   color: white;
 }
 
@@ -111,9 +115,7 @@
   color: white;
 }
 
-.transaction-hash,
-.confirming-msg,
-.confirmed-msg {
+.transaction-hash, .confirming-msg, .confirmed-msg {
   margin-top: 15px;
   padding: 10px;
   border-radius: 5px;

@@ -1,60 +1,33 @@
-import * as React from 'react'
-import { useAccount, useConnect, useDisconnect, Connector } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 
 export function WalletOptions() {
-  const account = useAccount() //Utiliza el hook useAccount para obtener la cuenta actual del usuario, es el importante
-  const { connectors, connect, status, error } = useConnect() //información sobre la conexión y los conectores disponibles
+  const account = useAccount()
   const { disconnect } = useDisconnect()
 
   return (
-    <div className='wallet-options-container'>
-      <div className='account-info'>
-        <h2>Account</h2>
-        <div>
-          <strong>Status:</strong> {account.status}
-          <br />
-          <strong>Address:</strong> {account.address}
-          <br />
-          <strong>Chain ID:</strong> {account.chain?.id}
+    <div className='flex justify-between items-start p-5 border border-gray-300 rounded-lg shadow-md mb-8 w-full max-w-md mx-auto'>
+      <div className='flex-1'>
+        <h2 className='text-xl font-bold mb-2'>Account</h2>
+        <div className='text-sm'>
+          <p>
+            <strong>Status:</strong> {account.status}
+          </p>
+          <p>
+            <strong>Address:</strong> {account.address}
+          </p>
+          <p>
+            <strong>Chain ID:</strong> {account.chain?.id}
+          </p>
         </div>
-        {account.status === 'connected' && (
-          <button className='disconnect-button' onClick={() => disconnect()}>
-            Disconnect
-          </button>
-        )}
       </div>
-
-      <div className='connect-options'>
-        <h2>Connect</h2>
-        {connectors.map((connector) => (
-          <WalletOption
-            key={connector.id}
-            connector={connector}
-            onClick={() => connect({ connector })}
-          />
-        ))}
-        <div className='connection-status'>
-          <strong>Status:</strong> {status}
-        </div>
-        <div className='error-message'>{error?.message}</div>
-      </div>
+      {account.status === 'connected' && (
+        <button
+          className='mt-4 py-2 px-4 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400'
+          onClick={() => disconnect()}
+        >
+          Disconnect
+        </button>
+      )}
     </div>
-  )
-}
-
-function WalletOption({ connector, onClick }: { connector: Connector; onClick: () => void }) {
-  const [ready, setReady] = React.useState(false)
-
-  React.useEffect(() => {
-    ;(async () => {
-      const provider = await connector.getProvider()
-      setReady(!!provider)
-    })()
-  }, [connector])
-
-  return (
-    <button className='wallet-option-button' disabled={!ready} onClick={onClick}>
-      {connector.name}
-    </button>
   )
 }
