@@ -35,7 +35,7 @@ export function MintNFT() {
     const tokenId = await getNextTokenId()
 
     try {
-      await writeContract({
+      writeContract({
         address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada también
         abi,
         functionName: 'mint',
@@ -60,8 +60,7 @@ export function MintNFT() {
   }
 
   const handleConnect = async (connector: Connector) => {
-    await connect({ connector })
-
+    connect({ connector })
     setShowConnectOptions(false)
   }
 
