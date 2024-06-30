@@ -40,7 +40,7 @@ export default function TicketSelection() {
   const router = useRouter();
 
   const eventDetails = {
-    id: "leonas.01",
+    id: "leonas.02",
     name: "Las Leonas",
     venue: "California Theatre - San Jose, CA",
     date: "October 18th, 2024"
@@ -98,11 +98,11 @@ export default function TicketSelection() {
           {/* Event Description */}
           <div className="text-primary-content relative">
             <h1 className="text-6xl font-bold mb-4 bg-primary-content bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto ">
-              La India Yuridia
+              Loonas
             </h1>
             <div className="block">
               <h2 className="text-4xl mb-4 bg-primary-content bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto">
-                The Ritz Theatre, New Jersey
+              "California Theatre - San Jose, CA
               </h2>
             </div>
             <div className="ml-auto sm:w-full md:w-96 text-primary-content bg-white rounded-lg shadow-sm p-6">
@@ -139,7 +139,7 @@ export default function TicketSelection() {
                   className="bg-blue-500 text-white text-2xl font-bold py-4 px-6 rounded-md mx-2"
                   onClick={handleBuyTicket}
                 >
-                  Buy Orchestra Ticket
+                  Buy  Ticket
                 </button>
               </div>
               {cart.length !== 0 ? (

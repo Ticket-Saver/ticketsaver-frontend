@@ -8,27 +8,6 @@ type Data = {
   message?: string;
 };
 
-/*
-const getEventDetails = async (eventId: string) => {
-  // Simula una llamada a una base de datos o API para obtener detalles del evento
-  return {
-    name: "Las Leonas",
-    venue: "California Theatre - San Jose, CA",
-    date: "October 18th, 2024"
-  };
-};
-
-const getTicketDetails = async (ticketId: string) => {
-  // Simula una llamada a una base de datos o API para obtener detalles del boleto
-  return {
-    price: 100,
-    priceTag: "General Admission",
-    seatType: "ADA",
-    seatLabel: "Loge section 1"
-  };
-};
-*/
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
