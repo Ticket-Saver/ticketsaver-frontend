@@ -1,35 +1,34 @@
-import { useState } from 'react';
+import { useState } from 'react'
 import TicketsClaim from '../../components/TicketsClaim'
 import { BlueCreateWalletButton } from '../../components/mintWagmi/SmartWalletButton/walletButton'
 
 interface Event {
-  eventId: string;
-  id: string;
-  eventName: string;
-  artistName?: string;
-  tour?: string;
-  description: string;
-  cardImage: string;
-  venue: string;
-  date: string;
-  city: string;
+  eventId: string
+  id: string
+  eventName: string
+  artistName?: string
+  tour?: string
+  description: string
+  cardImage: string
+  venue: string
+  date: string
+  city: string
 }
 
-
 export default function PastEvent() {
-
   const eventYuridia: Event = {
     eventId: '238191a6-0a65-45f2-81a6-4a29357cf8f6',
     id: 'Buildathon',
     eventName: 'Hackathon Buildathon',
     artistName: 'Buildathon',
     tour: 'Hackathon Tour',
-    description: 'Join us for a weekend of hacking, learning, and fun! Buildathon is a 36-hour hackathon where students from all over the world come together to turn their ideas into reality. Whether you are a beginner or a seasoned hacker, Buildathon is the place to be!',
+    description:
+      'Join us for a weekend of hacking, learning, and fun! Buildathon is a 36-hour hackathon where students from all over the world come together to turn their ideas into reality. Whether you are a beginner or a seasoned hacker, Buildathon is the place to be!',
     cardImage: 'events/Buildathon.jpeg',
     venue: 'The Ritz Theatre',
     date: 'June 06, 2024',
     city: 'Elizabeth, NJ'
-  };
+  }
 
   const eventLeonasSJ: Event = {
     eventId: 'las_leonas.03',
@@ -37,14 +36,15 @@ export default function PastEvent() {
     eventName: 'Las Leonas',
     artistName: 'Las Leonas',
     tour: 'US Tour',
-    description: 'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!',
+    description:
+      'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!',
     cardImage: 'events/Leonas.jpg',
     venue: 'California Theater',
     date: 'October 18, 2024',
     city: 'San Jose, CA'
   }
 
-  const [events, _setEvents] = useState<Event[]>([eventYuridia, eventLeonasSJ]);
+  const [events, _setEvents] = useState<Event[]>([eventYuridia, eventLeonasSJ])
 
   return (
     <div className='space-y-5'>
@@ -68,7 +68,7 @@ export default function PastEvent() {
           start collecting today.
         </div>
       </div>
-      <div className="space-y-5">
+      <div className='space-y-5'>
         {events.map((event: Event) => (
           <div key={event.eventId}>
             <TicketsClaim

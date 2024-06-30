@@ -15,10 +15,7 @@ export function BlueCreateWalletButton() {
   }, [connectors, connect])
 
   return (
-    <button
-      className='btn btn-primary btn-outline px-3'
-      onClick={createWallet}
-    >
+    <button className='btn btn-primary btn-outline px-3' onClick={createWallet}>
       <CoinbaseWalletLogo />
       Create Wallet
     </button>
