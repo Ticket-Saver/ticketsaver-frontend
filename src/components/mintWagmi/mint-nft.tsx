@@ -41,13 +41,13 @@ export function MintNFT() {
   }
 
   return (
-    <div className='flex flex-col items-center p-5 bg-transparent rounded-lg shadow-none w-full max-w-md mx-auto text-white'>
+    <div className=''>
       <button
-        className={`mt-4 py-3 px-8 text-lg font-bold border-none rounded-lg cursor-pointer transition duration-300 transform ${
+        className={`btn btn-primary btn-outline px-10 ${
           isPending
             ? 'bg-gray-500 cursor-not-allowed'
             : isConnected
-              ? 'bg-blue-600 hover:bg-blue-400 hover:scale-105'
+              ? 'btn btn-primary btn-outline px-10'
               : 'bg-gray-400'
         }`}
         disabled={!isConnected || isPending} // Deshabilita el botón si no está conectado o está pendiente

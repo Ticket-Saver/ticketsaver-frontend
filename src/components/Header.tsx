@@ -61,7 +61,7 @@ export default function Header() {
                     <a className='justify-between'>{user?.phone_number}</a>
                   </li>
                   <li>
-                    <Link to='/dashboard'>My Tickets</Link>
+                    <Link to='/dashboard/tickets/pastevent'>My Tickets</Link>
                   </li>
 
                   <li>
