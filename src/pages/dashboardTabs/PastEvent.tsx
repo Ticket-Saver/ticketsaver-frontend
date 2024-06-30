@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import TicketsClaim from '../../components/TicketsClaim'
 import { BlueCreateWalletButton } from '../../components/mintWagmi/SmartWalletButton/walletButton'
+import EveClaim from '../../components/EventsClaim'
 
 interface Event {
   eventId: string
@@ -13,6 +13,7 @@ interface Event {
   venue: string
   date: string
   city: string
+  route?: string
 }
 
 export default function PastEvent() {
@@ -27,7 +28,8 @@ export default function PastEvent() {
     cardImage: 'events/Buildathon.jpeg',
     venue: 'The Ritz Theatre',
     date: 'June 06, 2024',
-    city: 'Elizabeth, NJ'
+    city: 'Elizabeth, NJ',
+    route: `/dashboard/claimtickets/${'Buildathon'}/mynftsclaim`
   }
 
   const eventLeonasSJ: Event = {
@@ -41,28 +43,29 @@ export default function PastEvent() {
     cardImage: 'events/Leonas.jpg',
     venue: 'California Theater',
     date: 'October 18, 2024',
-    city: 'San Jose, CA'
+    city: 'San Jose, CA',
+    route: `/dashboard/claimtickets/${'Las leonas'}/mynftsclaim`
   }
 
   const [events, _setEvents] = useState<Event[]>([eventYuridia, eventLeonasSJ])
 
   return (
     <div className='space-y-5'>
-      <div className='w-full h-56 bg-neutral rounded-xl flex flex-col justify-between p-4 py-8'>
-        <div className='flex justify-between items-center'>
-          <div className='text-3xl font-semibold'>Claim your collectible tickets</div>
-          <div className='flex space-x-4'>
+      <div className='w-full bg-neutral rounded-xl flex flex-col justify-between p-4 py-2 sm:py-8'>
+        <div className='flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4'>
+          <div className='text-xl sm:text-3xl font-semibold text-center sm:text-left'>Claim your collectible tickets</div>
+          <div className='flex flex-row sm:flex-row space-y-0 sm:space-y-0 space-x-2 sm:space-x-5'>
             <a>
               <BlueCreateWalletButton />
             </a>
             <a>
-              <button className='btn btn-primary btn-outline px-10'>learn more</button>
+              <button className='btn btn-primary btn-outline px-4 sm:px-10'>learn more</button>
             </a>
           </div>
         </div>
-        <div className='w-2/5 h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551]'></div>
-        <div className='text-xl pb-4'>Turn your tickets into lasting memories!!!</div>
-        <div className='text-sm w-2/3'>
+        <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
+        <div className='text-base sm:text-xl pb-4 text-center sm:text-left'>Turn your tickets into lasting memories!!!</div>
+        <div className='text-xs sm:text-sm w-full sm:w-2/3'>
           Don’t let them get lost in a PDF file. Now, you can transform your tickets into
           collectible items and store them forever in your digital wallet. Create your wallet and
           start collecting today.
@@ -71,7 +74,7 @@ export default function PastEvent() {
       <div className='space-y-5'>
         {events.map((event: Event) => (
           <div key={event.eventId}>
-            <TicketsClaim
+            <EveClaim
               eventId={event.eventId}
               id={event.id}
               title={event.eventName}
@@ -80,6 +83,7 @@ export default function PastEvent() {
               venue={event.venue}
               date={event.date}
               city={event.city}
+              route={event.route}
             />
           </div>
         ))}

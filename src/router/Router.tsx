@@ -14,6 +14,8 @@ import Web3 from '../pages/Web3'
 import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
 import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
+import ClaimTicketPage from '../pages/ClaimTicketsPage'
+import TicketClaim from '../components/TickectClaim'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
@@ -55,6 +57,9 @@ export const AppRouter = () => (
         <Route path='settings' element={<MySettings />} />
         <Route path='help' element={<YouNeedHelp />} />
         <Route path='web3' element={<Web3 />} />
+        <Route path="claimtickets/:eventName" element={<ClaimTicketPage />}> 
+          <Route path='mynftsclaim' element={<TicketClaim />} />
+        </Route>
       </Route>
     </Routes>
   </Router>
