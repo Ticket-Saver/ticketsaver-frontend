@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { useConnect } from 'wagmi'
 import { CoinbaseWalletLogo } from './CoinbaseWalletLogo'
-import styles from '../../../styles/BlueCreateWalletButton.module.css'
 
 export function BlueCreateWalletButton() {
   const { connectors, connect } = useConnect()
@@ -16,7 +15,7 @@ export function BlueCreateWalletButton() {
   }, [connectors, connect])
 
   return (
-    <button className={styles.button} onClick={createWallet}>
+    <button className='btn btn-primary btn-outline px-3' onClick={createWallet}>
       <CoinbaseWalletLogo />
       Create Wallet
     </button>

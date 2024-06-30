@@ -9,7 +9,7 @@ export default function Sidebar() {
   const { isAuthenticated, user } = useAuth0()
 
   return (
-    <div className='bg-[#180F3C] bg-opacity-4 text-white w-80 min-h-screen p-4'>
+    <div className='bg-[#180F3C] bg-opacity-4 text-white w-80 min-h-screen h-full p-4'>
       <div className='flex flex-col items-center py-8'>
         <img
           src={isAuthenticated && user?.picture ? user?.picture : '/user.png'}
