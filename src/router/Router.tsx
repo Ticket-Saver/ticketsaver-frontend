@@ -15,6 +15,9 @@ import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
 import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
 
+import TestSale from '../pages/sale/TestEventSale'
+import CheckoutPage from '../pages/checkout'
+
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
   return isAuthenticated ? element : <Navigate to='/' />
@@ -31,7 +34,9 @@ export const AppRouter = () => (
           </LayoutHeaderFooter>
         }
       />
-     
+     <Route path='sale' element={<TestSale />} />
+     <Route path='checkout' element={<CheckoutPage/>} />
+
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
       <Route

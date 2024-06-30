@@ -8,7 +8,7 @@ type Data = {
   message?: string;
 };
 
-export default async function handler(
+export default async function POST(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
@@ -21,9 +21,9 @@ export default async function handler(
           price_data: {
             currency: 'USD',
             tax_behavior:'exclusive',
-              unit_amount: ticket.price * 100, // Stripe expects the amount in cents
+              unit_amount: ticket.price *100, // Stripe expects the amount in cents
               product_data: {
-                name: `Ticket - ${ticket.seatLabel}`,
+                name: `Ticket ${ticket.seatLabel}; Type ${ticket.seatType} ;Event: ${req.body.event.name}`,
                 description: `Event: ${req.body.event.name} at ${req.body.event.venue} on ${req.body.event.date}`,
                 metadata: {
                     event_label: `${req.body.event.id}`,
@@ -41,8 +41,7 @@ export default async function handler(
           ui_mode: 'embedded',
           line_items: lineItems,
           mode: 'payment',
-          success_url: 'https://ticketsaver.net/success',
-          cancel_url: 'https://ticketsaver.net/cancel',
+          return_url: 'https://ticketsaver-frontend.netlify.app/',
           invoice_creation: {
             enabled: true,
             invoice_data: {
@@ -55,7 +54,7 @@ export default async function handler(
           },
           payment_intent_data: {
             metadata: {
-              event_label:`${req.body.event.name}`,
+              event_label:`${req.body.event.id}`,
             }
           },
         });
