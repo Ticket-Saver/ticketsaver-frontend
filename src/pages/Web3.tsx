@@ -2,7 +2,7 @@ import { WalletOptions } from '../components/mintWagmi/wallet-options'
 import { MintNFT } from '../components/mintWagmi/mint-nft'
 import { BlueCreateWalletButton } from '../components/mintWagmi/SmartWalletButton/walletButton'
 import { ConnectWalletButton } from '../components/ConnectButton'
-import indiaYuridiaImage from '/events/IndiaYuridia.png';
+import indiaYuridiaImage from '/events/IndiaYuridia.png'
 import '../styles/custom.css'
 
 const nftData = [

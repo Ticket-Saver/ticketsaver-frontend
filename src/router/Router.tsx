@@ -57,7 +57,7 @@ export const AppRouter = () => (
         <Route path='settings' element={<MySettings />} />
         <Route path='help' element={<YouNeedHelp />} />
         <Route path='web3' element={<Web3 />} />
-        <Route path="claimtickets/:eventName" element={<ClaimTicketPage />}> 
+        <Route path='claimtickets/:eventName' element={<ClaimTicketPage />}>
           <Route path='mynftsclaim' element={<TicketClaim />} />
         </Route>
       </Route>

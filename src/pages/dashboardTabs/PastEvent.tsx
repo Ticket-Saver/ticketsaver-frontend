@@ -53,7 +53,9 @@ export default function PastEvent() {
     <div className='space-y-5'>
       <div className='w-full bg-neutral rounded-xl flex flex-col justify-between p-4 py-2 sm:py-8'>
         <div className='flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4'>
-          <div className='text-xl sm:text-3xl font-semibold text-center sm:text-left'>Claim your collectible tickets</div>
+          <div className='text-xl sm:text-3xl font-semibold text-center sm:text-left'>
+            Claim your collectible tickets
+          </div>
           <div className='flex flex-row sm:flex-row space-y-0 sm:space-y-0 space-x-2 sm:space-x-5'>
             <a>
               <BlueCreateWalletButton />
@@ -64,7 +66,9 @@ export default function PastEvent() {
           </div>
         </div>
         <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
-        <div className='text-base sm:text-xl pb-4 text-center sm:text-left'>Turn your tickets into lasting memories!!!</div>
+        <div className='text-base sm:text-xl pb-4 text-center sm:text-left'>
+          Turn your tickets into lasting memories!!!
+        </div>
         <div className='text-xs sm:text-sm w-full sm:w-2/3'>
           Don’t let them get lost in a PDF file. Now, you can transform your tickets into
           collectible items and store them forever in your digital wallet. Create your wallet and

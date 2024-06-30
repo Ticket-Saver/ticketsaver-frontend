@@ -9,20 +9,21 @@ import { useState } from 'react'
 
 export default function Sidebar() {
   const { isAuthenticated, user } = useAuth0()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
     <>
       <button
-        className="p-4 fixed z-10 bottom-5 left-5 btn btn-primary btn-circle px-10 lg:hidden" 
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+        className='p-4 fixed z-10 bottom-5 left-5 btn btn-primary btn-circle px-10 lg:hidden'
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
         {isSidebarOpen ? 'Close' : 'Menu'}
       </button>
       <div
-  className={`${isSidebarOpen ? 'flex' : 'lg:flex hidden'
-    } fixed lg:static top-19 left-0 flex-col bg-[#180F3C] text-white w-80 min-h-screen h-full p-4`}
->
+        className={`${
+          isSidebarOpen ? 'flex' : 'lg:flex hidden'
+        } fixed lg:static top-19 left-0 flex-col bg-[#180F3C] text-white w-80 min-h-screen h-full p-4`}
+      >
         <div className='flex flex-col items-center py-8'>
           <img
             src={isAuthenticated && user?.picture ? user?.picture : '/user.png'}
