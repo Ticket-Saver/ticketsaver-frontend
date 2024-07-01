@@ -1,35 +1,42 @@
-import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { abi } from './abi'
+import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, usePublicClient  } from 'wagmi'
+
+import { createCollectorClient } from "@zoralabs/protocol-sdk";
+
+
 
 export function MintNFT() {
-  const { isConnected } = useAccount()
+  const {address ,isConnected } = useAccount()
   const { data: hash, error, isPending, writeContract } = useWriteContract()
 
-  async function getNextTokenId() {
-    // Harcodeada
-    return 100
-  }
+
+  const chainId = useChainId();
+  const publicClient = usePublicClient();
+  const collectorClient = createCollectorClient({ chainId, publicClient });
+
+  
+
 
   async function mintNFT() {
     if (!isConnected) {
       alert('Please connect your wallet to mint an NFT.')
       return
     }
+    
 
-    const tokenId = await getNextTokenId()
-
-    try {
-      writeContract({
-        address: import.meta.env.VITE_SMARTCONTRACT_ADDR,
-        abi,
-        functionName: 'mint',
-        args: [tokenId]
-      })
-    } catch (error) {
-      console.error(error)
-      alert('An error occurred during minting. Please check the console for details.')
+    const {parameters} =  await collectorClient.mint(
+      {
+        tokenContract: "0x183eA7dD84886507328e6805c7c368c0023478F9",
+        quantityToMint: 1,
+        mintType: "1155",
+  
+        minterAccount: address
+      }
+    )
+     
+   
+    writeContract(parameters);
     }
-  }
+  
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
