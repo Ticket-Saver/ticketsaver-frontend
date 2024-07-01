@@ -13,7 +13,7 @@ app.listen(3003, () =>{
     console.log("server on port 3003")
 })
 
-const stripe = new Stripe("sk_test_51NkIhKJ2gfJv307U5ptHDeF4XjWfrwjliz91KK2sHPpcFSyvouJMMeds71d4OsKsKea56kTOa4CYUuBOjm23XZ5S00bxdAyA0Y");
+const stripe = new Stripe(process.env.VITE_STRIPE_PRIVATE_KEY);
 
 const YOUR_DOMAIN = 'http://localhost:5173'
 
