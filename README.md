@@ -10,6 +10,11 @@
 6. frontend: `User` can mint an `NFT` for each acquired ticket
 7. api: The minting uses the Zora protocol
 
+## Deploys
+
+- [TicketSaver frontend (deploy)](https://ticketsaver-frontend.netlify.app/)
+- [TicketSaver Collectibles (with Zora)](https://zora.co/collect/base:0x183ea7dd84886507328e6805c7c368c0023478f9)
+
 ### Stack
 
 - `Base` [docs](https://docs.base.org/): an Ethereum Layer-2 blockchain network
