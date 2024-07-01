@@ -13,7 +13,7 @@ app.listen(3003, () =>{
     console.log("server on port 3003")
 })
 
-const stripe = new Stripe(import.meta.env.VITE_STRIPE_PRIVATE_KEY);
+const stripe = new Stripe("sk_test_51NkIhKJ2gfJv307U5ptHDeF4XjWfrwjliz91KK2sHPpcFSyvouJMMeds71d4OsKsKea56kTOa4CYUuBOjm23XZ5S00bxdAyA0Y");
 
 const YOUR_DOMAIN = 'http://localhost:5173'
 
@@ -33,13 +33,14 @@ app.post('/api/checkout', async (req, res) => {
         currency: 'USD',
         unit_amount: ticket.price * 100, // Stripe expects the amount in cents
         product_data: {
-          name: `Ticket ${ticket.seatLabel}; Type ${ticket.priceType}; Event: ${event.name}`,
+          name: `Ticket ${ticket.ticketId}; PriceType: ${ticket.priceType}; Zone ${ticket.venueZone}`,
           description: `Event: ${event.name} at ${event.venue} on ${event.date}`,
           metadata: {
             event_label: event.id,
             price_type: ticket.priceType,
-            ticket_zone: ticket.seatType,
-            ticket_id: ticket.seatLabel,
+            ticket_zone: ticket.venueZone,
+            ticket_id: ticket.ticketId,
+            issuedAt: ticket.issuedAt,
             is_seat: true,
           },
         },
@@ -57,9 +58,11 @@ app.post('/api/checkout', async (req, res) => {
         enabled: true,
         invoice_data: {
           metadata: {
+            ticketId: `${cart.ticketId}`,
             eventName: `${event.id}`,
             venue: `${event.venue}`,
             date: `${event.date}`,
+            issuedAt:`${cart.issuedAt}`
           }
         },
       },

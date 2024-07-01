@@ -1,4 +1,3 @@
-import React from 'react';
 
 // DIRIGE A UN EVENTO YA CREADO DE STRIPE, TEMPORALMENTE.
 
