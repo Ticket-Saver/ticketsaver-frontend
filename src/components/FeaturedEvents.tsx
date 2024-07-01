@@ -4,7 +4,6 @@ import { EventCard } from './EventCard'
 import { v4 as uuidv4 } from 'uuid'
 
 export default function FeaturedEvents() {
-
   const buildathon = {
     eventId: '238191a6-0a65-45f2-81a6-4a29357cf8f6',
     id: 'Buildathon',
@@ -34,7 +33,6 @@ export default function FeaturedEvents() {
     city: 'San Jose, CA',
     route: `/dashboard/claimtickets/${'Las leonas'}/mynftsclaim`
   }
-
 
   const [events, _setEvents] = useState<any>([buildathon, eventLeonasSJ])
   const [_sessionId, setSessionId] = useState<string>('') // State to store sessionId
