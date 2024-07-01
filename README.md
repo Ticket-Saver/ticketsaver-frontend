@@ -1,11 +1,14 @@
 # TicketSaver Frontend
 
-## Hackaton Onchain
+## Intended workflow
 
-0. `Zora` is a track sponsor.
-1. The project must be build on `Base`
-2. `Zora` network is available on `Base`
-3.
+1. frontend: `User` selects an `event`
+2. frontend: `User` realizes the payment trough Stripe
+3. api: Stripe triggers an AWS Lambda webhook
+4. backend: The AWS Lambda creates and sends an email with the `tickets`
+5. frontend: `User` can see its tickets at the dashboard
+6. frontend: `User` can mint an `NFT` for each acquired ticket
+7. api: The minting uses the Zora protocol
 
 ### Stack
 
