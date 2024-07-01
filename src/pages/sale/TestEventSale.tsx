@@ -1,4 +1,3 @@
-import EventSaleTest from '../../components/EventSaleTest';
 
 import EventTest from '../../components/EventTest'
 

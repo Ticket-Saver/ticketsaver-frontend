@@ -6,7 +6,8 @@ export function MintNFT() {
   const { data: hash, error, isPending, writeContract } = useWriteContract()
 
   async function getNextTokenId() {
-    return 100 // Función harcodeada para obtener el siguiente ID
+    // Harcodeada
+    return 100
   }
 
   async function mintNFT() {

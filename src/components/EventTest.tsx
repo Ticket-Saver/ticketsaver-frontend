@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Link } from 'react-router-dom';
-import { ticketId,getToken } from './TicketUtils';
+import { ticketId } from './TicketUtils';
 
 interface Cart {
   ticketId: string;
@@ -13,7 +13,7 @@ interface Cart {
 }   
 
 export default function TicketSelection() {
-  const [sessionId, setSessionId] = useState<string>(''); // State to store sessionId
+  const [_sessionId, setSessionId] = useState<string>(''); // State to store sessionId
   const [cart, setCart] = useState<Cart[]>([]);
 
   const getCookieStart = (name: string) => {
