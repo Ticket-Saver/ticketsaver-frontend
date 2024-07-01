@@ -1,42 +1,38 @@
-import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, usePublicClient  } from 'wagmi'
+import {
+  type BaseError,
+  useAccount,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useChainId,
+  usePublicClient
+} from 'wagmi'
 
-import { createCollectorClient } from "@zoralabs/protocol-sdk";
-
-
+import { createCollectorClient } from '@zoralabs/protocol-sdk'
 
 export function MintNFT() {
-  const {address ,isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { data: hash, error, isPending, writeContract } = useWriteContract()
 
-
-  const chainId = useChainId();
-  const publicClient = usePublicClient();
-  const collectorClient = createCollectorClient({ chainId, publicClient });
-
-  
-
+  const chainId = useChainId()
+  const publicClient = usePublicClient()
+  const collectorClient = createCollectorClient({ chainId, publicClient })
 
   async function mintNFT() {
     if (!isConnected) {
       alert('Please connect your wallet to mint an NFT.')
       return
     }
-    
 
-    const {parameters} =  await collectorClient.mint(
-      {
-        tokenContract: "0x183eA7dD84886507328e6805c7c368c0023478F9",
-        quantityToMint: 1,
-        mintType: "1155",
-  
-        minterAccount: address
-      }
-    )
-     
-   
-    writeContract(parameters);
-    }
-  
+    const { parameters } = await collectorClient.mint({
+      tokenContract: '0x183eA7dD84886507328e6805c7c368c0023478F9',
+      quantityToMint: 1,
+      mintType: '1155',
+
+      minterAccount: address
+    })
+
+    writeContract(parameters)
+  }
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
