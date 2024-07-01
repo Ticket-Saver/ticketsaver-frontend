@@ -4,47 +4,39 @@ import { EventCard } from './EventCard'
 import { v4 as uuidv4 } from 'uuid'
 
 export default function FeaturedEvents() {
-  const eventYuridia = {
+
+  const buildathon = {
     eventId: '238191a6-0a65-45f2-81a6-4a29357cf8f6',
-    id: 'IndiaYuridia',
-    eventName: 'La India Yuridia',
-    artistName: 'India Yuridia',
-    tour: 'Por que Asi Soy',
+    id: 'Buildathon',
+    eventName: 'Hackathon Buildathon',
+    artistName: 'Buildathon',
+    tour: 'Hackathon Tour',
     description:
-      '¡Llega por primera vez a New Jersey la comediante femenina #1 de América Latina! ¡La India Yuridia!',
-    cardImage: 'events/IndiaYuridia.png',
+      'Join us for a weekend of hacking, learning, and fun! Buildathon is a 36-hour hackathon where students from all over the world come together to turn their ideas into reality.',
+    cardImage: 'events/Buildathon.jpeg',
     venue: 'The Ritz Theatre',
-    date: 'September 08, 2024',
-    city: 'Elizabeth, NJ'
+    date: 'June 06, 2024',
+    city: 'Elizabeth, NJ',
+    route: `/dashboard/claimtickets/${'Buildathon'}/mynftsclaim`
   }
-  const eventYuridiaSJ = {
-    eventId: 'india_yuridia.02',
-    id: 'IndiaYuridiaSJ',
-    eventName: 'La India Yuridia',
-    artistName: 'India Yuridia',
-    tour: 'Por que Asi Soy',
+
+  const eventLeonasSJ = {
+    eventId: 'las_leonas.03',
+    id: 'leonas_SJ',
+    eventName: 'Las Leonas',
+    artistName: 'Las Leonas',
+    tour: 'US Tour',
     description:
-      '¡Regresa a San José CA, la comediante femenina #1 de América Latina! ¡La India Yuridia!',
-    cardImage: 'events/IndiaYuridia.png',
-    venue: 'San José, CA',
-    date: 'November 17, 2024',
-    city: 'San José'
+      'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!',
+    cardImage: 'events/Leonas.jpg',
+    venue: 'California Theater',
+    date: 'October 18, 2024',
+    city: 'San Jose, CA',
+    route: `/dashboard/claimtickets/${'Las leonas'}/mynftsclaim`
   }
 
-  /*const eventEsquivel = {
-    eventId: '004x',
-    id: 'los_esquivel.01',
-    eventName: 'Los Esquivel',
-    artistName: 'Los Esquivel',
-    tour: '',
-    description: '¿Listos para una noche de fiesta? No te pierdas el concierto de Los Esquivel en Noxx Nightclub este próximo 10 de Mayo. Prepárate para cantar todos sus hits. ¡Compra tus boletos antes de que se agoten!',
-    cardImage: 'poster-los_esquivel.01.png',
-    venue: 'NOXX Nightclub',
-    date: 'May 10, 2024',
-    city: 'McAllen, TX'
-  }/*/
 
-  const [events, _setEvents] = useState<any>([eventYuridia, eventYuridiaSJ])
+  const [events, _setEvents] = useState<any>([buildathon, eventLeonasSJ])
   const [_sessionId, setSessionId] = useState<string>('') // State to store sessionId
 
   // Function to get cookie by name
