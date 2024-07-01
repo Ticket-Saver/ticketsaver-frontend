@@ -1,7 +1,7 @@
-// TicketSelection.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { Link } from 'react-router-dom';
 
 interface Cart {
   ticketId: string;
@@ -39,7 +39,7 @@ export default function TicketSelection() {
   }, []);
 
   const eventDetails = {
-    id: "leonas.03",
+    id: "las_leonas.03",
     name: "Las Leonas",
     venue: "California Theatre - San Jose, CA",
     date: "October 18th, 2024"
@@ -71,7 +71,6 @@ export default function TicketSelection() {
       cart: cart,
       event: eventDetails,
     }));
-    navigate("/checkout");
   };
 
   return (
@@ -157,12 +156,14 @@ export default function TicketSelection() {
                     </div>
                   </div>
                   <div className="flex justify-center">
+                  <Link to="/checkout">
                     <button
                       className="bg-green-500 text-white text-2xl font-bold py-4 px-6 rounded-md mt-4"
                       onClick={handleCheckout}
                     >
                       Continue to checkout
                     </button>
+                    </Link>
                   </div>
                 </>
               ) : (

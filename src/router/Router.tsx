@@ -34,8 +34,13 @@ export const AppRouter = () => (
           </LayoutHeaderFooter>
         }
       />
-     <Route path='sale' element={<TestSale />} />
-     <Route path='checkout' element={<CheckoutPage/>} />
+     <Route path='sale' element={
+      <LayoutHeaderFooter>
+      <TestSale />
+    </LayoutHeaderFooter>} />
+
+    <Route path='checkout' element={<CheckoutPage />} />
+     
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
