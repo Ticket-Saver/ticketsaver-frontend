@@ -1,15 +1,13 @@
-import TicketEventSale from '../../components/EventTest';
-import Header from '../../components/Header'
-import Footer from '../../components/Footer'
+import EventSaleTest from '../../components/EventSaleTest';
+
+import EventTest from '../../components/EventTest'
 
 export default function TestSale() {
 
        
   return (
     <>
-    <Header/>
-    <TicketEventSale/>
-    <Footer/>
+    <EventTest/>
     </>
   )
 }
