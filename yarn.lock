@@ -3842,6 +3842,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zoralabs/protocol-deployments@npm:^0.1.13":
+  version: 0.1.13
+  resolution: "@zoralabs/protocol-deployments@npm:0.1.13"
+  checksum: 10c0/b8e1361dda2a8583ba7026bfb54f97eb6bce7509eb26385d1ef9bc6e71afee03577d8961cb9565f0056af0e3710fcd6414afff8432ff211b85a50ac9cc8bb970
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^2.0.0":
   version: 2.0.0
   resolution: "abbrev@npm:2.0.0"
@@ -10531,6 +10538,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^7.2.0"
     "@typescript-eslint/parser": "npm:^7.2.0"
     "@vitejs/plugin-react-swc": "npm:^3.5.0"
+    "@zoralabs/protocol-deployments": "npm:^0.1.13"
     autoprefixer: "npm:^10.4.19"
     axios: "npm:^1.7.2"
     bootstrap-icons: "npm:^1.11.3"
