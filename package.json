@@ -19,6 +19,7 @@
     "@tailwindcss/typography": "^0.5.13",
     "@tanstack/react-query": "^5.48.0",
     "@zoralabs/protocol-deployments": "^0.1.13",
+    "@zoralabs/protocol-sdk": "^0.7.1",
     "axios": "^1.7.2",
     "bootstrap-icons": "^1.11.3",
     "cors": "^2.8.5",
