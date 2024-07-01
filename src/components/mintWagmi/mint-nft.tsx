@@ -19,7 +19,7 @@ export function MintNFT() {
 
     try {
       writeContract({
-        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada también
+        address: import.meta.env.VITE_SMARTCONTRACT_ADDR,
         abi,
         functionName: 'mint',
         args: [tokenId]

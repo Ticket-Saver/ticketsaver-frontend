@@ -4,48 +4,58 @@ import {
   EmbeddedCheckout,
   EmbeddedCheckoutProvider,
 } from "@stripe/react-stripe-js";
+import axios from "axios";
 
-const stripePromise = loadStripe(`${process.env.STRIPE_PUBLIC_KEY}`);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const CheckoutStripe = () => {
-  const [clientSecret, setClientSecret] = useState('');
+  const [clientSecret, setClientSecret] = useState(null);
 
-  // Define fetchClientSecret using useCallback
   const fetchClientSecret = useCallback(async () => {
-    const cart = localStorage.getItem("cart_checkout");
-    if (!cart) {
-      throw new Error("No sale to make payment for.");
+    try {
+      const cartString = localStorage.getItem("cart_checkout");
+      if (!cartString) {
+        throw new Error("No sale to make payment for.");
+      }
+
+      const { cart, event } = JSON.parse(cartString);
+
+      // Ensure cart is an array
+      if (!Array.isArray(cart)) {
+        throw new Error("Invalid cart data.");
+      }
+
+      const response = await axios.post("http://localhost:3003/api/checkout", { cart, event }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = response.data;
+      return data.clientSecret;
+    } catch (error) {
+      console.error("Error al obtener el pago de Stripe.", error);
+      throw error;
     }
-
-    // Ensure you're sending a properly formatted JSON string and setting Content-Type header
-    const response = await fetch("/api/route", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: cart, // Assuming cart is already a JSON string
-    });
-
-    const data = await response.json();
-    return data.clientSecret;
   }, []);
 
+  // Llama fetchClientSecret al montar el componente
   useEffect(() => {
-    fetchClientSecret().then(setClientSecret).catch((error) => {
-      console.error("Failed to fetch Stripe payment.", error);
-    });
+    fetchClientSecret()
+      .then((secret) => setClientSecret(secret))
+      .catch((error) => {
+        console.error("Error al obtener el pago de Stripe.", error);
+      });
   }, [fetchClientSecret]);
 
+  // Renderiza el EmbeddedCheckoutProvider si tienes el clientSecret
   return (
     <div id="checkout">
-      {
-        <EmbeddedCheckoutProvider
-          stripe={stripePromise}
-          options={{ clientSecret }}
-        >
+      {clientSecret && (
+        <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
           <EmbeddedCheckout />
         </EmbeddedCheckoutProvider>
-      }
+      )}
     </div>
   );
 };

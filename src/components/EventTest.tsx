@@ -1,20 +1,20 @@
-// TicketSelection.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { Link } from 'react-router-dom';
+import { ticketId,getToken } from './TicketUtils';
 
 interface Cart {
   ticketId: string;
   priceType: string;
   eventId: string;
   price: number;
-  seatLabel: string;
-}
+  venueZone: string;  
+  issuedAt: number;
+}   
 
 export default function TicketSelection() {
   const [sessionId, setSessionId] = useState<string>(''); // State to store sessionId
   const [cart, setCart] = useState<Cart[]>([]);
-  const navigate = useNavigate();
 
   const getCookieStart = (name: string) => {
     const cookies = document.cookie.split(';');
@@ -39,7 +39,7 @@ export default function TicketSelection() {
   }, []);
 
   const eventDetails = {
-    id: "leonas.03",
+    id: "las_leonas.03",
     name: "Las Leonas",
     venue: "California Theatre - San Jose, CA",
     date: "October 18th, 2024"
@@ -47,19 +47,23 @@ export default function TicketSelection() {
 
   const ticketDetails = {
     priceType: "P1",
-    price: 100,
-    seatLabel: "General Admission"
+    price: 131.15,
+    venueZone: "General Admission" // 
   };
 
   const handleBuyTicket = () => {
+    const issuedAt = Date.now(); // Obtener el timestamp actual
+    const newTicketId = ticketId(eventDetails.name, ticketDetails.venueZone, cart.length + 1, issuedAt);
+
     setCart(prevCart => [
       ...prevCart,
       {
-        ticketId: uuidv4(),
+        ticketId: newTicketId,
         priceType: ticketDetails.priceType,
         eventId: eventDetails.id,
         price: ticketDetails.price,
-        seatLabel: ticketDetails.seatLabel,
+        venueZone: ticketDetails.venueZone, 
+        issuedAt: issuedAt 
       },
     ]);
   };
@@ -71,8 +75,8 @@ export default function TicketSelection() {
       cart: cart,
       event: eventDetails,
     }));
-    navigate("/checkout");
   };
+
 
   return (
     <div className="bg-gray-100">
@@ -138,7 +142,7 @@ export default function TicketSelection() {
                   {cart.map((ticket, index) => (
                     <div key={index} className="mb-4 pb-4 border-b-2 border-gray-200 flex justify-between flex-row">
                       <div>
-                        <span className="pr-5">Ticket - {ticket.seatLabel}</span>
+                        <span className="pr-5">Ticket - {ticket.venueZone}</span>
                         <p className="font-bold">Ticket Total</p>
                       </div>
                       <div>
@@ -157,12 +161,14 @@ export default function TicketSelection() {
                     </div>
                   </div>
                   <div className="flex justify-center">
+                  <Link to="/checkout">
                     <button
                       className="bg-green-500 text-white text-2xl font-bold py-4 px-6 rounded-md mt-4"
                       onClick={handleCheckout}
                     >
                       Continue to checkout
                     </button>
+                    </Link>
                   </div>
                 </>
               ) : (
