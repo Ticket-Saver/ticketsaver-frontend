@@ -1,11 +1,11 @@
-import  Stripe  from 'stripe'
+import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export default async (req, context) => {
   if (req.method == 'POST') {
     try {
-      const { cart, event} = JSON.parse(req.body);
+      const { cart, event } = JSON.parse(req.body)
 
       if (!cart || !event) {
         throw new Error('Missing cart or event details')
