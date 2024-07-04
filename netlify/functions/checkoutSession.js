@@ -4,10 +4,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 export default async (req, context) => {
   if (req.method == 'POST') {
     try {
-      const { cart, event: eventDetails } = JSON.parse(req.body)
+      const { cart, event} = req.body
+
+      if (!cart || !event) {
+        throw new Error('Missing cart or event details');
+      }
 
       console.log('Creating checkout session for cart:', cart)
-      console.log('Event details:', eventDetails)
+      console.log('Event details:', event)
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -15,9 +19,9 @@ export default async (req, context) => {
           unit_amount: ticket.price * 100, // Stripe expects the amount in cents
           product_data: {
             name: `Ticket ${ticket.ticketId}; PriceType: ${ticket.priceType}; Zone ${ticket.venueZone}`,
-            description: `Event: ${eventDetails.name} at ${eventDetails.venue} on ${eventDetails.date}`,
+            description: `Event: ${event.name} at ${event.venue} on ${event.date}`,
             metadata: {
-              event_label: eventDetails.id,
+              event_label: event.id,
               price_type: ticket.priceType,
               ticket_zone: ticket.venueZone,
               ticket_id: ticket.ticketId,
@@ -40,21 +44,21 @@ export default async (req, context) => {
           invoice_data: {
             metadata: {
               ticketId: `${cart.ticketId}`,
-              eventName: `${eventDetails.id}`,
-              venue: `${eventDetails.venue}`,
-              date: `${eventDetails.date}`,
+              eventName: `${event.id}`,
+              venue: `${event.venue}`,
+              date: `${event.date}`,
               issuedAt: `${cart.issuedAt}`
             }
           }
         },
         metadata: {
-          eventName: eventDetails.name,
-          venue: eventDetails.venue,
-          date: eventDetails.date
+          eventName: event.name,
+          venue: event.venue,
+          date: event.date
         },
         payment_intent_data: {
           metadata: {
-            event_label: `${eventDetails.id}`
+            event_label: `${event.id}`
           }
         }
       })
@@ -73,7 +77,7 @@ export default async (req, context) => {
     }
   } else if (req.method === 'GET') {
     try {
-      const session = await stripe.checkout.sessions.retrieve(req.query.id)
+      const session = await stripe.checkout.sessions.retrieve(req.query)
 
       return {
         statusCode: 200,
