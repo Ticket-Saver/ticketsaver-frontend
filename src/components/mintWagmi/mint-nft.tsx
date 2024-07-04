@@ -22,13 +22,13 @@ export function MintNFT() {
       return
     }
 
-    const smartContractAddr = import.meta.env.VITE_SMARTCONTRACT_ADDR as `0x${string}`;
+    const smartContractAddr = import.meta.env.VITE_SMARTCONTRACT_ADDR as `0x${string}`
 
     const { parameters } = await collectorClient.mint({
       tokenContract: smartContractAddr,
       quantityToMint: 1,
       mintType: '1155',
-      minterAccount:address!,
+      minterAccount: address!,
       tokenId: 1n
     })
 
