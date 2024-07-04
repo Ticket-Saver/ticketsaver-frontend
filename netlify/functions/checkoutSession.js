@@ -1,14 +1,18 @@
-import {Stripe} from 'stripe'
+import { Stripe } from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export default async (req, context) => {
   if (req.method == 'POST') {
     try {
+<<<<<<< HEAD
       const { cart, event} = JSON.parse(req.body);
+=======
+      const { cart, event } = req.body
+>>>>>>> ff5584929bce5838a935f7cf498adb3ed9fd7435
 
       if (!cart || !event) {
-        throw new Error('Missing cart or event details');
+        throw new Error('Missing cart or event details')
       }
 
       console.log('Creating checkout session for cart:', cart)
