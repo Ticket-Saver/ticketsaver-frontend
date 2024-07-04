@@ -24,21 +24,21 @@ const CheckoutStripe = () => {
       const response = await fetch('/api/checkoutSession', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cart, event }),
-      });
+        body: JSON.stringify({ cart, event })
+      })
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        throw new Error('Failed to create checkout session')
       }
 
-      const data = await response.json();
-      return data.clientSecret;
+      const data = await response.json()
+      return data.clientSecret
     } catch (error) {
-      console.error('Error al obtener el pago de Stripe.', error);
-      throw error;
+      console.error('Error al obtener el pago de Stripe.', error)
+      throw error
     }
-  }, []);
+  }, [])
 
   // Llama fetchClientSecret al montar el componente
   useEffect(() => {
