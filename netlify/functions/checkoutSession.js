@@ -78,7 +78,7 @@ export default async (req, context) => {
     }
   } else if (req.method === 'GET') {
     try {
-      const session = await stripe.checkout.sessions.retrieve(req.query)
+      const session = await stripe.checkout.sessions.retrieve(req.query.session_id)
 
       return {
         statusCode: 200,
