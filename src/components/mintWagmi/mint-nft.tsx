@@ -12,7 +12,6 @@ import { createCollectorClient } from '@zoralabs/protocol-sdk'
 export function MintNFT() {
   const { address, isConnected } = useAccount()
   const { data: hash, error, isPending, writeContract } = useWriteContract()
-
   const chainId = useChainId()
   const publicClient = usePublicClient()
   const collectorClient = createCollectorClient({ chainId, publicClient })
@@ -23,12 +22,14 @@ export function MintNFT() {
       return
     }
 
+    const smartContractAddr = import.meta.env.VITE_SMARTCONTRACT_ADDR as `0x${string}`;
+
     const { parameters } = await collectorClient.mint({
-      tokenContract: import.meta.env.VITE_SMARTCONTRACT_ADDR,
+      tokenContract: smartContractAddr,
       quantityToMint: 1,
       mintType: '1155',
-
-      minterAccount: address
+      minterAccount:address!,
+      tokenId: 1n
     })
 
     writeContract(parameters)
