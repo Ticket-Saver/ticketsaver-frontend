@@ -24,7 +24,7 @@ export function MintNFT() {
     }
 
     const { parameters } = await collectorClient.mint({
-      tokenContract: '0x183eA7dD84886507328e6805c7c368c0023478F9',
+      tokenContract: import.meta.env.VITE_SMARTCONTRACT_ADDR,
       quantityToMint: 1,
       mintType: '1155',
 

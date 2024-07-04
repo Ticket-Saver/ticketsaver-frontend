@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js'
-import axios from 'axios'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -22,23 +21,24 @@ const CheckoutStripe = () => {
         throw new Error('Invalid cart data.')
       }
 
-      const response = await axios.post(
-        'http://localhost:3003/api/checkout',
-        { cart, event },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
+      const response = await fetch('netlify/functions/checkoutSession', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart, event }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
 
-      const data = response.data
-      return data.clientSecret
+      const data = await response.json();
+      return data.clientSecret;
     } catch (error) {
-      console.error('Error al obtener el pago de Stripe.', error)
-      throw error
+      console.error('Error al obtener el pago de Stripe.', error);
+      throw error;
     }
-  }, [])
+  }, []);
 
   // Llama fetchClientSecret al montar el componente
   useEffect(() => {
