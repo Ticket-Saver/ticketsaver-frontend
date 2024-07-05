@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-exports.handler = async function(event,context) {
+exports.handler = async function (event, context) {
   if (event.httpMethod == 'POST') {
     try {
       const { cart, events } = JSON.parse(event.body)
