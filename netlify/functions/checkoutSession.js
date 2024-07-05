@@ -5,14 +5,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 exports.handler = async function (event, context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, events } =JSON.parse(event.body);
+      const { cart, events } = JSON.parse(event.body)
 
-      console.log('Event body:', event.body);
-      console.log('Creating checkout session for cart:', cart);
-      console.log('Event details:', events);
-      
+      console.log('Event body:', event.body)
+      console.log('Creating checkout session for cart:', cart)
+      console.log('Event details:', events)
+
       if (!cart || !events) {
-        throw new Error('Missing cart or event details');
+        throw new Error('Missing cart or event details')
       }
 
       const lineItems = cart.map((ticket) => ({
@@ -33,7 +33,7 @@ exports.handler = async function (event, context) {
           }
         },
         quantity: 1
-      }));
+      }))
 
       const session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
@@ -79,12 +79,11 @@ exports.handler = async function (event, context) {
     }
   } else if (event.httpMethod === 'GET') {
     try {
-      const sessionId = event.queryStringParameters.session_id;
+      const sessionId = event.queryStringParameters.session_id
 
-      console.log('Retrieving session with ID:', sessionId);
+      console.log('Retrieving session with ID:', sessionId)
 
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-
+      const session = await stripe.checkout.sessions.retrieve(sessionId)
 
       return {
         statusCode: 200,
