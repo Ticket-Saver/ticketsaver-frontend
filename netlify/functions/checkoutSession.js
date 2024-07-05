@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-exports.handler = async (event) => {
+exports.handler = async function(event,context) {
   if (req.method == 'POST') {
     try {
       const { cart, events } = JSON.parse(event.body)
@@ -78,7 +78,7 @@ exports.handler = async (event) => {
     }
   } else if (event.method === 'GET') {
     try {
-      const session = await stripe.checkout.sessions.retrieve(req.query.session_id)
+      const session = await stripe.checkout.sessions.retrieve(event.query.session_id)
 
       return {
         statusCode: 200,
