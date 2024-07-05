@@ -2,17 +2,17 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-export default async (req, context) => {
+exports.handler = async (event) => {
   if (req.method == 'POST') {
     try {
-      const { cart, event } = JSON.parse(req.body)
+      const { cart, events } = JSON.parse(event.body)
 
-      if (!cart || !event) {
+      if (!cart || !events) {
         throw new Error('Missing cart or event details')
       }
 
       console.log('Creating checkout session for cart:', cart)
-      console.log('Event details:', event)
+      console.log('Event details:', events)
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -20,9 +20,9 @@ export default async (req, context) => {
           unit_amount: ticket.price * 100, // Stripe expects the amount in cents
           product_data: {
             name: `Ticket ${ticket.ticketId}; PriceType: ${ticket.priceType}; Zone ${ticket.venueZone}`,
-            description: `Event: ${event.name} at ${event.venue} on ${event.date}`,
+            description: `Event: ${events.name} at ${events.venue} on ${events.date}`,
             metadata: {
-              event_label: event.id,
+              event_label: events.id,
               price_type: ticket.priceType,
               ticket_zone: ticket.venueZone,
               ticket_id: ticket.ticketId,
@@ -39,27 +39,27 @@ export default async (req, context) => {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: `${process.env.YOUR_DOMAIN}/return?session_id={CHECKOUT_SESSION_ID}`,
+        return_url: "https://ticketsaver-test.netlify.app/",
         invoice_creation: {
           enabled: true,
           invoice_data: {
             metadata: {
               ticketId: `${cart.ticketId}`,
-              eventName: `${event.id}`,
-              venue: `${event.venue}`,
-              date: `${event.date}`,
+              eventName: `${events.id}`,
+              venue: `${events.venue}`,
+              date: `${events.date}`,
               issuedAt: `${cart.issuedAt}`
             }
           }
         },
         metadata: {
-          eventName: event.name,
-          venue: event.venue,
-          date: event.date
+          eventName: events.name,
+          venue: events.venue,
+          date: events.date
         },
         payment_intent_data: {
           metadata: {
-            event_label: `${event.id}`
+            event_label: `${events.id}`
           }
         }
       })
@@ -76,7 +76,7 @@ export default async (req, context) => {
         body: JSON.stringify({ error: 'Failed to create checkout session' })
       }
     }
-  } else if (req.method === 'GET') {
+  } else if (event.method === 'GET') {
     try {
       const session = await stripe.checkout.sessions.retrieve(req.query.session_id)
 

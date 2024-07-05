@@ -35,7 +35,7 @@ const CheckoutStripe = () => {
       const data = await response.json()
       return data.clientSecret
     } catch (error) {
-      console.error('Error al obtener el pago de Stripe.', error)
+      console.error('Error al obtener el pago de Stripe .', error)
       throw error
     }
   }, [])
