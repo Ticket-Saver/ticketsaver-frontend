@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function(event,context) {
-  if (req.method == 'POST') {
+  if (event.method == 'POST') {
     try {
       const { cart, events } = JSON.parse(event.body)
 
@@ -39,7 +39,7 @@ exports.handler = async function(event,context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: "https://ticketsaver-test.netlify.app/",
+        return_url: 'https://ticketsaver-test.netlify.app/',
         invoice_creation: {
           enabled: true,
           invoice_data: {
