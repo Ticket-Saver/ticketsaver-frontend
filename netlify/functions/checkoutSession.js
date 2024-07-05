@@ -5,13 +5,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 exports.handler = async function (event, context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, events } =JSON.parse(event.body);
+      const { cart, eventInfo } =JSON.parse(event.body);
 
       console.log('Event body:', event.body);
       console.log('Creating checkout session for cart:', cart);
-      console.log('Event details:', events);
+      console.log('Event details:', eventInfo);
       
-      if (!cart || !events) {
+      if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details');
       }
 
@@ -21,9 +21,9 @@ exports.handler = async function (event, context) {
           unit_amount: ticket.price * 100, // Stripe expects the amount in cents
           product_data: {
             name: `Ticket ${ticket.ticketId}; PriceType: ${ticket.priceType}; Zone ${ticket.venueZone}`,
-            description: `Event: ${events.name} at ${events.venue} on ${events.date}`,
+            description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`,
             metadata: {
-              event_label: events.id,
+              event_label: eventInfo.id,
               price_type: ticket.priceType,
               ticket_zone: ticket.venueZone,
               ticket_id: ticket.ticketId,
@@ -46,21 +46,21 @@ exports.handler = async function (event, context) {
           invoice_data: {
             metadata: {
               ticketId: `${cart.ticketId}`,
-              eventName: `${events.id}`,
-              venue: `${events.venue}`,
-              date: `${events.date}`,
+              eventName: `${eventInfo.id}`,
+              venue: `${eventInfo.venue}`,
+              date: `${eventInfo.date}`,
               issuedAt: `${cart.issuedAt}`
             }
           }
         },
         metadata: {
-          eventName: events.name,
-          venue: events.venue,
-          date: events.date
+          eventName: eventInfo.name,
+          venue: eventInfo.venue,
+          date: eventInfo.date
         },
         payment_intent_data: {
           metadata: {
-            event_label: `${events.id}`
+            event_label: `${eventInfo.id}`
           }
         }
       })

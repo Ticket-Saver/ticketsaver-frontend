@@ -14,7 +14,7 @@ const CheckoutStripe = () => {
         throw new Error('No sale to make payment for.')
       }
 
-      const { cart, event } = JSON.parse(cartString)
+      const { cart, eventInfo } = JSON.parse(cartString)
 
       // Ensure cart is an array
       if (!Array.isArray(cart)) {
@@ -26,7 +26,7 @@ const CheckoutStripe = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cart, event })
+        body: JSON.stringify({ cart, eventInfo })
       })
       if (!response.ok) {
         throw new Error('Failed to create checkout session ok')

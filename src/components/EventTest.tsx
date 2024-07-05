@@ -79,7 +79,7 @@ export default function TicketSelection() {
       'cart_checkout',
       JSON.stringify({
         cart: cart,
-        event: eventDetails
+        eventInfo: eventDetails
       })
     )
   }
