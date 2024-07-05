@@ -2,17 +2,17 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-exports.handler = async function (event, context) {
+exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, eventInfo } =JSON.parse(event.body);
+      const { cart, eventInfo } = JSON.parse(event.body)
 
-      console.log('Event body:', event.body);
-      console.log('Creating checkout session for cart:', cart);
-      console.log('Event details:', eventInfo);
-      
+      console.log('Event body:', event.body)
+      console.log('Creating checkout session for cart:', cart)
+      console.log('Event details:', eventInfo)
+
       if (!cart || !eventInfo) {
-        throw new Error('Missing cart or event details');
+        throw new Error('Missing cart or event details')
       }
 
       const lineItems = cart.map((ticket) => ({
