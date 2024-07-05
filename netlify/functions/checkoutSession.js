@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 exports.handler = async function(event,context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, events } = JSON.parse(event.body)
+      const { cart, events } = event.body
 
       if (!cart || !events) {
         throw new Error('Missing cart or event details')
