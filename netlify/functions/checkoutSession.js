@@ -39,7 +39,7 @@ exports.handler = async (event) => {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: "https://ticketsaver-test.netlify.app/",
+        return_url: 'https://ticketsaver-test.netlify.app/',
         invoice_creation: {
           enabled: true,
           invoice_data: {
