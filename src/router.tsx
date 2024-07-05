@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ReactNode } from 'react';
 import LoginPage from './loginPage';
 import ProtectedPage from './protectedPage';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0();
@@ -13,7 +16,10 @@ export const AppRouter = () => (
   <Router>
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/protected" element={ <ProtectedRoute element={<ProtectedPage />} />}
+      <Route path="/protected" element={<ProtectedRoute element={
+        <QueryClientProvider client={queryClient}>
+          <ProtectedPage />
+        </QueryClientProvider>} />}
       />
     </Routes>
   </Router>
