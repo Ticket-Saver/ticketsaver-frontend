@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function(event,context) {
-  if (event.method == 'POST') {
+  if (event.httpMethod == 'POST') {
     try {
       const { cart, events } = JSON.parse(event.body)
 
@@ -76,7 +76,7 @@ exports.handler = async function(event,context) {
         body: JSON.stringify({ error: 'Failed to create checkout session' })
       }
     }
-  } else if (event.method === 'GET') {
+  } else if (event.httpMethod === 'GET') {
     try {
       const session = await stripe.checkout.sessions.retrieve(event.query.session_id)
 
