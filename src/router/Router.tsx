@@ -17,6 +17,8 @@ import Collectibles from '../pages/dashboardTabs/Collectibles'
 
 import TestSale from '../pages/sale/TestEventSale'
 import CheckoutPage from '../pages/checkout'
+import EventPage from '../pages/EventPage'
+import SalePage from '../pages/SalePage'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
@@ -46,6 +48,10 @@ export const AppRouter = () => (
       <Route path='checkout' element={<CheckoutPage />} />
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
+
+      <Route path="/events/:eventId" element={<EventPage />} />
+
+      <Route path="/sale/:eventId" element={<SalePage />} />
 
       <Route
         path='/dashboard'
