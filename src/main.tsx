@@ -8,7 +8,7 @@ import 'unfonts.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Auth0Provider
-      domain= {import.meta.env.VITE_AUTH0_DOMAIN}
+      domain={import.meta.env.VITE_AUTH0_DOMAIN}
       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       cacheLocation='localstorage'
       useRefreshTokens={true}
