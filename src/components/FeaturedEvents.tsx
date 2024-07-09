@@ -64,12 +64,9 @@ export default function FeaturedEvents() {
     }
   }, [])
 
-
   return (
     <section className='py-10 md:py-16 bg-base-300'>
-      <h2>
-        ENV Variable Example: {import.meta.env.VITE_APP_EXAMPLE_NETLIFY}
-      </h2>
+      <h2>ENV Variable Example: {import.meta.env.VITE_APP_EXAMPLE_NETLIFY}</h2>
       <div className='container'>
         <div className='text-center'>
           <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
