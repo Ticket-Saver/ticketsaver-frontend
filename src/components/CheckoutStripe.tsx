@@ -5,9 +5,9 @@ import { useAuth0 } from '@auth0/auth0-react'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
-const {user}= useAuth0()
+const { user } = useAuth0()
 
-console.log("user", user)
+console.log('user', user)
 
 const CheckoutStripe = () => {
   const [clientSecret, setClientSecret] = useState(null)
@@ -20,7 +20,6 @@ const CheckoutStripe = () => {
       }
 
       const { cart, eventInfo, user } = JSON.parse(cartString)
-
 
       // Ensure cart is an array
       if (!Array.isArray(cart)) {
