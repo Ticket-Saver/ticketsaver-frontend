@@ -19,8 +19,7 @@ const CheckoutStripe = () => {
         throw new Error('No sale to make payment for.')
       }
 
-      const { cart, eventInfo} = JSON.parse(cartString)
-
+      const { cart, eventInfo, user } = JSON.parse(cartString)
 
       // Ensure cart is an array
       if (!Array.isArray(cart)) {
