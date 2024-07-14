@@ -5,12 +5,12 @@ import { useAuth0 } from '@auth0/auth0-react'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
-const {user}= useAuth0()
-
-console.log("user", user)
 
 const CheckoutStripe = () => {
   const [clientSecret, setClientSecret] = useState(null)
+  const {user}= useAuth0()
+  console.log("user", user)
+
 
   const fetchClientSecret = useCallback(async () => {
     try {
@@ -19,7 +19,7 @@ const CheckoutStripe = () => {
         throw new Error('No sale to make payment for.')
       }
 
-      const { cart, eventInfo, user } = JSON.parse(cartString)
+      const { cart, eventInfo} = JSON.parse(cartString)
 
 
       // Ensure cart is an array
@@ -32,7 +32,7 @@ const CheckoutStripe = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cart, eventInfo })
+        body: JSON.stringify({ cart, eventInfo, user })
       })
       if (!response.ok) {
         throw new Error('Failed to create checkout session ok')
