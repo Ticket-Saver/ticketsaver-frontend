@@ -5,12 +5,10 @@ import { useAuth0 } from '@auth0/auth0-react'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
-
 const CheckoutStripe = () => {
   const [clientSecret, setClientSecret] = useState(null)
-  const {user}= useAuth0()
-  console.log("user", user)
-
+  const { user } = useAuth0()
+  console.log('user', user)
 
   const fetchClientSecret = useCallback(async () => {
     try {
