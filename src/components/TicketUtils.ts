@@ -15,3 +15,4 @@ export function ticketId(
   const dataFmt = `${eventLabel}:${zone}:${ticketNum.toString().padStart(2, '0')}:${issuedAt}`
   return getToken(dataFmt, 4).toUpperCase()
 }
+

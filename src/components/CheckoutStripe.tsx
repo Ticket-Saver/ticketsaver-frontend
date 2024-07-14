@@ -1,8 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js'
+import { useAuth0 } from '@auth0/auth0-react'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+
+const {user}= useAuth0()
+
+console.log("user", user)
 
 const CheckoutStripe = () => {
   const [clientSecret, setClientSecret] = useState(null)
@@ -14,7 +19,8 @@ const CheckoutStripe = () => {
         throw new Error('No sale to make payment for.')
       }
 
-      const { cart, eventInfo } = JSON.parse(cartString)
+      const { cart, eventInfo, user } = JSON.parse(cartString)
+
 
       // Ensure cart is an array
       if (!Array.isArray(cart)) {
