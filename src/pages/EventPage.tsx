@@ -1,11 +1,45 @@
-import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export default function EventPage() {
-  const { eventId } = useParams()
 
-  // Aquí puedes cargar los datos del evento usando el eventId,
-  // por ejemplo, haciendo una solicitud a una API o buscando en un objeto de datos estáticos.
+  const { venue, name, date } = useParams();
+
+  console.log(venue, date, name);
+  const [venues, setVenue] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+      const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
+      const token = import.meta.env.VITE_GITHUB_TOKEN
+      const storedVenues = localStorage.getItem('Venues');
+
+      if (storedVenues) {
+        setVenue(JSON.parse(storedVenues));
+      } else {
+        try {
+          const response = await fetch(githubApiUrl, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github.v3.raw'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const matchingVenue = data.find((venueItem: any) => venueItem.label === venue);
+          setVenue(matchingVenue);
+          console.log(matchingVenue);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      }
+    };
+    fetchVenues();
+  }, [venue]);
 
   return (
     <div className="bg-white">
@@ -30,10 +64,10 @@ export default function EventPage() {
           {/* Event Description */}
           <div className="text-primary-content relative">
             <h1 className="text-6xl font-bold mb-4 bg-primary-content bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto ">
-              {eventId}
+              {name}
             </h1>
             <h2 className="text-4xl mb-4 bg-primary-content bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto">
-              The Ritz Theatre, New Jersey
+              {venues?.name}, {venues?.location.city}
             </h2>
             <div className="ml-auto md:w-96 sm:w-full text-primary-content bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-bold mb-6">Ticket Prices</h2>
@@ -77,7 +111,7 @@ export default function EventPage() {
         {/* Event Description */}
         <div className="prose lg:prose-xl text-black w-full">
           <h1 className="text-black ">Porque asi soy</h1>
-          <h2 className="text-black">September 8th, 2024</h2>
+          <h2 className="text-black">{date}</h2>
           <h3 className="text-black">Sobre el evento</h3>
           <p className="text-left">
             ¡Llega por primera vez a New Jersey la comediante femenina #1 de América Latina!! ¡La India Yuridia! No te pierdas su nueva gira “Por que Asi Soy” donde te garantizamos pasaras una noche de risas junto a toda tu familia! ¡Compra tus boletos antes de que se agoten!
