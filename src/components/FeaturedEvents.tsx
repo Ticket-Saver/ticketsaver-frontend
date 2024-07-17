@@ -9,6 +9,7 @@ interface Event {
   event_hour: string;
   event_name: string;
   venue_label: string;
+  event_label: string;
 }
 
 export default function FeaturedEvents() {
@@ -21,7 +22,10 @@ export default function FeaturedEvents() {
       const storedEvents = localStorage.getItem('events');
 
     if (storedEvents) {
-      setEvents(JSON.parse(storedEvents));
+      const parsedEvents = JSON.parse(storedEvents);
+      const filteredEvents = parsedEvents.filter((event: Event) => event.event_label === 'las_leonas.02' || event.event_label === 'las_leonas.03');
+      setEvents(filteredEvents);
+      console.log('Filtered events', filteredEvents);
     } else {
       try {
         const response = await fetch(githubApiUrl, {
@@ -35,10 +39,11 @@ export default function FeaturedEvents() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        const eventsArray = Object.values(data) as Event[]; 
-        setEvents(eventsArray);
-        localStorage.setItem('events', JSON.stringify(eventsArray));
+        const data: Record<string, Event> = await response.json();
+        console.log(data);
+        const filteredEvents = Object.values(data).filter((event: Event) => event.event_label === 'las_leonas.02' || event.event_label === 'las_leonas.03');
+        setEvents(filteredEvents);
+        localStorage.setItem('events', JSON.stringify(filteredEvents));
       } catch (error) {
         console.error("Error al obtener eventos:", error);
       }
