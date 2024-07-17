@@ -11,9 +11,48 @@ type Seat = [string, number]; //["A",1]
 
 type SeatMap = {
   [zone: string]: {   // Mezzanine
-    [priceType: string]: string[] // P1 -> "A","B","C" 
+    [priceType: string]: {    //P1
+      [row: string]: string[]   // "A": ["14, 2, -2", "101, 112", "1, 13, 2"]
+    },
   }
 };
+
+
+
+const seatrangesToValues = (ranges: string[]): number[] => {
+  // Inicializar la lista de valores que se devolverá
+  const values: number[] = [];
+
+  // Iterar sobre cada string en la lista de rangos
+  ranges.forEach(r => {
+      const parsedNumber = parseInt(r, 10);
+      
+      if (!isNaN(parsedNumber)) {
+          values.push(parsedNumber);
+      } else {
+          try {
+              let param = r.split(',', 3).map(s => parseInt(s, 10));
+              
+              if (param.length === 2) {
+                  param.push(1);
+              }
+              const [start, end, step] = param;
+
+              const sgn = Math.sign(end - start);
+
+              for (let i = start; i !== end + sgn; i += step) {
+                  values.push(i);
+              }
+          } catch (e) {
+              console.error(`Error ${r}`, e);
+          }
+      }
+  });
+  return values;
+};
+export {seatrangesToValues}
+
+
 
 
 // precios y sus correspondientes zonas
@@ -32,16 +71,22 @@ export {zone_prices_file}
 
 
 // dada la zona y asiento, se regresa un precio"
-const zoneseat_to_price = (seatmap: SeatMap, zone: string, seat: Seat): string => {
+const zoneseatToPrice = (seatmap: SeatMap, zone: string, seat: Seat): string => {
   for (const [priceType, rows] of Object.entries(seatmap[zone])) {
-    if (rows.includes(seat[0])) {
-      return priceType;
-    }
+      const rowMap: Record<string, string[]> = rows as Record<string, string[]>;
+      try {
+          const row = rowMap[seat[0]];
+          if (seatrangesToValues(row).includes(seat[1])) {
+              return priceType;
+          }
+      } catch (error) {
+          continue;
+      }
   }
   throw new Error("Seat out of range");
 };
 
-export { zoneseat_to_price };
+export { zoneseatToPrice };
 
 
 //dado un tipo de precio, se regresa el monto
@@ -64,7 +109,7 @@ export { pricetypeToAmount };
 
 const find_price = (data: any, zone: string, seat:Seat): number => {
   const { prices, seatmap } = zone_prices_file(data);
-  const priceType = zoneseat_to_price(seatmap, zone, seat);
+  const priceType = zoneseatToPrice(seatmap, zone, seat);
   return pricetypeToAmount(prices, priceType);
 }
 export {find_price};
