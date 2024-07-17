@@ -1,19 +1,23 @@
 import Stripe from 'stripe'
+import { findCustomer } from '../utils/customer'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, eventInfo } = JSON.parse(event.body)
+      const { cart, eventInfo, user } = JSON.parse(event.body)
 
       console.log('Event body:', event.body)
       console.log('Creating checkout session for cart:', cart)
       console.log('Event details:', eventInfo)
-
+      console.log('user:',user)
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
+
+      const customerId = await findCustomer(user);
+
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -40,7 +44,12 @@ exports.handler = async function (event, _context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: 'https://ticketsaver-test.netlify.app/',
+        return_url:`$https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
+        customer_email: user?.email,
+        phone_number_collection: {
+          enabled: true
+        },
+        customer:customerId,
         invoice_creation: {
           enabled: true,
           invoice_data: {
@@ -49,14 +58,18 @@ exports.handler = async function (event, _context) {
               eventName: `${eventInfo.id}`,
               venue: `${eventInfo.venue}`,
               date: `${eventInfo.date}`,
-              issuedAt: `${cart.issuedAt}`
+              issuedAt: `${cart.issuedAt}`,
+              name: user?.name,
+              email: user?.email
             }
           }
         },
         metadata: {
           eventName: eventInfo.name,
           venue: eventInfo.venue,
-          date: eventInfo.date
+          date: eventInfo.date,
+          name: user?.name,
+          email: user?.email
         },
         payment_intent_data: {
           metadata: {
