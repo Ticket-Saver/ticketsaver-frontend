@@ -18,7 +18,6 @@ type SeatMap = {
 };
 
 
-
 const seatrangesToValues = (ranges: string[]): number[] => {
   // Inicializar la lista de valores que se devolverá
   const values: number[] = [];
@@ -68,6 +67,31 @@ const zone_prices_file = (data: any): { prices: Prices, seatmap: SeatMap } => {
 };
 export {zone_prices_file}
 
+
+//dada los precios y sus zonas, se regresa el nombre de la zona y los precios 
+const extractZonePrices = (result: any) => {
+  const { prices, zones } = result;
+  const zonePriceList = [];
+
+  for (const [zoneName, priceTiers] of Object.entries(zones)) {
+    const priceTierKeys = Object.keys(priceTiers as Record<string, any>);
+    const pricesForZone = priceTierKeys.map((priceTierKey) => {
+      const availableDates = Object.keys(prices[priceTierKey]);
+      const firstAvailableDate = availableDates[0]; 
+      const priceInfo = prices[priceTierKey][firstAvailableDate];
+      return { 
+        priceBase: priceInfo.price_base, 
+        priceFinal: priceInfo.price_final
+      };
+    });
+
+    zonePriceList.push({ zone: zoneName, prices: pricesForZone });
+  }
+
+  return zonePriceList;
+}
+
+export { extractZonePrices };
 
 
 // dada la zona y asiento, se regresa un precio"
