@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const useFetchJson = (url: string) => {
+const useFetchJson = (url: string,  options?: RequestInit) => {
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -9,7 +9,7 @@ const useFetchJson = (url: string) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, options);
         if (!response.ok) {
           throw new Error('response error');
         }
@@ -23,7 +23,7 @@ const useFetchJson = (url: string) => {
     };
 
     fetchData();
-  }, [url]);
+  }, [url,]);
 
   return { data, loading, error };
 };
