@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Link } from 'react-router-dom'
 import { ticketId } from './TicketUtils'
+import { useAuth0 } from '@auth0/auth0-react'
 
 
 interface Cart {
@@ -37,6 +38,7 @@ export default function TicketSelection() {
       setSessionId(existingSessionId)
     }
   }, [])
+  const { user } = useAuth0()
 
   const eventDetails = {
     id: 'las_leonas.03',
@@ -80,7 +82,8 @@ export default function TicketSelection() {
       'cart_checkout',
       JSON.stringify({
         cart: cart,
-        eventInfo: eventDetails
+        eventInfo: eventDetails,
+        user: user
       })
     )
   }
