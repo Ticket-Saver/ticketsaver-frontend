@@ -5,20 +5,21 @@ import { CustomAuthError } from '@supabase/supabase-js'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
+  console.log('Event received:', event);
+
   if (event.httpMethod == 'POST') {
     try {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
 
-      console.log('Event body:', event.body)
-      console.log('Creating checkout session for cart:', cart)
-      console.log('Event details:', eventInfo)
-      console.log('customer:',CustomAuthError)
+      console.log('Parsed event body:', { cart, eventInfo, customer });
+
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
 
+      console.log('Calling findCustomer with:', customer);
       const customerId = await findCustomer(customer);
-
+      console.log('Customer ID:', customerId);
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -39,7 +40,8 @@ exports.handler = async function (event, _context) {
         },
         quantity: 1
       }))
-
+      console.log('Line items for checkout session:', lineItems);
+      
       const session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],

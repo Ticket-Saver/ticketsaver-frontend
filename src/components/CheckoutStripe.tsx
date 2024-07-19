@@ -20,8 +20,9 @@ const CheckoutStripe = () => {
       if (!Array.isArray(cart)) {
         throw new Error('Invalid cart data.')
       }
-      console.log(customer.name)
       console.log(customer)
+      console.log(cart)
+      console.log(eventInfo)
 
       const response = await fetch('/api/checkoutSession', {
         method: 'POST',
