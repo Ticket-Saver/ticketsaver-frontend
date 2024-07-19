@@ -1,22 +1,23 @@
 import Stripe from 'stripe'
 import { findCustomer } from '../utils/customer'
+import { CustomAuthError } from '@supabase/supabase-js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, eventInfo, user } = JSON.parse(event.body)
+      const { cart, eventInfo, customer } = JSON.parse(event.body)
 
       console.log('Event body:', event.body)
       console.log('Creating checkout session for cart:', cart)
       console.log('Event details:', eventInfo)
-      console.log('user:',user)
+      console.log('customer:',CustomAuthError)
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
 
-      const customerId = await findCustomer(user);
+      const customerId = await findCustomer(customer);
 
 
       const lineItems = cart.map((ticket) => ({
@@ -45,7 +46,7 @@ exports.handler = async function (event, _context) {
         line_items: lineItems,
         mode: 'payment',
         return_url:`$https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
-        customer_email: user?.email,
+        customer_email: customer?.email,
         phone_number_collection: {
           enabled: true
         },
@@ -59,8 +60,8 @@ exports.handler = async function (event, _context) {
               venue: `${eventInfo.venue}`,
               date: `${eventInfo.date}`,
               issuedAt: `${cart.issuedAt}`,
-              name: user?.name,
-              email: user?.email
+              name: customer?.name,
+              email: customer?.email
             }
           }
         },
@@ -68,8 +69,8 @@ exports.handler = async function (event, _context) {
           eventName: eventInfo.name,
           venue: eventInfo.venue,
           date: eventInfo.date,
-          name: user?.name,
-          email: user?.email
+          name: customer?.name,
+          email: customer?.email
         },
         payment_intent_data: {
           metadata: {

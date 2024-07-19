@@ -2,11 +2,11 @@ import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 
-const findCustomer = async (user) => {
+const findCustomer = async (customer) => {
   try {
     // Buscar clientes por email
     const customers = await stripe.customers.list({
-      email: user.email,
+      email: customer.email,
       limit: 1,
     });
 
@@ -16,9 +16,9 @@ const findCustomer = async (user) => {
     } else {
       // Si no existe, crear uno nuevo
       const newCustomer = await stripe.customers.create({
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
+        name: customer.name,
+        email: customer.email,
+        phone: customer?.phone,
       });
       return newCustomer.id;
     }

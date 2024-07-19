@@ -40,6 +40,11 @@ export default function TicketSelection() {
   }, [])
   const { user } = useAuth0()
 
+  const customer = {
+    name: user?.name,
+    email: user?.email,
+    phone: user?.phone_number};
+
   const eventDetails = {
     id: 'las_leonas.03',
     name: 'Las Leonas',
@@ -83,7 +88,7 @@ export default function TicketSelection() {
       JSON.stringify({
         cart: cart,
         eventInfo: eventDetails,
-        user: user
+        customer: customer
       })
     )
   }
