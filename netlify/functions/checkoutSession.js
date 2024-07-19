@@ -47,7 +47,7 @@ exports.handler = async function (event, _context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url:`$https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
+        return_url:`https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
         phone_number_collection: {
           enabled: true
         },
