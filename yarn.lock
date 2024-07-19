@@ -9070,6 +9070,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"seatchart@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "seatchart@npm:0.1.0"
+  checksum: 10c0/45ceb8f21ae7350bed5876727896e8d3a8ee14f6545e9c7870ca9687ad00c0b6b252d4c73190440c72223aaed4eae109e39127b0cf42fed3e1dcc2f784718e3d
+  languageName: node
+  linkType: hard
+
 "secp256k1@npm:^5.0.0":
   version: 5.0.0
   resolution: "secp256k1@npm:5.0.0"
@@ -10498,6 +10505,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-query: "npm:^3.39.3"
     react-router-dom: "npm:^6.23.1"
+    seatchart: "npm:^0.1.0"
     stripe: "npm:^16.1.0"
     tailwindcss: "npm:^3.4.3"
     typescript: "npm:^5.2.2"
