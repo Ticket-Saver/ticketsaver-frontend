@@ -1,23 +1,25 @@
 import Stripe from 'stripe'
 import { findCustomer } from '../utils/customer'
+import { CustomAuthError } from '@supabase/supabase-js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
+  console.log('Event received:', event)
+
   if (event.httpMethod == 'POST') {
     try {
-      const { cart, eventInfo, user } = JSON.parse(event.body)
+      const { cart, eventInfo, customer } = JSON.parse(event.body)
 
-      console.log('Event body:', event.body)
-      console.log('Creating checkout session for cart:', cart)
-      console.log('Event details:', eventInfo)
-      console.log('user:',user)
+      console.log('Parsed event body:', { cart, eventInfo, customer })
+
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
 
-      const customerId = await findCustomer(user);
-
+      console.log('Calling findCustomer with:', customer)
+      const customerId = await findCustomer(customer)
+      console.log('Customer ID:', customerId)
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -38,18 +40,18 @@ exports.handler = async function (event, _context) {
         },
         quantity: 1
       }))
+      console.log('Line items for checkout session:', lineItems)
 
       const session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url:`$https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
-        customer_email: user?.email,
+        return_url: `https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
         phone_number_collection: {
           enabled: true
         },
-        customer:customerId,
+        customer: customerId,
         invoice_creation: {
           enabled: true,
           invoice_data: {
@@ -59,8 +61,8 @@ exports.handler = async function (event, _context) {
               venue: `${eventInfo.venue}`,
               date: `${eventInfo.date}`,
               issuedAt: `${cart.issuedAt}`,
-              name: user?.name,
-              email: user?.email
+              name: customer?.name,
+              email: customer?.email
             }
           }
         },
@@ -68,8 +70,8 @@ exports.handler = async function (event, _context) {
           eventName: eventInfo.name,
           venue: eventInfo.venue,
           date: eventInfo.date,
-          name: user?.name,
-          email: user?.email
+          name: customer?.name,
+          email: customer?.email
         },
         payment_intent_data: {
           metadata: {

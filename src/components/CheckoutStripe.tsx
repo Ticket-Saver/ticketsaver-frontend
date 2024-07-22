@@ -14,19 +14,22 @@ const CheckoutStripe = () => {
         throw new Error('No sale to make payment for.')
       }
 
-      const { cart, eventInfo } = JSON.parse(cartString)
+      const { cart, eventInfo, customer } = JSON.parse(cartString)
 
       // Ensure cart is an array
       if (!Array.isArray(cart)) {
         throw new Error('Invalid cart data.')
       }
+      console.log(customer)
+      console.log(cart)
+      console.log(eventInfo)
 
       const response = await fetch('/api/checkoutSession', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cart, eventInfo })
+        body: JSON.stringify({ cart, eventInfo, customer })
       })
       if (!response.ok) {
         throw new Error('Failed to create checkout session ok')
