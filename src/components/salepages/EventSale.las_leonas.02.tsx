@@ -7,8 +7,8 @@ import React, {
 } from "react";
 import { useRouter } from "next/router";
 import SeatchartJS, { CartChangeEvent } from "seatchart";
-import Seatchart from "@/components/Seatchart";
-import InteractiveMap from "@/components/assets/InteractiveMap";
+import Seatchart from "../InteractiveMap";
+import InteractiveMap from "@/components/InteractiveMap";
 import UnionCountryMap from "@/components/assets/UnionCountyMap";
 import { v4 as uuidv4 } from 'uuid';
 

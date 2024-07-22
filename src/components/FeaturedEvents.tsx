@@ -15,7 +15,7 @@ interface Event {
 
 export default function FeaturedEvents() {
   const [events, setEvents] = useState<Event[]>([]);
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
+  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/files/events.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
   const options = {
