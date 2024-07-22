@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { useState, useEffect } from 'react';
-=======
-import React, { useState, useEffect } from 'react';
->>>>>>> b5e4382e2d1ea914a5314e73e21c56f1308a43b2
 import ImageMapper from 'react-img-mapper';
 
 import 'seatchart/dist/seatchart.min.css';
