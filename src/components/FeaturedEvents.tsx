@@ -58,8 +58,7 @@ export default function FeaturedEvents() {
     fetchEvents()
   }, [])
 
-
-  const setSessionId = useState<string>('')[1]; // State to store sessionId
+  const setSessionId = useState<string>('')[1] // State to store sessionId
 
   const getCookie = (name: string) => {
     const cookies = document.cookie.split(';')
