@@ -18,7 +18,6 @@ import Collectibles from '../pages/dashboardTabs/Collectibles'
 import TestSale from '../pages/sale/TestEventSale'
 import CheckoutPage from '../pages/checkout'
 import EventPage from '../pages/EventPage'
-import SalePage from '../pages/SalePage'
 import TicketSelection from '../pages/TicketEventSale'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {

@@ -119,7 +119,7 @@ export default function EventPage() {
                       <th className="text-left font-normal">{zoneItem.zone}</th>
                       <th className="text-right font-normal">
                         Starting prices from
-                        <a className="font-bold"> ${Math.min(...zoneItem.prices.map(price => price.priceBase)) / 100}</a>
+                        <a className="font-bold"> ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}</a>
                       </th>
                     </tr>
                   ))}

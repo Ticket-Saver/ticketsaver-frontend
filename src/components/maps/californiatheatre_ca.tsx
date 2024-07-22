@@ -344,7 +344,7 @@ const getDefaultMap = () => ({
                     },
                     indexerRows: {
                         visible: true,
-                        label: (row: number) => "FF",
+                        label: () => "FF",
                     },
                     seatTypes: {
                         default: {
@@ -1142,7 +1142,7 @@ const getDefaultMap = () => ({
                     },
                     indexerRows: {
                         visible: true,
-                        label: (row: number) => 'K',
+                        label: () => 'K',
                     },
                     seatTypes: {
                         default: {
