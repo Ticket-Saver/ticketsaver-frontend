@@ -19,6 +19,7 @@ import TestSale from '../pages/sale/TestEventSale'
 import CheckoutPage from '../pages/checkout'
 import EventPage from '../pages/EventPage'
 import SalePage from '../pages/SalePage'
+import TicketSelection from '../pages/TicketEventSale'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
@@ -51,7 +52,7 @@ export const AppRouter = () => (
 
       <Route path="/events/:name/:venue/:date/:label" element={<EventPage />} />
 
-      <Route path="/sale/:eventId" element={<SalePage />} />
+      <Route path="/sale/:name/:venuesName/:location/:label" element={<TicketSelection />} />
 
       <Route
         path='/dashboard'
@@ -62,7 +63,7 @@ export const AppRouter = () => (
                 <Dashboard />
               </LayoutHeader>
             }
-          />
+          />  
         }
       >
         <Route path='profile' element={<MyProfile />} />

@@ -86,7 +86,7 @@ export default function FeaturedEvents() {
                 eventId={event.eventId}
                 title={event.event_name}
                 description={'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!'} // Add description if available
-                thumbnailURL={'https://via.placeholder.com/150'}
+                thumbnailURL={'/events/Leonas.jpg'}
                 venue={event.venue_label}
                 date={event.event_date}
                 city={'Columbus, Ohaio'}
