@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { ticketId } from './TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
 
-
 interface Cart {
   ticketId: string
   priceType: string
@@ -43,7 +42,8 @@ export default function TicketSelection() {
   const customer = {
     name: user?.name,
     email: user?.email,
-    phone: user?.phone_number};
+    phone: user?.phone_number
+  }
 
   const eventDetails = {
     id: 'las_leonas.03',

@@ -5,21 +5,21 @@ import { CustomAuthError } from '@supabase/supabase-js'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
-  console.log('Event received:', event);
+  console.log('Event received:', event)
 
   if (event.httpMethod == 'POST') {
     try {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
 
-      console.log('Parsed event body:', { cart, eventInfo, customer });
+      console.log('Parsed event body:', { cart, eventInfo, customer })
 
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
 
-      console.log('Calling findCustomer with:', customer);
-      const customerId = await findCustomer(customer);
-      console.log('Customer ID:', customerId);
+      console.log('Calling findCustomer with:', customer)
+      const customerId = await findCustomer(customer)
+      console.log('Customer ID:', customerId)
 
       const lineItems = cart.map((ticket) => ({
         price_data: {
@@ -40,18 +40,18 @@ exports.handler = async function (event, _context) {
         },
         quantity: 1
       }))
-      console.log('Line items for checkout session:', lineItems);
+      console.log('Line items for checkout session:', lineItems)
 
       const session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url:`https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
+        return_url: `https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
         phone_number_collection: {
           enabled: true
         },
-        customer:customerId,
+        customer: customerId,
         invoice_creation: {
           enabled: true,
           invoice_data: {
