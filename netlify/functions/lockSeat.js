@@ -30,7 +30,7 @@ exports.handler = async function handler(event, _context) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: 'Invalid request format' })
-    };
+    }
   }
 
   const { data: seatData, error: seatError } = await supabase
