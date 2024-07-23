@@ -49,9 +49,23 @@ export const AppRouter = () => (
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
-      <Route path='/events/:name/:venue/:date/:label' element={<EventPage />} />
+      <Route
+        path='/events/:name/:venue/:date/:label'
+        element={
+          <LayoutHeaderFooter>
+            <EventPage />{' '}
+          </LayoutHeaderFooter>
+        }
+      />
 
-      <Route path='/sale/:name/:venuesName/:location/:label' element={<TicketSelection />} />
+      <Route
+        path='/sale/:name/:venuesName/:location/:label'
+        element={
+          <LayoutHeaderFooter>
+            <TicketSelection />{' '}
+          </LayoutHeaderFooter>
+        }
+      />
 
       <Route
         path='/dashboard'
