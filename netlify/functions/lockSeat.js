@@ -18,6 +18,7 @@ exports.handler = async function handler(event, _context) {
   }
 
   const seat = event.body
+  console.log(seat)
 
   // Validate the request body
   if (
@@ -26,7 +27,10 @@ exports.handler = async function handler(event, _context) {
     typeof seat.col !== 'number' ||
     typeof seat.sessionId !== 'string'
   ) {
-    return res.status(400).json({ error: 'Invalid request format' })
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid request format' })
+    };
   }
 
   const { data: seatData, error: seatError } = await supabase

@@ -9,7 +9,8 @@ exports.handler = async function handler(event, _context) {
   }
 
   const { subZone } = event.body
-
+  console.log(subZone)
+  
   // Validate subZone is provided and is a string
   if (typeof subZone !== 'string') {
     return {
