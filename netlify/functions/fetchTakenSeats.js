@@ -1,4 +1,4 @@
-import supabase from '../utils/supabase'
+import {supabase} from '../utils/supabase'
 
 exports.handler = async function handler(event, _context) {
   if (event.httpMethod !== 'POST') {
