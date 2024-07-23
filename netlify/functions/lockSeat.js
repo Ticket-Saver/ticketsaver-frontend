@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //import {supabase} from '../utils/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 
@@ -10,6 +11,9 @@ console.log('Supabase client created:', supabase)
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase URL or Anon Key in environment variables')
 }
+=======
+import { supabase } from '../utils/supabaseClient'
+>>>>>>> c358698b2e476069c178881960cee721fea82d20
 /*
 interface SeatUpdateRequest {
   Seat: string;

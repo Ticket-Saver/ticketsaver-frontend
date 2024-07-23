@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //import {supabase} from '../utils/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 
@@ -11,6 +12,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase URL or Anon Key in environment variables')
 }
 console.log('Supabase client created:', supabase)
+=======
+import { supabase } from '../utils/supabaseClientClient'
+>>>>>>> c358698b2e476069c178881960cee721fea82d20
 
 export const handler = async (event, _context) => {
   if (event.httpMethod !== 'POST') {

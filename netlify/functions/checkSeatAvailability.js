@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 //import {supabase} from '../utils/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
+=======
+import { supabase } from '../utils/supabaseClient'
+>>>>>>> c358698b2e476069c178881960cee721fea82d20
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
