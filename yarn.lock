@@ -8628,6 +8628,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-fast-compare@npm:^3.2.0":
+  version: 3.2.2
+  resolution: "react-fast-compare@npm:3.2.2"
+  checksum: 10c0/0bbd2f3eb41ab2ff7380daaa55105db698d965c396df73e6874831dbafec8c4b5b08ba36ff09df01526caa3c61595247e3269558c284e37646241cba2b90a367
+  languageName: node
+  linkType: hard
+
+"react-img-mapper@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "react-img-mapper@npm:1.5.1"
+  dependencies:
+    react-fast-compare: "npm:^3.2.0"
+  peerDependencies:
+    react: 16.x || 17.x || 18.x
+    react-dom: 16.x || 17.x || 18.x
+  checksum: 10c0/172799af4bc2f73120ef8504bf26abf84bf7531efdcf5e808f895a01c061d503d985e7ad9dde30f63d0a8ef0f23197d611989a593dbbdfd7dca26e4f426cd42c
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -10503,6 +10522,7 @@ __metadata:
     prettier: "npm:^3.2.5"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
+    react-img-mapper: "npm:^1.5.1"
     react-query: "npm:^3.39.3"
     react-router-dom: "npm:^6.23.1"
     seatchart: "npm:^0.1.0"

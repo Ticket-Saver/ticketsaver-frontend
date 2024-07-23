@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ImageMapper from 'react-img-mapper'
 
 import 'seatchart/dist/seatchart.min.css'
@@ -15,8 +15,8 @@ const InteractiveMap = ({
   src,
   width
 }: InteractiveMapProps) => {
-  const [highlightedAreas, setHighlightedAreas] = useState([])
-  const [updatedMap, setUpdatedMap] = useState(getDefaultMap())
+  const [highlightedAreas, setHighlightedAreas] = useState<any[]>([]);
+  const [updatedMap, setUpdatedMap] = useState(getDefaultMap());
   const height = width
 
   useEffect(() => {

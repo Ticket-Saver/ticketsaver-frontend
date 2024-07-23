@@ -1,10 +1,14 @@
-import React, { useState, ChangeEvent, useEffect, useRef, useCallback } from 'react'
-import { useRouter } from 'next/router'
+import { useState, ChangeEvent, useEffect, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom';
 import SeatchartJS, { CartChangeEvent } from 'seatchart'
 import Seatchart from '../InteractiveMap'
-import InteractiveMap from '@/components/InteractiveMap'
+import InteractiveMap from '../InteractiveMap';
 import UnionCountryMap from '@/components/assets/UnionCountyMap'
 import { v4 as uuidv4 } from 'uuid'
+
+import { ticketId } from '../TicketUtils'
+
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface Cart {
   price: number
@@ -49,6 +53,14 @@ export default function TicketSelection() {
     }
   }, [])
 
+  const { user } = useAuth0()
+
+  const customer = {
+    name: user?.name,
+    email: user?.email,
+    phone: user?.phone_number
+  }
+
   const [eventZoneSelected, setEventZoneSelected] = useState<'orchestra' | 'loge' | ''>('orchestra')
 
   const eventZones = {
@@ -72,7 +84,6 @@ export default function TicketSelection() {
   }
 
   const [cart, setCart] = useState<Cart[]>([])
-  const router = useRouter()
 
   const handleEventZoneSelect = (event: ChangeEvent<HTMLSelectElement>) => {
     if (event.target.value === 'orchestra') {
@@ -95,14 +106,15 @@ export default function TicketSelection() {
       'cart_checkout',
       JSON.stringify({
         cart: cart,
-        event: {
-          name: 'las_leonas.02',
+        eventInfo: {
+          id: 'las_leonas.02',
+          name: 'las Leonas',
           venue: 'Union County Performing Arts Center',
           date: 'September 1st, 2024'
-        }
+        },
+        customer: customer
       })
     )
-    router.push('/checkout')
   }
 
   const [seatchartCurrentOptions, setSeatchartCurrentOptions] = useState<any>(null)
@@ -476,12 +488,14 @@ export default function TicketSelection() {
                   </div>
                   {/* Proceed to Checkout Button */}
                   <div className='flex justify-center'>
-                    <button
-                      className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
-                      onClick={() => handleCheckout()}
-                    >
-                      Proceed to Checkout
-                    </button>
+                    <Link to='/checkout'>
+                      <button
+                        className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
+                        onClick={() => handleCheckout()}
+                        >
+                        Proceed to Checkout
+                      </button>
+                    </Link>
                   </div>
                 </>
               ) : (
