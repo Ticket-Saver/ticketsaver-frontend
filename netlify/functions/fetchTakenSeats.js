@@ -1,9 +1,8 @@
-import {supabase} from '../utils/supabaseClient'
-
+import { supabase } from '../utils/supabaseClient'
 
 console.log('Supabase client created:', supabase)
 
-exports.handler = async function(event, _context) {
+exports.handler = async function (event, _context) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
