@@ -7,8 +7,8 @@ exports.handler = async function handler(event, _context) {
       body: JSON.stringify({ error: 'Method not allowed' })
     }
   }
-
-  const { subZone } = event.body
+  console.log(event)
+  const { subZone } = JSON.parse(event.body)
   console.log(subZone)
   
   // Validate subZone is provided and is a string

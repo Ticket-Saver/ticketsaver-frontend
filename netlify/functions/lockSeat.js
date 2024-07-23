@@ -17,7 +17,7 @@ exports.handler = async function handler(event, _context) {
     }
   }
 
-  const seat = event.body
+  const seat = JSON.parse(event.body)
   console.log(seat)
 
   // Validate the request body

@@ -8,7 +8,7 @@ exports.handler = async function handler(event, _context) {
     }
   }
 
-  const { seats } = event.body // Assuming the body contains an array of seats to check
+  const { seats } = JSON.parse(event.body)// Assuming the body contains an array of seats to check
   console.log(seats)
 
   if (!Array.isArray(seats) || seats.length === 0) {
