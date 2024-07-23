@@ -45,3 +45,6 @@ dist-ssr
 
 ## --> ELSE ADD if NOT using yarn's zero-install:
 .pnp.*
+
+# Local Netlify folder
+.netlify
