@@ -7,7 +7,7 @@ exports.handler = async function handler(event, _context) {
       body: JSON.stringify({ error: 'Method not allowed' })
     }
   }
-  console.log(event)
+  console.log(event.body)
   const { subZone } = JSON.parse(event.body)
   console.log(subZone)
 
@@ -27,7 +27,7 @@ exports.handler = async function handler(event, _context) {
       .select('row, col')
       .eq('subZone', subZone)
       .or('isTaken.eq.true,LockedStatus.eq.true')
-
+    console.log(data)
     if (error) throw error
 
     return {
