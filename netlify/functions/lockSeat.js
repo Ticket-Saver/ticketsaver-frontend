@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import {supabase} from '../utils/supabaseClient'
-=======
-import { supabase } from '../utils/supabase'
->>>>>>> 2d95a7a16ef42de48bcc5357c074003b11122942
+import supabase from '../utils/supabaseClient'
 /*
 interface SeatUpdateRequest {
   Seat: string;
