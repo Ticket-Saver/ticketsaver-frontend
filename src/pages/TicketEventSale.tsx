@@ -408,17 +408,17 @@ export default function TicketSelection() {
                       <div className='items-center flex justify-center'>
                         <InteractiveMap
                           handleClickImageZone={async (area) => {
-                            console.log('Area: ', area.title);
+                            console.log('Area: ', area.title)
                             handleGetAreaSeats(area.title).then((parsedSeats) => {
-                              if (Array.isArray(parsedSeats.data)) { 
-                                const selectedOptions = area.Options;
-                                selectedOptions.reservedSeats = parsedSeats;
-                                setSeatchartCurrentOptions(selectedOptions);
+                              if (Array.isArray(parsedSeats.data)) {
+                                const selectedOptions = area.Options
+                                selectedOptions.reservedSeats = parsedSeats
+                                setSeatchartCurrentOptions(selectedOptions)
                               } else {
-                                console.error('parsedSeats is not an array:', parsedSeats);
+                                console.error('parsedSeats is not an array:', parsedSeats)
                               }
-                            });
-                            setSeatchartCurrentArea(area);
+                            })
+                            setSeatchartCurrentArea(area)
                           }}
                           getDefaultMap={
                             label === 'las_leonas.03'

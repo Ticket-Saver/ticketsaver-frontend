@@ -8,7 +8,6 @@ export default function EventPage() {
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
-
   useEffect(() => {
     const fetchVenues = async () => {
       const storedVenues = localStorage.getItem('Venues')
