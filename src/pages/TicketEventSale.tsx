@@ -15,6 +15,10 @@ import californiaTheatreSvg from "../assets/maps/californiaTheatre.svg"
 import unionCountySvg from "../assets/maps/union_county.svg"
 import { v4 as uuidv4 } from 'uuid';
 
+import { ticketId } from '../components/TicketUtils'
+import { useAuth0 } from '@auth0/auth0-react'
+
+
 interface Cart {
   price: number;
   serviceFee: number;
@@ -27,7 +31,11 @@ interface Cart {
   seatType: string;
   subZone: string;
   coords: { row: number; col: number };
+  priceType: string;
+  venueZone: string;
+  ticketId: string;
 }
+
 
 export default function TicketSelection() {
   const { name, venuesName, location, label } = useParams();
@@ -90,6 +98,13 @@ export default function TicketSelection() {
     orchestra: [4.45, 3.66, 3.01, 2.48, 1.70],
     loge: [4.45, 3.66, 3.01, 2.48, 1.70],
   };
+  const { user } = useAuth0();
+
+  const customer = {
+    name: user?.name,
+    email: user?.email,
+    phone: user?.phone_number
+  };
 
   const [cart, setCart] = useState<Cart[]>([]);
   const navigate = useNavigate();
@@ -118,11 +133,13 @@ export default function TicketSelection() {
       "cart_checkout",
       JSON.stringify({
         cart: cart,
-        event: {
+        eventInfo: {
+          id: 'las_leonas.03',
           name: "Leonas.03",
           venue: "California Theatre - San Jose, CA",
           date: "October 18th, 2024",
         },
+        customer: customer
       })
     );
     navigate("/checkout");
@@ -178,6 +195,10 @@ export default function TicketSelection() {
 
         // Proceed only if lockSeats was successful
         if (eventZoneSelected !== "") {
+          const newTicketId = ticketId('las_leonas.03',
+            eventZoneSelected,
+            cart.length + 1,
+            Date.now())
           const zoneColorType_ = seatchartCurrentArea?.name as string;
           const zoneColors = eventZones[eventZoneSelected];
           const colorIndex = zoneColors.indexOf(zoneColorType_);
@@ -196,6 +217,9 @@ export default function TicketSelection() {
               subZone: seatchartCurrentArea.title,
               coords: { row: e.seat.index.row, col: e.seat.index.col },
               priceTag: priceTag[eventZoneSelected][colorIndex],
+              priceType: priceTag[eventZoneSelected][colorIndex],
+              venueZone: eventZoneSelected,
+              ticketId: newTicketId
             },
           ]);
         }
