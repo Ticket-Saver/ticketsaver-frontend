@@ -1,4 +1,4 @@
-import supabase from '../utils/supabaseClient'
+import {supabase} from '../utils/supabaseClient'
 /*
 interface SeatUpdateRequest {
   Seat: string;
@@ -9,7 +9,7 @@ interface SeatUpdateRequest {
 }
   */
 
-exports.handler = async function handler(event, _context) {
+export const handler = async (event, _context) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
