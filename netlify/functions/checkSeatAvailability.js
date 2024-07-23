@@ -1,20 +1,6 @@
-<<<<<<< HEAD
-//import {supabase} from '../utils/supabaseClient'
-import { createClient } from '@supabase/supabase-js'
-=======
-import { supabase } from '../utils/supabaseClient'
->>>>>>> c358698b2e476069c178881960cee721fea82d20
+import {supabase} from '../utils/supabaseClient'
 
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-console.log('Supabase client created:', supabase)
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or Anon Key in environment variables')
-}
-export const handler = async (event, _context) => {
+exports.handler = async function(event, _context) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,

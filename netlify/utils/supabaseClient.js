@@ -10,4 +10,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 console.log('Supabase client created:', supabase)
 
-export default supabase
+export {supabase};
