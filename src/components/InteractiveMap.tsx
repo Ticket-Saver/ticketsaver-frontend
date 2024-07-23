@@ -1,52 +1,52 @@
-import { useState, useEffect } from 'react';
-import ImageMapper from 'react-img-mapper';
+import { useState, useEffect } from 'react'
+import ImageMapper from 'react-img-mapper'
 
-import 'seatchart/dist/seatchart.min.css';
+import 'seatchart/dist/seatchart.min.css'
 
 interface Area {
-  shape: string;
-  coords: number[];
-  polygon?: number[][];
-  preFillColor?: string | undefined;
-  [key: string]: any;
+  shape: string
+  coords: number[]
+  polygon?: number[][]
+  preFillColor?: string | undefined
+  [key: string]: any
 }
 
 interface Map {
-  name: string;
-  areas: Area[];
+  name: string
+  areas: Area[]
 }
 
 interface InteractiveMapProps {
-  handleClickImageZone: (area: Area) => void;
-  getDefaultMap: () => Map;
-  src: string;
-  width: number;
+  handleClickImageZone: (area: Area) => void
+  getDefaultMap: () => Map
+  src: string
+  width: number
 }
 
 const InteractiveMap = ({
   handleClickImageZone,
   getDefaultMap,
   src,
-  width,
+  width
 }: InteractiveMapProps) => {
-  const [highlightedAreas, setHighlightedAreas] = useState<Area[]>([]);
-  const [updatedMap, setUpdatedMap] = useState(getDefaultMap());
-  const height = width;
+  const [highlightedAreas, setHighlightedAreas] = useState<Area[]>([])
+  const [updatedMap, setUpdatedMap] = useState(getDefaultMap())
+  const height = width
 
   useEffect(() => {
-    const map = { ...getDefaultMap() };
+    const map = { ...getDefaultMap() }
     map.areas = map.areas.map((mapArea) => {
-      const newArea = { ...mapArea };
+      const newArea = { ...mapArea }
       newArea.coords = newArea.coords.map((coord, index) => {
-        return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height;
-      });
+        return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height
+      })
 
       if (newArea.polygon) {
         newArea.polygon = newArea.polygon.map((point) => {
           return point.map((coord, index) => {
-            return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height;
-          });
-        });
+            return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height
+          })
+        })
       }
 
       if (
@@ -55,19 +55,19 @@ const InteractiveMap = ({
             JSON.stringify(highlightedArea.coords) === JSON.stringify(newArea.coords)
         )
       ) {
-        newArea.preFillColor = 'rgba(255, 255, 0, 0.5)';
+        newArea.preFillColor = 'rgba(255, 255, 0, 0.5)'
       } else {
-        newArea.preFillColor = '';
+        newArea.preFillColor = ''
       }
-      return newArea;
-    });
-    setUpdatedMap(map);
-  }, [highlightedAreas, width, height, getDefaultMap]);
+      return newArea
+    })
+    setUpdatedMap(map)
+  }, [highlightedAreas, width, height, getDefaultMap])
 
   const handleAreaClick = (area: Area) => {
-    handleClickImageZone(area);
-    setHighlightedAreas([area]);
-  };
+    handleClickImageZone(area)
+    setHighlightedAreas([area])
+  }
 
   return (
     <div className='flex-row overflow-visible justify-center content-center '>
