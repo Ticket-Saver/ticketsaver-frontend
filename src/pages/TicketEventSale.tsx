@@ -30,6 +30,7 @@ interface Cart {
   seatType: string
   subZone: string
   coords: { row: number; col: number }
+  priceTag: string
   priceType: string
   venueZone: string
   ticketId: string
@@ -183,6 +184,7 @@ export default function TicketSelection() {
 
       try {
         // Wait for the lockSeats to complete
+        console.log(lockingSeat)
         await lockSeats(lockingSeat)
 
         // Proceed only if lockSeats was successful
@@ -193,29 +195,63 @@ export default function TicketSelection() {
             cart.length + 1,
             Date.now()
           )
+
           const zoneColorType_ = seatchartCurrentArea?.name as string
           const zoneColors = eventZones[eventZoneSelected]
           const colorIndex = zoneColors.indexOf(zoneColorType_)
-          setCart((prev: Cart[] | undefined) => [
-            ...(prev || []),
-            {
-              price: eventZonePrices[eventZoneSelected][colorIndex],
-              serviceFee: ServiceFees[eventZoneSelected][colorIndex],
-              ffFee: FFFFees[eventZoneSelected][colorIndex],
-              creditCardFee: CreditCardFees[eventZoneSelected][colorIndex],
-              seat: { row: globalSeat.letters, col: globalSeat.numbers },
-              zoneName: eventZoneSelected,
-              zoneId: 'Yuridia',
-              seatLabel: e.seat.label,
-              seatType: zoneColorType_,
-              subZone: seatchartCurrentArea.title,
-              coords: { row: e.seat.index.row, col: e.seat.index.col },
-              priceTag: priceTag[eventZoneSelected][colorIndex],
-              priceType: priceTag[eventZoneSelected][colorIndex],
-              venueZone: eventZoneSelected,
-              ticketId: newTicketId
-            }
-          ])
+
+          console.log(zoneColorType_)
+          console.log(zoneColors)
+          console.log(colorIndex)
+          console.log('-----------------------------------')
+          console.log('eventZonePrices:', eventZonePrices)
+          console.log('eventZoneSelected:', eventZoneSelected)
+          console.log('colorIndex:', colorIndex)
+          console.log('ServiceFees:', ServiceFees)
+          console.log('FFFFees:', FFFFees)
+          console.log('CreditCardFees:', CreditCardFees)
+          console.log('globalSeat:', globalSeat)
+          console.log('e.seat.label:', e.seat.label)
+          console.log('zoneColorType_:', zoneColorType_)
+          console.log('seatchartCurrentArea.title:', seatchartCurrentArea.title)
+          console.log('priceTag:', priceTag)
+          console.log('newTicketId:', newTicketId)
+
+          if (
+            !eventZonePrices[eventZoneSelected] ||
+            !ServiceFees[eventZoneSelected] ||
+            !FFFFees[eventZoneSelected] ||
+            !CreditCardFees[eventZoneSelected] ||
+            !globalSeat ||
+            !priceTag[eventZoneSelected] ||
+            colorIndex === -1
+          ) {
+            throw new Error('One or more required values are missing or invalid')
+          }
+          setCart((prev: Cart[] | undefined) => {
+            const newCart = [
+              ...(prev || []),
+              {
+                price: eventZonePrices[eventZoneSelected][colorIndex],
+                serviceFee: ServiceFees[eventZoneSelected][colorIndex],
+                ffFee: FFFFees[eventZoneSelected][colorIndex],
+                creditCardFee: CreditCardFees[eventZoneSelected][colorIndex],
+                seat: { row: globalSeat.letters, col: globalSeat.numbers },
+                zoneName: eventZoneSelected,
+                zoneId: 'Yuridia',
+                seatLabel: e.seat.label,
+                seatType: zoneColorType_,
+                subZone: seatchartCurrentArea.title,
+                coords: { row: e.seat.index.row, col: e.seat.index.col },
+                priceTag: priceTag[eventZoneSelected][colorIndex],
+                priceType: priceTag[eventZoneSelected][colorIndex],
+                venueZone: eventZoneSelected,
+                ticketId: newTicketId
+              }
+            ]
+            console.log(newCart)
+            return newCart
+          })
         }
       } catch (error) {
         console.error('Failed to lock seat:', error)
