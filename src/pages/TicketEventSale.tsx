@@ -189,10 +189,12 @@ export default function TicketSelection() {
 
         // Proceed only if lockSeats was successful
         if (eventZoneSelected !== '') {
+          const cartLength = (cart || []).length
+
           const newTicketId = ticketId(
             'las_leonas.03',
             eventZoneSelected,
-            cart.length + 1,
+            cartLength + 1,
             Date.now()
           )
 
