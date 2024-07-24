@@ -2,6 +2,11 @@ import Stripe from 'stripe'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const findCustomer = async (customer) => {
+  
+  if (!customer || !customer.email) {
+    console.error('El objeto customer está vacío o no tiene email.');
+    throw new Error('El objeto customer está vacío o no tiene email.');
+  }
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY no está definida en las variables de entorno.')
   }

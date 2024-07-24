@@ -37,7 +37,7 @@ interface Cart {
 
 export default function TicketSelection() {
   const { name, venuesName, location, label } = useParams()
-
+  console.log(label)
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
 
@@ -70,7 +70,7 @@ export default function TicketSelection() {
   const [eventZoneSelected] = useState<'orchestra' | 'loge' | ''>('orchestra')
 
   const eventZones: { [key: string]: string[] } = {
-    orchestra: ['Yellow', 'Orange', 'Purple', 'Beige', 'Green'],
+    orchestra: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
     loge: ['Red', 'Blue', 'Green', 'Purple', 'Yellow']
   }
   const priceTag = {
@@ -240,7 +240,6 @@ export default function TicketSelection() {
       }
     }
   }
-
   const [windowSize, setWindowSize] = useState(0)
 
   const handleWindowResize = useCallback(() => {
@@ -268,8 +267,12 @@ export default function TicketSelection() {
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
-
-      const takenSeats = await response.json()
+      
+      const result = await response.json()
+      console.log(result)
+      const takenSeats = result.data;
+      console.log(takenSeats)
+      
       return takenSeats // Process the taken seats as needed
     } catch (err) {
       console.error(err)
@@ -410,13 +413,9 @@ export default function TicketSelection() {
                           handleClickImageZone={async (area) => {
                             console.log('Area: ', area.title)
                             handleGetAreaSeats(area.title).then((parsedSeats) => {
-                              if (Array.isArray(parsedSeats.data)) {
-                                const selectedOptions = area.Options
-                                selectedOptions.reservedSeats = parsedSeats
-                                setSeatchartCurrentOptions(selectedOptions)
-                              } else {
-                                console.error('parsedSeats is not an array:', parsedSeats)
-                              }
+                              let selectedOptions = area.Options
+                              selectedOptions.map.reservedSeats = parsedSeats
+                              setSeatchartCurrentOptions(selectedOptions)
                             })
                             setSeatchartCurrentArea(area)
                           }}
