@@ -267,12 +267,12 @@ export default function TicketSelection() {
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
-      
+
       const result = await response.json()
       console.log(result)
-      const takenSeats = result.data;
+      const takenSeats = result.data
       console.log(takenSeats)
-      
+
       return takenSeats // Process the taken seats as needed
     } catch (err) {
       console.error(err)

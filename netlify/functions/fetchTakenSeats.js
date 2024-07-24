@@ -1,6 +1,5 @@
 import { supabase } from '../utils/supabaseClient'
 
-
 exports.handler = async function (event, _context) {
   if (event.httpMethod !== 'POST') {
     return {
@@ -31,7 +30,7 @@ exports.handler = async function (event, _context) {
     console.log(JSON.stringify({ data }))
     console.log(JSON.parse(JSON.stringify({ data })))
     if (error) throw error
-    
+
     return {
       statusCode: 200,
       body: JSON.stringify({ data })
