@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 exports.handler = async function (event, _context) {
   console.log('Evento recibido:', event)
 
-  let customerId; // Declara customerId aquí para asegurarte de que esté disponible en toda la función
+  let customerId // Declara customerId aquí para asegurarte de que esté disponible en toda la función
 
   if (event.httpMethod !== 'POST') {
     return {
@@ -37,14 +37,14 @@ exports.handler = async function (event, _context) {
 
     try {
       const invoices = await stripe.invoices.list({
-        customer: customerId 
+        customer: customerId
       })
 
       const tickets = await TicketsFromInvoices(invoices)
 
       return {
         statusCode: 200,
-        body: JSON.stringify(tickets)  
+        body: JSON.stringify(tickets)
       }
     } catch (error) {
       console.error('Error al buscar facturas:', error)
