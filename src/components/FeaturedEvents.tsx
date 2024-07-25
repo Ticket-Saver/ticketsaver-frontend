@@ -14,23 +14,23 @@ interface Event {
 }
 
 interface Location {
-  address: string;
-  city: string;
-  country: string;
-  maps_url: string;
-  zip_code: string;
+  address: string
+  city: string
+  country: string
+  maps_url: string
+  zip_code: string
 }
 
 interface Venue {
-  capacity: number;
-  label: string;
-  location: Location;
-  name: string;
-  seatmap: boolean;
+  capacity: number
+  label: string
+  location: Location
+  name: string
+  seatmap: boolean
 }
 
 interface EventWithVenue extends Event {
-  venue: Venue | undefined;
+  venue: Venue | undefined
 }
 
 export default function FeaturedEvents() {
@@ -75,7 +75,10 @@ export default function FeaturedEvents() {
     }
 
     if (data2) {
-      filteredVenue = [...findData(data2, 'unioncounty_nj'), ...findData(data2, 'californiatheatre_ca')]
+      filteredVenue = [
+        ...findData(data2, 'unioncounty_nj'),
+        ...findData(data2, 'californiatheatre_ca')
+      ]
       console.log('filteredVenue', filteredVenue)
     }
 
@@ -83,8 +86,8 @@ export default function FeaturedEvents() {
   }, [data2])
 
   useEffect(() => {
-    const combinedData = events.map(event => {
-      const venue = venues.find(v => v.label === event.venue_label)
+    const combinedData = events.map((event) => {
+      const venue = venues.find((v) => v.label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
