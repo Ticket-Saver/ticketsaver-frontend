@@ -12,21 +12,34 @@ export interface EventsClaimConfig {
   venue?: string
   city?: string
   route?: string
+  description2?: string
 }
-
-export default function EveClaim({ title, city, thumbnailURL, route = '' }: EventsClaimConfig) {
-  console.log(route)
+;``
+export default function EveClaim({
+  title,
+  venue,
+  city,
+  thumbnailURL,
+  route = '',
+  description2
+}: EventsClaimConfig) {
+  console.log(description2)
   return (
     <div className='w-full bg-neutral rounded-xl flex flex-col sm:flex-row'>
       <div className='flex flex-col justify-between p-4 py-6 w-full sm:w-2/5'>
         <div className='text-xl sm:text-3xl font-semibold'>{title}</div>
         <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
-        <div className='text-lg sm:text-xl pb-4'>{city}</div>
+        <div className='text-lg sm:text-xl pb-4'>
+          {city}, {venue}
+        </div>
+        <div className='text-sm sm:text-sm pb-4'>{description2}</div>
         <div className='text-sm pb-10'>
           You have a collectible ticket to claim! Connect your wallet now to secure it
         </div>
         <Link to={route}>
-          <button className='btn btn-primary btn-outline px-4 sm:px-10'>View your tickets</button>
+          <button className='btn btn-primary btn-outline px-4 sm:px-10'>
+            Claim you collectible
+          </button>
         </Link>
       </div>
       <div className='w-full sm:w-3/5 flex justify-center items-center p-4'>

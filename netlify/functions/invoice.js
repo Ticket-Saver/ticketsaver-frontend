@@ -5,12 +5,14 @@ import { TicketsFromInvoices } from '../utils/ticketsFromInvoice'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 exports.handler = async function (event, _context) {
-  console.log('Event received:', event)
+  console.log('Evento recibido:', event)
+
+  let customerId // Declara customerId aquí para asegurarte de que esté disponible en toda la función
 
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' })
+      body: JSON.stringify({ error: 'Método no permitido' })
     }
   }
 
@@ -18,18 +20,18 @@ exports.handler = async function (event, _context) {
     try {
       const { customer } = JSON.parse(event.body)
 
-      console.log('Calling findCustomer with:', customer)
+      console.log('Llamando a findCustomer con:', customer)
 
-      const customerId = await findCustomer(customer)
-      console.log('Customer ID:', customerId)
+      customerId = await findCustomer(customer) // Ahora asignando a la variable ya declarada
+      console.log('ID del cliente:', customerId)
 
       if (!customerId) {
-        throw new Error('Missing customerId')
+        throw new Error('Falta customerId')
       }
     } catch (error) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid request body' })
+        body: JSON.stringify({ error: 'Cuerpo de solicitud inválido' })
       }
     }
 
@@ -38,17 +40,17 @@ exports.handler = async function (event, _context) {
         customer: customerId
       })
 
-      const tickets = TicketsFromInvoices(invoices)
+      const tickets = await TicketsFromInvoices(invoices)
 
       return {
         statusCode: 200,
         body: JSON.stringify(tickets)
       }
     } catch (error) {
-      console.error('Error fetching invoices:', error)
+      console.error('Error al buscar facturas:', error)
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Internal Server Error' })
+        body: JSON.stringify({ error: 'Error interno del servidor' })
       }
     }
   }
