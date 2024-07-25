@@ -13,9 +13,32 @@ interface Event {
   event_label: string
 }
 
+interface Location {
+  address: string;
+  city: string;
+  country: string;
+  maps_url: string;
+  zip_code: string;
+}
+
+interface Venue {
+  capacity: number;
+  label: string;
+  location: Location;
+  name: string;
+  seatmap: boolean;
+}
+
+interface EventWithVenue extends Event {
+  venue: Venue | undefined;
+}
+
 export default function FeaturedEvents() {
   const [events, setEvents] = useState<Event[]>([])
+  const [venues, setVenues] = useState<Venue[]>([])
+  const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
+  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
   const options = {
@@ -37,10 +60,35 @@ export default function FeaturedEvents() {
     if (data) {
       filteredEvents = [...findData(data, 'las_leonas.02'), ...findData(data, 'las_leonas.03')]
       console.log('filteredEvents', filteredEvents)
-      localStorage.setItem('events', JSON.stringify(filteredEvents))
     }
     setEvents(filteredEvents)
   }, [data])
+
+  const { data: data2 } = useFetchJson(githubApiUrl2, options)
+
+  useEffect(() => {
+    let filteredVenue: Venue[] = []
+
+    const findData = (venues: Venue[], label: string) => {
+      console.log('venues', venues)
+      return venues.filter((venue) => venue.label === label)
+    }
+
+    if (data2) {
+      filteredVenue = [...findData(data2, 'unioncounty_nj'), ...findData(data2, 'californiatheatre_ca')]
+      console.log('filteredVenue', filteredVenue)
+    }
+
+    setVenues(filteredVenue)
+  }, [data2])
+
+  useEffect(() => {
+    const combinedData = events.map(event => {
+      const venue = venues.find(v => v.label === event.venue_label)
+      return { ...event, venue }
+    })
+    setEventsWithVenues(combinedData)
+  }, [events, venues])
 
   const setSessionId = useState<string>('')[1] // State to store sessionId
 
@@ -77,9 +125,9 @@ export default function FeaturedEvents() {
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
         </div>
         <div
-          className={`grid ${events.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
+          className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {events.map((event, index) => (
+          {eventsWithVenues.map((event, index) => (
             <Link
               to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}`}
               key={index}
@@ -93,9 +141,9 @@ export default function FeaturedEvents() {
                   'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!'
                 } // Add description if available
                 thumbnailURL={'/events/Leonas.jpg'}
-                venue={event.venue_label}
+                venue={event.venue?.name || event.venue_label}
                 date={event.event_date}
-                city={'Columbus, Ohaio'}
+                city={event.venue?.location.city} // Pass the city property from the venue object
               />
             </Link>
           ))}
