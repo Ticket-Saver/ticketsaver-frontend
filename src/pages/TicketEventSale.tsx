@@ -37,7 +37,7 @@ interface Cart {
 }
 
 export default function TicketSelection() {
-  const { name, venuesName, location, label } = useParams()
+  const { name, venuesName, date, location, label } = useParams()
   console.log(label)
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
@@ -128,10 +128,10 @@ export default function TicketSelection() {
       JSON.stringify({
         cart: cart,
         eventInfo: {
-          id: 'las_leonas.03',
-          name: 'Leonas.03',
-          venue: 'California Theatre - San Jose, CA',
-          date: 'October 18th, 2024'
+          id: label,
+          name: name,
+          venue: venuesName,
+          date: date
         },
         customer: customer
       })
@@ -190,13 +190,7 @@ export default function TicketSelection() {
         // Proceed only if lockSeats was successful
         if (eventZoneSelected !== '') {
           const cartLength = (cart || []).length
-
-          const newTicketId = ticketId(
-            'las_leonas.03',
-            eventZoneSelected,
-            cartLength + 1,
-            Date.now()
-          )
+          const newTicketId = ticketId(label || '', eventZoneSelected, cartLength + 1, Date.now())
 
           const zoneColorType_ = seatchartCurrentArea?.name as string
           const zoneColors = eventZones[eventZoneSelected]
@@ -272,6 +266,7 @@ export default function TicketSelection() {
 
       try {
         await lockSeats(lockingSeat)
+
         setCart((prev) => prev?.filter((cart) => cart.seatLabel !== e.seat.label))
       } catch (error) {
         console.error('Failed to unlock seat:', error)
