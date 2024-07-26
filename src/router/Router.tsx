@@ -59,7 +59,7 @@ export const AppRouter = () => (
       />
 
       <Route
-        path='/sale/:name/:venuesName/:location/:label'
+        path='/sale/:name/:venuesName/:location/:date/:label'
         element={
           <LayoutHeaderFooter>
             <TicketSelection />{' '}

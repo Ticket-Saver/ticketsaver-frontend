@@ -17,28 +17,32 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
+import { extractLatestPrices, find_price, zoneseatToPrice } from '../components/Utils/priceUtils'
 
 interface Cart {
-  price: number
-  serviceFee: number
-  ffFee: number
-  creditCardFee: number
-  seat: { row: string; col: string }
+  price_base: number
+  price_final: number
   zoneName: string
-  zoneId: string
   seatLabel: string
   seatType: string
   subZone: string
   coords: { row: number; col: number }
-  priceTag: string
   priceType: string
-  venueZone: string
   ticketId: string
 }
 
 export default function TicketSelection() {
   const { name, venuesName, date, location, label } = useParams()
-  console.log(label)
+
+  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
+  const token = import.meta.env.VITE_GITHUB_TOKEN
+  const options = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3.raw'
+    }
+  }
+
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
 
@@ -68,33 +72,68 @@ export default function TicketSelection() {
     }
   }, [])
 
-  const [eventZoneSelected] = useState<'orchestra' | 'loge' | ''>('orchestra')
+  const [eventSelected, setEventSelected] = useState<string | ''>('las_leonas.02')
+  const [priceTagList, setPriceTags] = useState<any>([])
+  const [zoneData, setZoneData] = useState<any>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(githubApiUrl, options)
+        if (!response.ok) {
+          throw new Error('response error')
+        }
+        const zonePriceData = await response.json()
+        setZoneData(zonePriceData)
+      } catch (error) {
+        console.error('Error fetching zone Data', error)
+      }
+    }
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    const fetchPricesTag = async () => {
+      try {
+        const response = await fetch(githubApiUrl, options)
+        if (!response.ok) {
+          throw new Error('response error')
+        }
+        const zonePrices = await response.json()
+        const zonePriceListData = extractLatestPrices(zonePrices)
+
+        setPriceTags(zonePriceListData)
+      } catch (error) {
+        console.error('Error fetching zone prices', error)
+      }
+    }
+
+    fetchPricesTag()
+  }, [])
+
+  useEffect(() => {
+    if (label) {
+      let eventlabel = label.replace(/\./g, '')
+      setEventSelected(eventlabel)
+    }
+  })
 
   const eventZones: { [key: string]: string[] } = {
-    orchestra: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-    loge: ['Red', 'Blue', 'Green', 'Purple', 'Yellow']
+    //seatchartCurrentArea.title
+    las_leonas03: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
+    las_leonas02: ['Pink', 'Aqua', 'Blue', 'Gray', 'Coral']
   }
-  const priceTag = {
-    orchestra: ['P1', 'P2', 'P3', 'P4', 'P5'],
-    loge: ['P1', 'P2', 'P3', 'P4', 'P5']
+
+  const priceTag: { [key: string]: string[] } = {
+    las_leonas03: ['P1', 'P2', 'P3', 'P4', 'P5'],
+    las_leonas02: ['P1', 'P2', 'P3', 'P4', 'P5']
   }
 
   const eventZonePrices: { [key: string]: number[] } = {
-    orchestra: [110, 90, 75, 60, 40],
-    loge: [100, 80, 65, 50, 30]
+    las_leonas03: [110, 90, 75, 60, 40],
+    las_leonas02: [110, 90, 70, 55, 40]
   }
-  const FFFFees = {
-    orchestra: [3.5, 3.5, 3.5, 3.5, 3.5, 3.5],
-    loge: [3.5, 3.5, 3.5, 3.5, 3.5, 3.5]
-  }
-  const ServiceFees = {
-    orchestra: [13.2, 10.8, 9.0, 7.2, 4.8],
-    loge: [13.2, 10.8, 9.0, 7.2, 4.8]
-  }
-  const CreditCardFees = {
-    orchestra: [4.45, 3.66, 3.01, 2.48, 1.7],
-    loge: [4.45, 3.66, 3.01, 2.48, 1.7]
-  }
+
   const { user } = useAuth0()
 
   const customer = {
@@ -106,21 +145,7 @@ export default function TicketSelection() {
   const [cart, setCart] = useState<Cart[]>([])
   const navigate = useNavigate()
 
-  /*const handleEventZoneSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-    if (event.target.value === "orchestra") {
-      setEventZoneSelected(event.target.value);
-    }
-  };*/
-
-  // Calculate total cost based on selected tickets
-  const ticketCost = cart?.reduce((acc, crr) => (acc = acc + crr.price), 0) || 0
-
-  // Assuming a fixed service fee of $5
-  const serviceFee = cart?.reduce((acc, crr) => (acc = acc + crr.serviceFee), 0) || 0
-  const ffFee = cart?.reduce((acc, crr) => (acc = acc + crr.ffFee), 0) || 0
-  const creditCardFee = cart?.reduce((acc, crr) => (acc = acc + crr.creditCardFee), 0) || 0
-
-  const totalCost = ffFee + creditCardFee + serviceFee + ticketCost
+  const totalCost = cart?.reduce((acc, crr) => (acc = acc + crr.price_final), 0) || 0
 
   const handleCheckout = async () => {
     localStorage.setItem(
@@ -144,13 +169,12 @@ export default function TicketSelection() {
 
   let seatchartRef = useRef<SeatchartJS>()
 
-  function splitSeatLabel(seatLabel: string): {
-    letters: string
-    numbers: string
-  } {
+  function ArraysplitSeatLabel(seatLabel: string): [string, number] {
     const match = seatLabel.match(/^([A-Za-z🧏♿🚹🦽]+)(\d+)$/)
     if (match) {
-      return { letters: match[1], numbers: match[2] }
+      const letters = match[1]
+      const numbers = parseInt(match[2], 10)
+      return [letters, numbers]
     } else {
       throw new Error('Invalid seat label format')
     }
@@ -173,7 +197,7 @@ export default function TicketSelection() {
   const handleOnSeatClick = async (e: CartChangeEvent) => {
     const sessionId = getCookie('sessionId')
     if (e.action === 'add') {
-      const globalSeat = splitSeatLabel(e.seat.label)
+      const globalSeat = ArraysplitSeatLabel(e.seat.label)
       const lockingSeat = {
         Seat: e.seat.label,
         row: e.seat.index.row,
@@ -188,61 +212,43 @@ export default function TicketSelection() {
         await lockSeats(lockingSeat)
 
         // Proceed only if lockSeats was successful
-        if (eventZoneSelected !== '') {
+        if (eventSelected !== '') {
           const cartLength = (cart || []).length
-          const newTicketId = ticketId(label || '', eventZoneSelected, cartLength + 1, Date.now())
 
-          const zoneColorType_ = seatchartCurrentArea?.name as string
-          const zoneColors = eventZones[eventZoneSelected]
+          const issuedAt = Date.now()
+          const newTicketId = ticketId(label || '', eventSelected, cartLength + 1, issuedAt)
+
+          const zoneColorType_ = seatchartCurrentArea?.name as string // referente a los nombres de cada zona del mapa
+
+          const zoneColors = eventZones[eventSelected] //referente a las zonas de los mapas( por colores)
+
           const colorIndex = zoneColors.indexOf(zoneColorType_)
 
-          console.log(zoneColorType_)
-          console.log(zoneColors)
-          console.log(colorIndex)
-          console.log('-----------------------------------')
-          console.log('eventZonePrices:', eventZonePrices)
-          console.log('eventZoneSelected:', eventZoneSelected)
-          console.log('colorIndex:', colorIndex)
-          console.log('ServiceFees:', ServiceFees)
-          console.log('FFFFees:', FFFFees)
-          console.log('CreditCardFees:', CreditCardFees)
-          console.log('globalSeat:', globalSeat)
-          console.log('e.seat.label:', e.seat.label)
-          console.log('zoneColorType_:', zoneColorType_)
-          console.log('seatchartCurrentArea.title:', seatchartCurrentArea.title)
-          console.log('priceTag:', priceTag)
-          console.log('newTicketId:', newTicketId)
+          let price_base: number
+          let priceType: string
 
-          if (
-            !eventZonePrices[eventZoneSelected] ||
-            !ServiceFees[eventZoneSelected] ||
-            !FFFFees[eventZoneSelected] ||
-            !CreditCardFees[eventZoneSelected] ||
-            !globalSeat ||
-            !priceTag[eventZoneSelected] ||
-            colorIndex === -1
-          ) {
-            throw new Error('One or more required values are missing or invalid')
+          if (label == 'las_leonas.02' || label == 'las_leonas.03') {
+            ;(priceType = priceTag[eventSelected][colorIndex]),
+              (price_base = eventZonePrices[eventSelected][colorIndex])
+          } else {
+            ;(priceType = zoneseatToPrice(zoneData.zones, seatchartCurrentArea.title, globalSeat)),
+              (price_base = find_price(zoneData, seatchartCurrentArea.title, globalSeat))
           }
+
           setCart((prev: Cart[] | undefined) => {
             const newCart = [
               ...(prev || []),
               {
-                price: eventZonePrices[eventZoneSelected][colorIndex],
-                serviceFee: ServiceFees[eventZoneSelected][colorIndex],
-                ffFee: FFFFees[eventZoneSelected][colorIndex],
-                creditCardFee: CreditCardFees[eventZoneSelected][colorIndex],
-                seat: { row: globalSeat.letters, col: globalSeat.numbers },
-                zoneName: eventZoneSelected,
-                zoneId: 'Yuridia',
+                price_base: price_base, //
+                price_final: priceTagList[priceType].price_final / 100,
+                zoneName: eventSelected,
                 seatLabel: e.seat.label,
                 seatType: zoneColorType_,
                 subZone: seatchartCurrentArea.title,
                 coords: { row: e.seat.index.row, col: e.seat.index.col },
-                priceTag: priceTag[eventZoneSelected][colorIndex],
-                priceType: priceTag[eventZoneSelected][colorIndex],
-                venueZone: eventZoneSelected,
-                ticketId: newTicketId
+                priceType: priceType,
+                ticketId: newTicketId,
+                issuedAt: issuedAt
               }
             ]
             console.log(newCart)
@@ -251,7 +257,7 @@ export default function TicketSelection() {
         }
       } catch (error) {
         console.error('Failed to lock seat:', error)
-        setErrorMessage('Failed to lock the seat. Please reload map by clicking it.') // Customize error message as needed
+        setErrorMessage('Failed to lock the seat. Please reload map by clicking it.')
         setIsError(true)
         return
       }
@@ -302,11 +308,9 @@ export default function TicketSelection() {
       }
 
       const result = await response.json()
-      console.log(result)
       const takenSeats = result.data
-      console.log(takenSeats)
 
-      return takenSeats // Process the taken seats as needed
+      return takenSeats
     } catch (err) {
       console.error(err)
       return []
@@ -340,18 +344,6 @@ export default function TicketSelection() {
   useEffect(() => {
     localStorage.setItem('local_cart', JSON.stringify(cart))
   }, [cart])
-
-  /*const handleClickImageZone = useCallback(
-    (area) => {
-      handleGetAreaSeats(area.title).then((parsedSeats) => {
-        let selectedOptions = area.Options;
-        selectedOptions.map.reservedSeats = parsedSeats;
-        setSeatchartCurrentOptions(selectedOptions);
-      });
-      setSeatchartCurrentArea(area);
-    },
-    [setSeatchartCurrentOptions, setSeatchartCurrentArea]
-  );*/
 
   const [selectedSeats, setSelectedSeats] = useState<{ seatLabel: string; seatType: string }[]>([])
 
@@ -528,25 +520,14 @@ export default function TicketSelection() {
                             {' '}
                             X
                           </button>
-                          <p>FF Fee</p>
-                          <p>Processing Fee</p>
-                          <p>Credit Card Fee</p>
+                          <p> Fees</p>
                           <p className='font-bold'>Ticket Total</p>
                         </div>
                         <div>
-                          <p>${ticket.price.toFixed(2)}</p>
-                          <p>${ticket.ffFee.toFixed(2)}</p>
-                          <p>${ticket.serviceFee.toFixed(2)}</p>
-                          <p>${ticket.creditCardFee.toFixed(2)}</p>
-                          <p className='font-bold'>
-                            $
-                            {(
-                              ticket.price +
-                              ticket.ffFee +
-                              ticket.serviceFee +
-                              ticket.creditCardFee
-                            ).toFixed(2)}
-                          </p>
+                          <p>${ticket.price_base.toFixed(2)}</p>
+                          <p>${(ticket.price_final - ticket.price_base).toFixed(2)}</p>
+
+                          <p className='font-bold'>${ticket.price_final.toFixed(2)}</p>
                         </div>
                       </div>
                     )

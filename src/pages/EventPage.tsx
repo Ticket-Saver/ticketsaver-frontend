@@ -126,7 +126,7 @@ export default function EventPage() {
               {/* Buy Tickets Button */}
               <div className='mt-6'>
                 <Link
-                  to={`/sale/${name}/${venues?.name}/${venues?.location.city}/${label}`}
+                  to={`/sale/${name}/${venues?.name}/${venues?.location.city}/${date}/${label}`}
                   className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
                 >
                   Buy Tickets!
