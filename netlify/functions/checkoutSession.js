@@ -24,14 +24,14 @@ exports.handler = async function (event, _context) {
       const lineItems = cart.map((ticket) => ({
         price_data: {
           currency: 'USD',
-          unit_amount: ticket.price * 100, // Stripe expects the amount in cents
+          unit_amount: ticket.price_final * 100, // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket ${ticket.ticketId}; PriceType: ${ticket.priceType}; Zone ${ticket.venueZone}`,
+            name: `Ticket ${ticket.ticketId}; Seat: ${ticket.seatLabel}; Zone ${ticket.subZone}`,
             description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`,
             metadata: {
               event_label: eventInfo.id,
               price_type: ticket.priceType,
-              ticket_zone: ticket.venueZone,
+              ticket_zone: ticket.subZone,
               ticket_id: ticket.ticketId,
               issuedAt: ticket.issuedAt,
               is_seat: true
@@ -47,7 +47,7 @@ exports.handler = async function (event, _context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: `https://ticketsaver-test.netlify.app/return?session_id={CHECKOUT_SESSION_ID}`,
+        return_url: `https://ticketsaver-test.netlify.app/`, //return?session_id={CHECKOUT_SESSION_ID}
         phone_number_collection: {
           enabled: true
         },
