@@ -14,7 +14,7 @@ export interface EventsClaimConfig {
   route?: string
   description2?: string
 }
-;``
+
 export default function EveClaim({
   title,
   venue,
