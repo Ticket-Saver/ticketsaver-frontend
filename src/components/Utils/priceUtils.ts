@@ -1,24 +1,3 @@
-type Prices = {
-  [priceType: string]: {
-    [priceDate: string]: {
-      price_base: number
-      price_final: number
-    }
-  }
-}
-
-type Seat = [string, number] //["A",1]
-
-type SeatMap = {
-  [zone: string]: {
-    // Mezzanine
-    [priceType: string]: {
-      //P1
-      [row: string]: string[] // "A": ["14, 2, -2", "101, 112", "1, 13, 2"]
-    }
-  }
-}
-
 const seatrangesToValues = (ranges: string[]): number[] => {
   // Inicializar la lista de valores que se devolverá
   const values: number[] = []
