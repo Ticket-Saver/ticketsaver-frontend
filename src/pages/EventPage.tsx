@@ -29,7 +29,8 @@ export default function EventPage() {
           }
 
           const data = await response.json()
-          const matchingVenue = data.find((venueItem: any) => venueItem.label === venue)
+          
+          const matchingVenue = data[venue!];
           setVenue(matchingVenue)
         } catch (error) {
           console.error('Error fetching data: ', error)
@@ -48,7 +49,7 @@ export default function EventPage() {
 
   const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
-
+  
   useEffect(() => {
     const fetchZonePrices = async () => {
       try {
@@ -126,7 +127,7 @@ export default function EventPage() {
               {/* Buy Tickets Button */}
               <div className='mt-6'>
                 <Link
-                  to={`/sale/${name}/${venues?.name}/${venues?.location.city}/${date}/${label}`}
+                  to={`/sale/${name}/${venues?.label}/${venues?.location.city}/${date}/${label}`}
                   className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
                 >
                   Buy Tickets!
