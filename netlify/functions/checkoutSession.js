@@ -24,18 +24,10 @@ exports.handler = async function (event, _context) {
       const lineItems = cart.map((ticket) => ({
         price_data: {
           currency: 'USD',
-          unit_amount: ticket.price_final * 100, // Stripe expects the amount in cents
+          unit_amount: Math.round(ticket.price_final * 100), // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket: ${ticket.seatLabel}; Zone ${ticket.subZone}`,
-            description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`,
-            metadata: {
-              event_label: eventInfo.id,
-              price_type: ticket.priceType,
-              ticket_zone: ticket.subZone,
-              ticket_id: ticket.ticketId,
-              issuedAt: ticket.issuedAt,
-              is_seat: true
-            }
+            name: `Ticket ${ticket.ticket.seatLabel}; ${ticket.priceType}; Zone ${ticket.subZone}`,
+            description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`
           }
         },
         quantity: 1
@@ -47,7 +39,7 @@ exports.handler = async function (event, _context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: `https://ticketsaver-test.netlify.app/`, //return?session_id={CHECKOUT_SESSION_ID}
+        return_url: `https://localhost:8888/return?session_id={CHECKOUT_SESSION_ID}`,
 
         customer: customerId,
         invoice_creation: {
@@ -57,21 +49,12 @@ exports.handler = async function (event, _context) {
               ticketId: `${cart.ticketId}`,
               eventName: `${eventInfo.id}`,
               venue: `${eventInfo.venue}`,
-              venueId: `${eventInfo.venueId}`,
               date: `${eventInfo.date}`,
-              location: `${eventInfo.location}`,
               issuedAt: `${cart.issuedAt}`,
               name: customer?.name,
               email: customer?.email
             }
           }
-        },
-        metadata: {
-          eventName: eventInfo.name,
-          venue: eventInfo.venue,
-          date: eventInfo.date,
-          name: customer?.name,
-          email: customer?.email
         },
         payment_intent_data: {
           metadata: {
@@ -91,33 +74,6 @@ exports.handler = async function (event, _context) {
         statusCode: 500,
         body: JSON.stringify({ error: 'Failed to create checkout session' })
       }
-    }
-  } else if (event.httpMethod === 'GET') {
-    try {
-      const sessionId = event.queryStringParameters.session_id
-
-      console.log('Retrieving session with ID:', sessionId)
-
-      const session = await stripe.checkout.sessions.retrieve(sessionId)
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          status: session.payment_status,
-          customer_email: session.customer_email
-        })
-      }
-    } catch (error) {
-      console.error('Error retrieving checkout session:', error.message)
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Failed to retrieve checkout session' })
-      }
-    }
-  } else {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' })
     }
   }
 }

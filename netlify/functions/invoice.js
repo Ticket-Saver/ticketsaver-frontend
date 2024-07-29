@@ -41,7 +41,7 @@ exports.handler = async function (event, _context) {
       })
 
       const tickets = await TicketsFromInvoices(invoices)
-      console.log( tickets)
+      console.log(tickets)
       return {
         statusCode: 200,
         body: JSON.stringify(tickets)
