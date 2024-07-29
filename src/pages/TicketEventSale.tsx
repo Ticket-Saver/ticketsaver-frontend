@@ -32,9 +32,9 @@ interface Cart {
 }
 
 export default function TicketSelection() {
-  const { name, venuesName, date, location, label } = useParams()
-
+  const { name,venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
+  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
     headers: {
@@ -111,6 +111,28 @@ export default function TicketSelection() {
     fetchPricesTag()
   }, [])
 
+
+  const [venueInfo, setVenue] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+        try {
+          const response = await fetch(githubApiUrl2, options)
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          const data = await response.json()
+          
+          const matchingVenue = data[venue!];
+          setVenue(matchingVenue)
+        } catch (error) {
+          console.error('Error fetching data: ', error)
+        }
+      
+    }
+    fetchVenues()
+  },[])
+
   useEffect(() => {
     if (label) {
       let eventlabel = label.replace(/\./g, '')
@@ -155,8 +177,10 @@ export default function TicketSelection() {
         eventInfo: {
           id: label,
           name: name,
-          venue: venuesName,
-          date: date
+          venue: venueInfo.name,
+          venueId: venue,
+          date: date,
+          location: location
         },
         customer: customer
       })
@@ -390,7 +414,7 @@ export default function TicketSelection() {
             </h1>
             <div className='block'>
               <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-                {venuesName}, {location}
+                {venue}, {location}
               </h2>
             </div>
             <div className='ml-auto sm:w-full md:w-96 text-black bg-white rounded-lg shadow-sm p-6'>

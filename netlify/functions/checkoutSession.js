@@ -26,7 +26,7 @@ exports.handler = async function (event, _context) {
           currency: 'USD',
           unit_amount: ticket.price_final * 100, // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket ${ticket.ticketId}; Seat: ${ticket.seatLabel}; Zone ${ticket.subZone}`,
+            name: `Ticket: ${ticket.seatLabel}; Zone ${ticket.subZone}`,
             description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`,
             metadata: {
               event_label: eventInfo.id,
@@ -59,7 +59,9 @@ exports.handler = async function (event, _context) {
               ticketId: `${cart.ticketId}`,
               eventName: `${eventInfo.id}`,
               venue: `${eventInfo.venue}`,
+              venueId: `${eventInfo.venueId}`,
               date: `${eventInfo.date}`,
+              location: `${eventInfo.location}`,
               issuedAt: `${cart.issuedAt}`,
               name: customer?.name,
               email: customer?.email

@@ -20,7 +20,7 @@ interface Event {
 export default function PastEvent() {
   const { user } = useAuth0()
   const [events, setEvents] = useState<Event[]>([])
-
+  
   const customer = {
     name: user?.name,
     email: user?.email,
