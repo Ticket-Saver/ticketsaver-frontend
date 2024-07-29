@@ -1,13 +1,20 @@
-import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { abi } from './abi'
+import {
+  type BaseError,
+  useAccount,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useChainId,
+  usePublicClient
+} from 'wagmi'
+
+import { createCollectorClient } from '@zoralabs/protocol-sdk'
 
 export function MintNFT() {
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { data: hash, error, isPending, writeContract } = useWriteContract()
-
-  async function getNextTokenId() {
-    return 100 // Función harcodeada para obtener el siguiente ID
-  }
+  const chainId = useChainId()
+  const publicClient = usePublicClient()
+  const collectorClient = createCollectorClient({ chainId, publicClient })
 
   async function mintNFT() {
     if (!isConnected) {
@@ -15,19 +22,17 @@ export function MintNFT() {
       return
     }
 
-    const tokenId = await getNextTokenId()
+    const smartContractAddr = import.meta.env.VITE_SMARTCONTRACT_ADDR as `0x${string}`
 
-    try {
-      writeContract({
-        address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // Dirección del smart contract, harcodeada también
-        abi,
-        functionName: 'mint',
-        args: [tokenId]
-      })
-    } catch (error) {
-      console.error(error)
-      alert('An error occurred during minting. Please check the console for details.')
-    }
+    const { parameters } = await collectorClient.mint({
+      tokenContract: smartContractAddr,
+      quantityToMint: 1,
+      mintType: '1155',
+      minterAccount: address!,
+      tokenId: 1n
+    })
+
+    writeContract(parameters)
   }
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
@@ -41,13 +46,13 @@ export function MintNFT() {
   }
 
   return (
-    <div className='flex flex-col items-center p-5 bg-transparent rounded-lg shadow-none w-full max-w-md mx-auto text-white'>
+    <div className=''>
       <button
-        className={`mt-4 py-3 px-8 text-lg font-bold border-none rounded-lg cursor-pointer transition duration-300 transform ${
+        className={`btn btn-primary btn-outline px-10 ${
           isPending
             ? 'bg-gray-500 cursor-not-allowed'
             : isConnected
-              ? 'bg-blue-600 hover:bg-blue-400 hover:scale-105'
+              ? 'btn btn-primary btn-outline px-10'
               : 'bg-gray-400'
         }`}
         disabled={!isConnected || isPending} // Deshabilita el botón si no está conectado o está pendiente

@@ -15,6 +15,11 @@ import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
 import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
 
+import TestSale from '../pages/sale/TestEventSale'
+import CheckoutPage from '../pages/checkout'
+import EventPage from '../pages/EventPage'
+import TicketSelection from '../pages/TicketEventSale'
+
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated } = useAuth0()
   return isAuthenticated ? element : <Navigate to='/' />
@@ -31,8 +36,36 @@ export const AppRouter = () => (
           </LayoutHeaderFooter>
         }
       />
+      <Route
+        path='sale'
+        element={
+          <LayoutHeaderFooter>
+            <TestSale />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route path='checkout' element={<CheckoutPage />} />
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
+
+      <Route
+        path='/events/:name/:venue/:date/:label'
+        element={
+          <LayoutHeaderFooter>
+            <EventPage />{' '}
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/sale/:name/:venuesName/:location/:date/:label'
+        element={
+          <LayoutHeaderFooter>
+            <TicketSelection />{' '}
+          </LayoutHeaderFooter>
+        }
+      />
 
       <Route
         path='/dashboard'
