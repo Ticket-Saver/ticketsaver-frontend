@@ -32,7 +32,7 @@ interface Cart {
 }
 
 export default function TicketSelection() {
-  const { name,venue, date, location, label } = useParams()
+  const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
@@ -111,28 +111,27 @@ export default function TicketSelection() {
     fetchPricesTag()
   }, [])
 
-
   const [venueInfo, setVenue] = useState<any>(null)
 
   useEffect(() => {
     const fetchVenues = async () => {
-        try {
-          const response = await fetch(githubApiUrl2, options)
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          const data = await response.json()
-          
-          const matchingVenue = data[venue!];
-          setVenue(matchingVenue)
-        } catch (error) {
-          console.error('Error fetching data: ', error)
+      try {
+        const response = await fetch(githubApiUrl2, options)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-      
+        const data = await response.json()
+
+        const matchingVenue = data[venue!]
+        console.log('miremos ', matchingVenue)
+        setVenue(matchingVenue)
+      } catch (error) {
+        console.error('Error fetching data: ', error)
+      }
     }
     fetchVenues()
-  },[])
-
+  }, [])
+  console.log('label de esto', venueInfo)
   useEffect(() => {
     if (label) {
       let eventlabel = label.replace(/\./g, '')

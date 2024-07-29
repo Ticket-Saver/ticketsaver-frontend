@@ -24,9 +24,9 @@ exports.handler = async function (event, _context) {
       const lineItems = cart.map((ticket) => ({
         price_data: {
           currency: 'USD',
-          unit_amount: Math.round(ticket.price_final * 100), // Stripe expects the amount in cents
+          unit_amount: ticket.price_final * 100, // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket ${ticket.ticket.seatLabel}; ${ticket.priceType}; Zone ${ticket.subZone}`,
+            name: `Ticket: ${ticket.seatLabel}; ${ticket.priceType}; Zone: ${ticket.subZone}`,
             description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`
           }
         },
@@ -49,7 +49,9 @@ exports.handler = async function (event, _context) {
               ticketId: `${cart.ticketId}`,
               eventName: `${eventInfo.id}`,
               venue: `${eventInfo.venue}`,
+              venueId: `${eventInfo.venueId}`,
               date: `${eventInfo.date}`,
+              location: `${eventInfo.location}`,
               issuedAt: `${cart.issuedAt}`,
               name: customer?.name,
               email: customer?.email
