@@ -42,7 +42,6 @@ export default function TicketSelection() {
       Accept: 'application/vnd.github.v3.raw'
     }
   }
-
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
 

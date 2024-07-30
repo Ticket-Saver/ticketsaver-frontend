@@ -15,6 +15,7 @@ import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
 import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
 
+import ReturnPage from '../pages/checkout'
 import CheckoutPage from '../pages/checkout'
 import EventPage from '../pages/EventPage'
 import TicketSelection from '../pages/TicketEventSale'
@@ -41,6 +42,7 @@ export const AppRouter = () => (
       />
 
       <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
+      <Route path='/return' element={<ReturnPage />} />
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 

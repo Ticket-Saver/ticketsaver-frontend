@@ -1,12 +1,14 @@
 import Stripe from 'stripe'
 import { findCustomer } from '../utils/customer'
-import { TicketsFromInvoices } from '../utils/ticketsFromInvoice'
+import {
+  TicketsFromInvoices,
+  TicketsByEvent,
+  DescriptionsByEvent
+} from '../utils/ticketsFromInvoice'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 exports.handler = async function (event, _context) {
-  console.log('Evento recibido:', event)
-
   let customerId // Declara customerId aquí para asegurarte de que esté disponible en toda la función
 
   if (event.httpMethod !== 'POST') {
@@ -40,11 +42,15 @@ exports.handler = async function (event, _context) {
         customer: customerId
       })
 
-      const tickets = await TicketsFromInvoices(invoices)
-      console.log(tickets)
+      const info = await TicketsFromInvoices(invoices)
+
+      const tickets = TicketsByEvent(info)
+      console.log('Tickets Agrupados por evento:', tickets)
+      console.log(' solamente descripciones', DescriptionsByEvent(info))
+
       return {
         statusCode: 200,
-        body: JSON.stringify(tickets)
+        body: JSON.stringify(info) // Aqui se puede cambiar.
       }
     } catch (error) {
       console.error('Error al buscar facturas:', error)
