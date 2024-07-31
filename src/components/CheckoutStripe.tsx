@@ -3,7 +3,6 @@ import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-
 const CheckoutStripe = () => {
   const [clientSecret, setClientSecret] = useState(null)
 
@@ -32,26 +31,19 @@ const CheckoutStripe = () => {
         body: JSON.stringify({ cart, eventInfo, customer })
       })
       if (!response.ok) {
-        throw new Error('Failed to create checkout session ok')
+        throw new Error('Failed to create checkout session')
       }
 
       const data = await response.json()
-      return data.clientSecret
+      setClientSecret(data.clientSecret)
     } catch (error) {
-      console.error('Error al obtener el pago de Stripe .', error)
+      console.error('Error al obtener el pago de Stripe.', error)
       throw error
     }
   }, [])
-
-  // Llama fetchClientSecret al montar el componente
   useEffect(() => {
     fetchClientSecret()
-      .then((secret) => setClientSecret(secret))
-      .catch((error) => {
-        console.error('Error al obtener el pago de Stripe.', error)
-      })
   }, [fetchClientSecret])
-
   // Renderiza el EmbeddedCheckoutProvider si tienes el clientSecret
   return (
     <div id='checkout'>
