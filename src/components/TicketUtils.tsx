@@ -16,8 +16,7 @@ export function ticketId(
   return getToken(dataFmt, 4).toUpperCase()
 }
 
-
-export async function fetchDataFromGitHub(data :string) {
+export async function fetchDataFromGitHub(data: string) {
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/${data}.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
@@ -27,14 +26,14 @@ export async function fetchDataFromGitHub(data :string) {
     }
   }
   try {
-    const response = await fetch(githubApiUrl,options);
+    const response = await fetch(githubApiUrl, options)
     if (!response.ok) {
-      throw new Error('Error en la respuesta de la API');
+      throw new Error('Error en la respuesta de la API')
     }
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error('Error al obtener los eventos:', error);
-    throw error;
+    console.error('Error al obtener los eventos:', error)
+    throw error
   }
-};
+}

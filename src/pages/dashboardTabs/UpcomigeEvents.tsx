@@ -7,6 +7,5 @@ export default function UpcomingEvent() {
       filterFunction={isUpcomingEvent}
       noEventsMessage="You don't have any upcoming events."
     />
-  );
+  )
 }
-
