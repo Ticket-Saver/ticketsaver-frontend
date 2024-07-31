@@ -29,8 +29,8 @@ export default function EventPage() {
           }
 
           const data = await response.json()
-          
-          const matchingVenue = data[venue!];
+
+          const matchingVenue = data[venue!]
           setVenue(matchingVenue)
         } catch (error) {
           console.error('Error fetching data: ', error)
@@ -49,7 +49,7 @@ export default function EventPage() {
 
   const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
-  
+
   useEffect(() => {
     const fetchZonePrices = async () => {
       try {
