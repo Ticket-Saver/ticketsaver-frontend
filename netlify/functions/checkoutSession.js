@@ -7,8 +7,7 @@ exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
-
-      console.log(process.env.VITE_DOMAIN_URL)
+      const domainUrl = process.env.VITE_DOMAIN_URL || 'https://ticketsaver-test.netlify.app/' //Harcoded URl because Netlify. -> process.env.VITE_DOMAIN_URL
 
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
@@ -33,7 +32,7 @@ exports.handler = async function (event, _context) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        return_url: `${process.env.VITE_DOMAIN_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+        return_url: `${domainUrl}/return?session_id={CHECKOUT_SESSION_ID}`,
 
         customer: customerId,
         invoice_creation: {
