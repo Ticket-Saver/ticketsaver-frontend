@@ -23,15 +23,15 @@ export default function Tabs() {
   }
 
   return (
-    <div className='w-full h-36 bg-neutral rounded-xl flex flex-col justify-between p-4 py-6'>
-      <div className='text-3xl font-semibold'>My tickets</div>
-      <div className='w-2/5 h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551]'></div>
+    <div className='w-full h-auto bg-neutral rounded-xl flex flex-col justify-between p-4 py-6 md:h-36'>
+      <div className='text-xl md:text-3xl font-semibold text-center md:text-left'>My tickets</div>
+      <div className='w-full md:w-2/5 h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
       <div>
-        <ul className='flex space-x-14'>
+        <ul className='flex flex-col items-center space-y-2 md:flex-row md:justify-start md:space-x-14 md:space-y-0'>
           {tabs.map((tab) => (
             <li
               key={tab.id}
-              className={`cursor-pointer ${activeTab === tab.id ? 'border-b-[1px] border-white' : 'text-white'}`}
+              className={`cursor-pointer ${activeTab === tab.id ? 'border-b-2 border-white' : 'text-white'} px-2`}
               onClick={() => handleTabClick(tab)}
             >
               {tab.title}

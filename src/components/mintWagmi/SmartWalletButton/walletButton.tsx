@@ -15,11 +15,8 @@ export function BlueCreateWalletButton() {
   }, [connectors, connect])
 
   return (
-    <button
-      className='flex items-center justify-center p-3 text-lg font-bold text-white bg-blue-700 rounded-lg cursor-pointer transition duration-300 hover:bg-blue-800 disabled:bg-gray-600 disabled:cursor-not-allowed'
-      onClick={createWallet}
-    >
-      <CoinbaseWalletLogo className='w-6 h-6 mr-2' />
+    <button className='btn btn-primary btn-outline px-3' onClick={createWallet}>
+      <CoinbaseWalletLogo />
       Create Wallet
     </button>
   )

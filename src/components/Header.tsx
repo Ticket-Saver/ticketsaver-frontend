@@ -1,5 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link } from 'react-router-dom'
+import Logo from '/logos/ticketsaver-logo.svg'
 
 export default function Header() {
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
@@ -12,15 +13,13 @@ export default function Header() {
     await loginWithRedirect()
   }
 
-  console.log(user)
-
   return (
     <header className='bg-neutral py-0 sticky top-0 z-50 '>
       <div className='container'>
         <div className='navbar px-0'>
           <div className='navbar-start space-x-10'>
             <a href='/'>
-              <img src='logos/ticketsaver-logo.svg' className='max-h-12' />
+              <img src={Logo} className='max-h-12' />
             </a>
             <div className='navbar-center hidden lg:flex'>
               <ul className='menu menu-horizontal p-0 font-medium'>
@@ -61,7 +60,7 @@ export default function Header() {
                     <a className='justify-between'>{user?.phone_number}</a>
                   </li>
                   <li>
-                    <Link to='/dashboard'>My Tickets</Link>
+                    <Link to='/dashboard/tickets/upcomingevent'>My Tickets</Link>
                   </li>
 
                   <li>
