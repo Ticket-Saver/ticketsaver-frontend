@@ -5,6 +5,7 @@ import {
   TicketsByEvent,
   DescriptionsByEvent
 } from '../utils/ticketsFromInvoice'
+import { cons } from 'effect/List'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
@@ -45,12 +46,14 @@ exports.handler = async function (event, _context) {
       const info = await TicketsFromInvoices(invoices)
 
       const tickets = TicketsByEvent(info)
+      const descriptions = DescriptionsByEvent(info)
+
       console.log('Tickets Agrupados por evento:', tickets)
-      console.log(' solamente descripciones', DescriptionsByEvent(info))
+      console.log(' solamente descripciones', descriptions)
 
       return {
         statusCode: 200,
-        body: JSON.stringify(info) // Aqui se puede cambiar.
+        body: JSON.stringify(tickets) // Aqui se puede cambiar.
       }
     } catch (error) {
       console.error('Error al buscar facturas:', error)

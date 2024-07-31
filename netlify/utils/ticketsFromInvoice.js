@@ -21,6 +21,7 @@ const TicketsByEvent = (tickets) => {
   //devuelve las descripciones(asiento y zona) y la demás info agrupadas en un array con identificador el eventID
   return tickets.reduce((acc, ticket) => {
     const { eventId, description, ...info } = ticket
+
     if (eventId != '') {
       if (!acc[eventId]) {
         acc[eventId] = []
