@@ -16,7 +16,6 @@ const findCustomer = async (customer) => {
       email: customer.email,
       limit: 1
     })
-    console.log('Respuesta de búsqueda:', customers)
 
     if (customers.data.length > 0) {
       // Si encontramos un cliente, devolvemos su ID

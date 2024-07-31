@@ -1,3 +1,12 @@
+import EventList from '../../components/EventList'
+import { isUpcomingEvent } from '../../components/EventList'
+
 export default function UpcomingEvent() {
-  return <div className='w-full h-40 bg-neutral rounded-xl'>upcomingevent</div>
+  return (
+    <EventList
+      filterFunction={isUpcomingEvent}
+      noEventsMessage="You don't have any upcoming events."
+    />
+  );
 }
+

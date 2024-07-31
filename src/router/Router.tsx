@@ -14,14 +14,17 @@ import Web3 from '../pages/Web3'
 import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
 import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
-
-import TestSale from '../pages/sale/TestEventSale'
+import ReturnPage from '../pages/ReturnPage'
 import CheckoutPage from '../pages/checkout'
 import EventPage from '../pages/EventPage'
 import TicketSelection from '../pages/TicketEventSale'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated, loginWithRedirect } = useAuth0()
+  if (!isAuthenticated) {
+    loginWithRedirect()
+    return null
+  }
   return isAuthenticated ? element : <Navigate to='/' />
 }
 
@@ -36,16 +39,10 @@ export const AppRouter = () => (
           </LayoutHeaderFooter>
         }
       />
-      <Route
-        path='sale'
-        element={
-          <LayoutHeaderFooter>
-            <TestSale />
-          </LayoutHeaderFooter>
-        }
-      />
 
-      <Route path='checkout' element={<CheckoutPage />} />
+      <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
+
+      <Route path='return' element={<ReturnPage />} />
 
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
@@ -59,11 +56,15 @@ export const AppRouter = () => (
       />
 
       <Route
-        path='/sale/:name/:venuesName/:location/:date/:label'
+        path='/sale/:name/:venue/:location/:date/:label'
         element={
-          <LayoutHeaderFooter>
-            <TicketSelection />{' '}
-          </LayoutHeaderFooter>
+          <ProtectedRoute
+            element={
+              <LayoutHeaderFooter>
+                <TicketSelection />{' '}
+              </LayoutHeaderFooter>
+            }
+          />
         }
       />
 

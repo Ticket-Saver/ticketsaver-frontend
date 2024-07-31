@@ -34,7 +34,7 @@ export default function Sidebar() {
         </div>
         <nav className='flex flex-col space-y-3 px-4'>
           <Link
-            to='/dashboard/tickets'
+            to='/dashboard/tickets/upcomingevent'
             className='p-2 px-5 rounded-xl flex items-center bg-[#1A0F40] text-white hover:bg-[#221551] focus:bg-[#221551] font-semibold'
           >
             <img src={TicketIcon} alt='Ticket Icon' className='h-6 w-6 text-white mr-2' />
