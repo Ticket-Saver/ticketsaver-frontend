@@ -58,8 +58,26 @@ export default function FeaturedEvents() {
     }
 
     if (data) {
-      filteredEvents = [...findData(data, 'las_leonas.02'), ...findData(data, 'las_leonas.03')]
-      console.log('filteredEvents', filteredEvents)
+      const eventsArray = Object.values(data);
+      const currentDate = new Date();
+
+      console.log('currentDate', currentDate)
+
+      filteredEvents = [
+        ...findData(eventsArray, 'las_leonas.02'),
+        ...findData(eventsArray, 'las_leonas.03')
+      ].filter(event => {
+
+        if (event.deleted_at) {
+          return false;
+        }
+
+        const endDate = new Date(event.event_date);
+        endDate.setDate(endDate.getDate() + 2);
+
+        return endDate.getTime() > currentDate.getTime();
+      });
+
     }
     setEvents(filteredEvents)
   }, [data])
