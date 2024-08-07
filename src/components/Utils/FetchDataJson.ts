@@ -25,7 +25,7 @@ const useFetchJson = (url: string, options?: RequestInit) => {
   }, [url])
 
   // Only return data if it's not empty
-  return { data: data.length > 0 ? data : null, loading, error }
+  return { data: Object.keys(data).length > 0 ? data : null, loading, error }
 }
 
 const findData = (data: any[], id: string) => {

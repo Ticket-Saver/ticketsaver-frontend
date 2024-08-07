@@ -50,6 +50,8 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
+  console.log('data', data)
+
   useEffect(() => {
     let filteredEvents: Event[] = []
 
@@ -57,8 +59,9 @@ export default function FeaturedEvents() {
       return events.filter((event) => event.event_label === label)
     }
 
-    if (data) {
-      filteredEvents = [...findData(data, 'las_leonas.02'), ...findData(data, 'las_leonas.03')]
+    if (data) { 
+      const eventsArray = Object.values(data);
+      filteredEvents = [...findData(eventsArray, 'las_leonas.02'), ...findData(eventsArray, 'las_leonas.03')]
       console.log('filteredEvents', filteredEvents)
     }
     setEvents(filteredEvents)
@@ -75,9 +78,10 @@ export default function FeaturedEvents() {
     }
 
     if (data2) {
+      const venuesArray = Object.values(data2);
       filteredVenue = [
-        ...findData(data2, 'unioncounty_nj'),
-        ...findData(data2, 'californiatheatre_ca')
+        ...findData(venuesArray, 'unioncounty_nj'),
+        ...findData(venuesArray, 'californiatheatre_ca')
       ]
       console.log('filteredVenue', filteredVenue)
     }
