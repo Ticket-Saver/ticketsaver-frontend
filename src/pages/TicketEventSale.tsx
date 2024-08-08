@@ -35,7 +35,7 @@ export default function TicketSelection() {
   const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const token = import.meta.env.VITE_GITHUB_TOKEN
+  const token = import.meta.env.VITE_GITHUB_TOKEN_READ
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -84,30 +84,14 @@ export default function TicketSelection() {
         }
         const zonePriceData = await response.json()
         setZoneData(zonePriceData)
+
+        const zonePriceListData = extractLatestPrices(zonePriceData)
+        setPriceTags(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone Data', error)
       }
     }
     fetchData()
-  }, [])
-
-  useEffect(() => {
-    const fetchPricesTag = async () => {
-      try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePrices = await response.json()
-        const zonePriceListData = extractLatestPrices(zonePrices)
-
-        setPriceTags(zonePriceListData)
-      } catch (error) {
-        console.error('Error fetching zone prices', error)
-      }
-    }
-
-    fetchPricesTag()
   }, [])
 
   const [venueInfo, setVenue] = useState<any>(null)
