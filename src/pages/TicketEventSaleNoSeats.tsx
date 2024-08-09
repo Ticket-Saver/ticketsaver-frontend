@@ -136,16 +136,16 @@ export default function TicketSelectionNoSeat() {
   }
   return (
     <div className='bg-gray-200 p-8 min-h-screen'>
-      {Object.keys(zoneData.zones).length > 0 && (
-        <div className='bg-white rounded-lg shadow-lg p-8 mb-8'>
+      {zoneData.zones && Object.keys(zoneData.zones).length > 0 && (
+        <div className='bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
           <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
           <table className='w-full'>
             <thead>
               <tr>
-                <th className='text-left text-black'>Zone</th>
-                <th className='text-left text-black'>Type</th>
-                <th className='text-right text-black'>Price</th>
-                <th className='text-right text-black'>Action</th>
+                <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
+                <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Type</th>
+                <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
+                <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -153,20 +153,20 @@ export default function TicketSelectionNoSeat() {
                 Object.entries(priceTypes).map(([priceType, price]) => {
                   const priceBase = priceTagList[priceType]?.price_base / 100
                   const priceFinal = priceTagList[priceType]?.price_final / 100
-
+  
                   return (
-                    <tr key={`${zoneLabel}-${priceType}`}>
-                      <td className='text-left font-normal text-black py-2'>{zoneLabel}</td>
-                      <td className='text-left font-normal text-black py-2'>{priceType}</td>
-                      <td className='text-right font-normal text-black py-2'>
+                    <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
+                      <td className='text-left font-normal text-black py-2 border-b border-gray-300'>{zoneLabel}</td>
+                      <td className='text-left font-normal text-black py-2 border-b border-gray-300'>{priceType}</td>
+                      <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
                         <p>${priceBase?.toFixed(2)}</p>
                         <p className='text-sm text-gray-600'>
                           Price + Fees: ${priceFinal?.toFixed(2)}
                         </p>
                       </td>
-                      <td className='text-right py-2'>
+                      <td className='text-right py-2 border-b border-gray-300'>
                         <button
-                          className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700'
+                          className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300'
                           onClick={() => handleBuyTicket(zoneLabel, priceType)}
                         >
                           Add to Cart
@@ -180,9 +180,9 @@ export default function TicketSelectionNoSeat() {
           </table>
         </div>
       )}
-
+  
       {cart.length > 0 && (
-        <div className='bg-white rounded-lg shadow-lg p-8'>
+        <div className='bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
           <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
           {cart.map((ticket, index) => (
             <div
@@ -200,7 +200,7 @@ export default function TicketSelectionNoSeat() {
               </div>
             </div>
           ))}
-
+  
           <div className='mt-8 flex justify-between'>
             <div>
               <p className='text-xl font-bold text-black'>Total</p>
@@ -212,7 +212,7 @@ export default function TicketSelectionNoSeat() {
           <div className='flex justify-center mt-8'>
             <Link to='/checkout'>
               <button
-                className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700'
+                className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
                 onClick={handleCheckout}
               >
                 Continue to Checkout
