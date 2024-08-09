@@ -47,7 +47,7 @@ export const AppRouter = () => (
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
       <Route
-        path='/events/:name/:venue/:date/:label'
+        path='/events/:name/:venue/:date/:label/:delete?'
         element={
           <LayoutHeaderFooter>
             <EventPage />{' '}
@@ -56,7 +56,7 @@ export const AppRouter = () => (
       />
 
       <Route
-        path='/sale/:name/:venue/:location/:date/:label'
+        path='/sale/:name/:venue/:location/:date/:label/:delete?'
         element={
           <ProtectedRoute
             element={

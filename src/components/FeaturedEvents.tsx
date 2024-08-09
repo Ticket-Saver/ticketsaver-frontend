@@ -11,6 +11,7 @@ interface Event {
   event_name: string
   venue_label: string
   event_label: string
+  event_deleted_at: string | null
 }
 
 interface Location {
@@ -68,7 +69,7 @@ export default function FeaturedEvents() {
         ...findData(eventsArray, 'las_leonas.03')
       ].filter(event => {
 
-        if (event.deleted_at) {
+        if (event.event_deleted_at) {
           return false;
         }
 
@@ -152,7 +153,7 @@ export default function FeaturedEvents() {
         >
           {eventsWithVenues.map((event, index) => (
             <Link
-              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}`}
+              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
               key={index}
             >
               <EventCard

@@ -32,7 +32,7 @@ interface Cart {
 }
 
 export default function TicketSelection() {
-  const { name, venue, date, location, label } = useParams()
+  const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
@@ -56,6 +56,22 @@ export default function TicketSelection() {
     return null
   }
   useEffect(() => {
+    if (deleteParam === 'delete') {
+      navigate('/');
+      return;
+    }
+
+    const currentDate = new Date();
+    const endDate = date ? new Date(date) : new Date();
+    console.log('faak',endDate)
+    console.log('faak2',currentDate)
+    endDate.setDate(endDate.getDate() + 2);
+
+    if (currentDate.getTime() > endDate.getTime()) {
+      navigate('/');
+      return;
+    }
+    
     // Check if sessionId already exists in cookies
     const existingSessionId = getCookieStart('sessionId')
     console.log('chance existe', existingSessionId)
