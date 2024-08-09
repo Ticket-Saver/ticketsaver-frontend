@@ -36,7 +36,7 @@ export default function TicketSelection() {
   const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png?ref=event-test`
+  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
 
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
