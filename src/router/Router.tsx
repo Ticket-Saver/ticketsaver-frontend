@@ -17,8 +17,7 @@ import Collectibles from '../pages/dashboardTabs/Collectibles'
 import ReturnPage from '../pages/ReturnPage'
 import CheckoutPage from '../pages/checkout'
 import EventPage from '../pages/EventPage'
-import TicketSelection from '../pages/TicketEventSale'
-import TicketSelectionNoSeat from '../pages/TicketEventSaleNoSeats'
+import SalePage from '../pages/EventPage'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
@@ -62,7 +61,7 @@ export const AppRouter = () => (
           <ProtectedRoute
             element={
               <LayoutHeaderFooter>
-                <TicketSelectionNoSeat />{' '}
+                <SalePage />{' '}
               </LayoutHeaderFooter>
             }
           />

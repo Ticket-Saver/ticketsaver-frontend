@@ -4,6 +4,7 @@ import { extractLatestPrices } from '../components/Utils/priceUtils'
 import { Link } from 'react-router-dom'
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
+import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 interface Cart {
   price_base: number
@@ -20,7 +21,9 @@ export default function TicketSelectionNoSeat() {
   const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const token = import.meta.env.VITE_GITHUB_TOKEN_READ
+  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png?ref=event-test`
+
+  const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -31,7 +34,21 @@ export default function TicketSelectionNoSeat() {
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>({})
   const [venueInfo, setVenue] = useState<any>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const url = await fetchGitHubImage(githubApiUrl3)
+        setImageUrl(url)
+      } catch (error) {
+        console.error('Error loading image:', error)
+      }
+    }
+
+    loadImage()
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,92 +152,119 @@ export default function TicketSelectionNoSeat() {
     navigate('/checkout')
   }
   return (
-    <div className='bg-gray-200 p-8 min-h-screen'>
-      {zoneData.zones && Object.keys(zoneData.zones).length > 0 && (
-        <div className='bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
-          <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
-          <table className='w-full'>
-            <thead>
-              <tr>
-                <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
-                <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Type</th>
-                <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
-                <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
-                Object.entries(priceTypes).map(([priceType, price]) => {
-                  const priceBase = priceTagList[priceType]?.price_base / 100
-                  const priceFinal = priceTagList[priceType]?.price_final / 100
-  
-                  return (
-                    <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
-                      <td className='text-left font-normal text-black py-2 border-b border-gray-300'>{zoneLabel}</td>
-                      <td className='text-left font-normal text-black py-2 border-b border-gray-300'>{priceType}</td>
-                      <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
-                        <p>${priceBase?.toFixed(2)}</p>
-                        <p className='text-sm text-gray-600'>
-                          Price + Fees: ${priceFinal?.toFixed(2)}
-                        </p>
-                      </td>
-                      <td className='text-right py-2 border-b border-gray-300'>
-                        <button
-                          className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300'
-                          onClick={() => handleBuyTicket(zoneLabel, priceType)}
-                        >
-                          Add to Cart
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
+    <div className='bg-white'>
+      <div className='relative bg-gray-100'>
+        {/* Event Header */}
+        <div className='absolute inset-0'>
+          {/* Cover Image */}
+          <div className='relative h-96'>
+            {/* Event Profile Image */}
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt='Event banner'
+                className='absolute inset-0 w-full h-full object-cover'
+              />
+            )}
+            {/* Overlay for blur effect */}
+            <div className='absolute inset-0 bg-black opacity-50'></div>
+          </div>
         </div>
-      )}
-  
-      {cart.length > 0 && (
-        <div className='bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
-          <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
-          {cart.map((ticket, index) => (
-            <div
-              key={index}
-              className='mb-4 pb-4 border-b-2 border-gray-300 flex justify-between text-black'
-            >
-              <div>
-                <span className='font-semibold'>
-                  Ticket - {ticket.zoneName} ({ticket.priceType})
-                </span>
-                <p>Price: ${ticket.price_base.toFixed(2)}</p>
-                <p className='text-sm text-gray-600'>
-                  Price + Fees: ${ticket.price_final.toFixed(2)}
-                </p>
+
+        <div className='relative z-10 p-8'>
+          {zoneData.zones && Object.keys(zoneData.zones).length > 0 && (
+            <div className='bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
+              <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
+              <table className='w-full'>
+                <thead>
+                  <tr>
+                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
+                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Type</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
+                    Object.entries(priceTypes).map(([priceType]) => {
+                      const priceBase = priceTagList[priceType]?.price_base / 100
+                      const priceFinal = priceTagList[priceType]?.price_final / 100
+
+                      return (
+                        <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
+                          <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
+                            {zoneLabel}
+                          </td>
+                          <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
+                            {priceType}
+                          </td>
+                          <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
+                            <p>${priceBase?.toFixed(2)}</p>
+                            <p className='text-sm text-gray-600'>
+                              Price + Fees: ${priceFinal?.toFixed(2)}
+                            </p>
+                          </td>
+                          <td className='text-right py-2 border-b border-gray-300'>
+                            <button
+                              className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300'
+                              onClick={() => handleBuyTicket(zoneLabel, priceType)}
+                            >
+                              Add to Cart
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {cart.length > 0 && (
+            <div className='bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
+              <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
+              {cart.map((ticket, index) => (
+                <div
+                  key={index}
+                  className='mb-4 pb-4 border-b-2 border-gray-300 flex justify-between text-black'
+                >
+                  <div>
+                    <span className='font-semibold'>
+                      Ticket - {ticket.zoneName} ({ticket.priceType})
+                    </span>
+                    <p>Price: ${ticket.price_base.toFixed(2)}</p>
+                    <p className='text-sm text-gray-600'>
+                      Price + Fees: ${ticket.price_final.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              <div className='mt-8 flex justify-between'>
+                <div>
+                  <p className='text-xl font-bold text-black'>Total</p>
+                </div>
+                <div>
+                  <p className='text-xl font-bold text-black'>${totalCost.toFixed(2)}</p>
+                </div>
+              </div>
+              <div className='flex justify-center mt-8'>
+                <Link to='/checkout'>
+                  <button
+                    className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
+                    onClick={handleCheckout}
+                  >
+                    Continue to Checkout
+                  </button>
+                </Link>
               </div>
             </div>
-          ))}
-  
-          <div className='mt-8 flex justify-between'>
-            <div>
-              <p className='text-xl font-bold text-black'>Total</p>
-            </div>
-            <div>
-              <p className='text-xl font-bold text-black'>${totalCost.toFixed(2)}</p>
-            </div>
-          </div>
-          <div className='flex justify-center mt-8'>
-            <Link to='/checkout'>
-              <button
-                className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
-                onClick={handleCheckout}
-              >
-                Continue to Checkout
-              </button>
-            </Link>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

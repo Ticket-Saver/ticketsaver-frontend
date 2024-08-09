@@ -14,6 +14,7 @@ import Unioncountry from '../components/maps/unioncounty_nj'
 import californiaTheatreSvg from '../assets/maps/californiaTheatre.svg'
 import unionCountySvg from '../assets/maps/union_county.svg'
 import { v4 as uuidv4 } from 'uuid'
+import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -35,13 +36,30 @@ export default function TicketSelection() {
   const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const token = import.meta.env.VITE_GITHUB_TOKEN_READ
+  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png?ref=event-test`
+
+  const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3.raw'
     }
   }
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const url = await fetchGitHubImage(githubApiUrl3)
+        setImageUrl(url)
+      } catch (error) {
+        console.error('Error loading image:', error)
+      }
+    }
+
+    loadImage()
+  }, [])
+
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
 
@@ -379,8 +397,8 @@ export default function TicketSelection() {
             {/* Event Profile Image */}
             <div className='absolute inset-0 overflow-hidden'>
               <img
-                src='/events/Leonas.jpg' // Replace with a default image
-                alt='Event Profile'
+                src={imageUrl}
+                alt='Event banner'
                 className='w-full h-full object-cover overflow-hidden blur-sm object-top'
               />
             </div>

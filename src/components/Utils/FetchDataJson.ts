@@ -32,4 +32,27 @@ const findData = (data: any[], id: string) => {
   return data.find((item) => item.id === id)
 }
 
-export { useFetchJson, findData }
+const fetchGitHubImage = async (url: string): Promise<string> => {
+  const token = import.meta.env.VITE_GITHUB_TOKEN //
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3.raw'
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error(`Error al obtener la imagen: ${response.status} ${response.statusText}`)
+  }
+
+  // Convertir la respuesta en un Blob de la imagen
+  const blob = await response.blob()
+
+  // Convertir el Blob en una URL para usarla en el componente
+  const imageUrl = URL.createObjectURL(blob)
+
+  return imageUrl
+}
+
+export { useFetchJson, findData, fetchGitHubImage }
