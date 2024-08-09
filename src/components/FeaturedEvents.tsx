@@ -93,9 +93,11 @@ export default function FeaturedEvents() {
     }
 
     if (data2) {
+      const venuesArray = Object.values(data2);
+
       filteredVenue = [
-        ...findData(data2, 'unioncounty_nj'),
-        ...findData(data2, 'californiatheatre_ca')
+        ...findData(venuesArray, 'unioncounty_nj'),
+        ...findData(venuesArray, 'californiatheatre_ca')
       ]
       console.log('filteredVenue', filteredVenue)
     }
