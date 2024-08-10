@@ -59,26 +59,24 @@ export default function FeaturedEvents() {
     }
 
     if (data) {
-      const eventsArray = Object.values(data);
-      const currentDate = new Date();
+      const eventsArray = Object.values(data)
+      const currentDate = new Date()
 
       console.log('currentDate', currentDate)
 
       filteredEvents = [
         ...findData(eventsArray, 'las_leonas.02'),
         ...findData(eventsArray, 'las_leonas.03')
-      ].filter(event => {
-
+      ].filter((event) => {
         if (event.event_deleted_at) {
-          return false;
+          return false
         }
 
-        const endDate = new Date(event.event_date);
-        endDate.setDate(endDate.getDate() + 2);
+        const endDate = new Date(event.event_date)
+        endDate.setDate(endDate.getDate() + 2)
 
-        return endDate.getTime() > currentDate.getTime();
-      });
-
+        return endDate.getTime() > currentDate.getTime()
+      })
     }
     setEvents(filteredEvents)
   }, [data])
@@ -94,7 +92,7 @@ export default function FeaturedEvents() {
     }
 
     if (data2) {
-      const venuesArray = Object.values(data2);
+      const venuesArray = Object.values(data2)
 
       filteredVenue = [
         ...findData(venuesArray, 'unioncounty_nj'),
