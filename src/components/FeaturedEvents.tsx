@@ -11,6 +11,7 @@ interface Event {
   event_name: string
   venue_label: string
   event_label: string
+  event_deleted_at: string | null
 }
 
 interface Location {
@@ -50,6 +51,8 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
+  console.log('data', data)
+
   useEffect(() => {
     let filteredEvents: Event[] = []
 
@@ -58,8 +61,24 @@ export default function FeaturedEvents() {
     }
 
     if (data) {
-      filteredEvents = [...findData(data, 'las_leonas.02'), ...findData(data, 'las_leonas.03')]
-      console.log('filteredEvents', filteredEvents)
+      const eventsArray = Object.values(data)
+      const currentDate = new Date()
+
+      console.log('currentDate', currentDate)
+
+      filteredEvents = [
+        ...findData(eventsArray, 'las_leonas.02'),
+        ...findData(eventsArray, 'las_leonas.03')
+      ].filter((event) => {
+        if (event.event_deleted_at) {
+          return false
+        }
+
+        const endDate = new Date(event.event_date)
+        endDate.setDate(endDate.getDate() + 2)
+
+        return endDate.getTime() > currentDate.getTime()
+      })
     }
     setEvents(filteredEvents)
   }, [data])
@@ -70,16 +89,15 @@ export default function FeaturedEvents() {
     let filteredVenue: Venue[] = []
 
     const findData = (venues: Venue[], label: string) => {
-      console.log('venues', venues)
       return venues.filter((venue) => venue.label === label)
     }
 
     if (data2) {
+      const venuesArray = Object.values(data2)
       filteredVenue = [
-        ...findData(data2, 'unioncounty_nj'),
-        ...findData(data2, 'californiatheatre_ca')
+        ...findData(venuesArray, 'unioncounty_nj'),
+        ...findData(venuesArray, 'californiatheatre_ca')
       ]
-      console.log('filteredVenue', filteredVenue)
     }
 
     setVenues(filteredVenue)
@@ -132,7 +150,7 @@ export default function FeaturedEvents() {
         >
           {eventsWithVenues.map((event, index) => (
             <Link
-              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}`}
+              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
               key={index}
             >
               <EventCard

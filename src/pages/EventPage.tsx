@@ -1,14 +1,32 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 
 export default function EventPage() {
-  const { venue, name, date, label } = useParams()
+  const navigate = useNavigate()
+  const { venue, name, date, label, delete: deleteParam } = useParams()
+  console.log(deleteParam)
   const [venues, setVenue] = useState<any>(null)
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
   useEffect(() => {
+    if (deleteParam === 'delete') {
+      navigate('/')
+      return
+    }
+
+    const currentDate = new Date()
+    const endDate = date ? new Date(date) : new Date()
+    console.log('faak', endDate)
+    console.log('faak2', currentDate)
+    endDate.setDate(endDate.getDate() + 2)
+
+    if (currentDate.getTime() > endDate.getTime()) {
+      navigate('/')
+      return
+    }
+
     const fetchVenues = async () => {
       const storedVenues = localStorage.getItem('Venues')
       localStorage.removeItem('Venues')
@@ -66,7 +84,6 @@ export default function EventPage() {
         console.error('Error fetching zone prices', error)
       }
     }
-
     fetchZonePrices()
   }, [])
 
@@ -127,7 +144,7 @@ export default function EventPage() {
               {/* Buy Tickets Button */}
               <div className='mt-6'>
                 <Link
-                  to={`/sale/${name}/${venues?.label}/${venues?.location.city}/${date}/${label}`}
+                  to={`/sale/${name}/${venues?.label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
                   className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
                 >
                   Buy Tickets!
