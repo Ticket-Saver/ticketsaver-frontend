@@ -98,21 +98,21 @@ export default function TicketSelection() {
   }
   useEffect(() => {
     if (deleteParam === 'delete') {
-      navigate('/');
-      return;
+      navigate('/')
+      return
     }
 
-    const currentDate = new Date();
-    const endDate = date ? new Date(date) : new Date();
-    console.log('faak',endDate)
-    console.log('faak2',currentDate)
-    endDate.setDate(endDate.getDate() + 2);
+    const currentDate = new Date()
+    const endDate = date ? new Date(date) : new Date()
+    console.log('faak', endDate)
+    console.log('faak2', currentDate)
+    endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
-      navigate('/');
-      return;
+      navigate('/')
+      return
     }
-    
+
     // Check if sessionId already exists in cookies
     const existingSessionId = getCookieStart('sessionId')
     console.log('chance existe', existingSessionId)
