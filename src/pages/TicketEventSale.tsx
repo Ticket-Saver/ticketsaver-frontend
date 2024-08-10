@@ -15,6 +15,7 @@ import californiaTheatreSvg from '../assets/maps/californiaTheatre.svg'
 import unionCountySvg from '../assets/maps/union_county.svg'
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { extractZonePrices } from '../components/Utils/priceUtils'
 
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -58,6 +59,28 @@ export default function TicketSelection() {
     }
 
     loadImage()
+  }, [])
+
+  const [zonePriceList, setZonePriceList] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchZonePrices = async () => {
+      try {
+        const response = await fetch(githubApiUrl, options)
+        if (!response.ok) {
+          throw new Error('response error')
+        }
+        const zonePrices = await response.json()
+        console.log('eventData', zonePrices)
+        const zonePriceListData = extractZonePrices(zonePrices)
+        console.log('zonePriceList', zonePriceListData)
+        setZonePriceList(zonePriceListData)
+      } catch (error) {
+        console.error('Error fetching zone prices', error)
+      }
+    }
+
+    fetchZonePrices()
   }, [])
 
   // Remove the unused sessionId variable
@@ -397,7 +420,7 @@ export default function TicketSelection() {
             {/* Event Profile Image */}
             <div className='absolute inset-0 overflow-hidden'>
               <img
-                src={imageUrl}
+                src={imageUrl!}
                 alt='Event banner'
                 className='w-full h-full object-cover overflow-hidden blur-sm object-top'
               />
@@ -429,13 +452,18 @@ export default function TicketSelection() {
                 </thead>
                 <tbody>
                   {/* Static ticket data */}
-                  <tr>
-                    <th className='text-left font-normal'>Section ticket</th>
-                    <th className='text-right font-normal'>
-                      Starting prices from
-                      <a className='font-bold'> $59 </a>+ <a className='font-bold'>Fee </a>
-                    </th>
-                  </tr>
+                  {zonePriceList.map((zoneItem) => (
+                    <tr key={zoneItem.zone}>
+                      <th className='text-left font-normal'>{zoneItem.zone}</th>
+                      <th className='text-right font-normal'>
+                        Starting prices from
+                        <a className='font-bold'>
+                          {' '}
+                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
+                        </a>
+                      </th>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
