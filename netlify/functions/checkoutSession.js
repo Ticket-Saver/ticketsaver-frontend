@@ -7,8 +7,8 @@ exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
-      const domainUrl = process.env.VITE_DOMAIN_URL //Harcoded URl because Netlify. -> process.env.VITE_DOMAIN_URL
-
+      const domainUrl = process.env.DOMAIN_URL || ''
+      console.log(domainUrl)
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
@@ -18,7 +18,7 @@ exports.handler = async function (event, _context) {
       const lineItems = cart.map((ticket) => ({
         price_data: {
           currency: 'USD',
-          unit_amount: ticket.price_final * 100, // Stripe expects the amount in cents
+          unit_amount: Math.round(ticket.price_final * 100), // Stripe expects the amount in cents
           product_data: {
             name: `Ticket: ${ticket.seatLabel}; ${ticket.priceType}; Zone: ${ticket.subZone}`,
             description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`
