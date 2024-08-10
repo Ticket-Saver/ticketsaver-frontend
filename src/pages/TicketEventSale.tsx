@@ -14,6 +14,8 @@ import Unioncountry from '../components/maps/unioncounty_nj'
 import californiaTheatreSvg from '../assets/maps/californiaTheatre.svg'
 import unionCountySvg from '../assets/maps/union_county.svg'
 import { v4 as uuidv4 } from 'uuid'
+import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { extractZonePrices } from '../components/Utils/priceUtils'
 
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -35,6 +37,8 @@ export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
+  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
+
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
     headers: {
@@ -42,6 +46,43 @@ export default function TicketSelection() {
       Accept: 'application/vnd.github.v3.raw'
     }
   }
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const url = await fetchGitHubImage(githubApiUrl3)
+        setImageUrl(url)
+      } catch (error) {
+        console.error('Error loading image:', error)
+      }
+    }
+
+    loadImage()
+  }, [])
+
+  const [zonePriceList, setZonePriceList] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchZonePrices = async () => {
+      try {
+        const response = await fetch(githubApiUrl, options)
+        if (!response.ok) {
+          throw new Error('response error')
+        }
+        const zonePrices = await response.json()
+        console.log('eventData', zonePrices)
+        const zonePriceListData = extractZonePrices(zonePrices)
+        console.log('zonePriceList', zonePriceListData)
+        setZonePriceList(zonePriceListData)
+      } catch (error) {
+        console.error('Error fetching zone prices', error)
+      }
+    }
+
+    fetchZonePrices()
+  }, [])
+
   // Remove the unused sessionId variable
   const [, setSessionId] = useState<string>('') // State to store sessionId
 
@@ -100,30 +141,14 @@ export default function TicketSelection() {
         }
         const zonePriceData = await response.json()
         setZoneData(zonePriceData)
+
+        const zonePriceListData = extractLatestPrices(zonePriceData)
+        setPriceTags(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone Data', error)
       }
     }
     fetchData()
-  }, [])
-
-  useEffect(() => {
-    const fetchPricesTag = async () => {
-      try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePrices = await response.json()
-        const zonePriceListData = extractLatestPrices(zonePrices)
-
-        setPriceTags(zonePriceListData)
-      } catch (error) {
-        console.error('Error fetching zone prices', error)
-      }
-    }
-
-    fetchPricesTag()
   }, [])
 
   const [venueInfo, setVenue] = useState<any>(null)
@@ -411,8 +436,8 @@ export default function TicketSelection() {
             {/* Event Profile Image */}
             <div className='absolute inset-0 overflow-hidden'>
               <img
-                src='/events/Leonas.jpg' // Replace with a default image
-                alt='Event Profile'
+                src={imageUrl!}
+                alt='Event banner'
                 className='w-full h-full object-cover overflow-hidden blur-sm object-top'
               />
             </div>
@@ -443,13 +468,18 @@ export default function TicketSelection() {
                 </thead>
                 <tbody>
                   {/* Static ticket data */}
-                  <tr>
-                    <th className='text-left font-normal'>Section ticket</th>
-                    <th className='text-right font-normal'>
-                      Starting prices from
-                      <a className='font-bold'> $59 </a>+ <a className='font-bold'>Fee </a>
-                    </th>
-                  </tr>
+                  {zonePriceList.map((zoneItem) => (
+                    <tr key={zoneItem.zone}>
+                      <th className='text-left font-normal'>{zoneItem.zone}</th>
+                      <th className='text-right font-normal'>
+                        Starting prices from
+                        <a className='font-bold'>
+                          {' '}
+                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
+                        </a>
+                      </th>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

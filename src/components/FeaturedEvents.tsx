@@ -51,6 +51,8 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
+  console.log('data', data)
+
   useEffect(() => {
     let filteredEvents: Event[] = []
 
@@ -93,7 +95,6 @@ export default function FeaturedEvents() {
 
     if (data2) {
       const venuesArray = Object.values(data2)
-
       filteredVenue = [
         ...findData(venuesArray, 'unioncounty_nj'),
         ...findData(venuesArray, 'californiatheatre_ca')
