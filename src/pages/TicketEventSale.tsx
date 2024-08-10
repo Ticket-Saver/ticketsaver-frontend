@@ -101,7 +101,7 @@ export default function TicketSelection() {
       navigate('/');
       return;
     }
-
+    
     const currentDate = new Date();
     const endDate = date ? new Date(date) : new Date();
     console.log('faak',endDate)
@@ -112,7 +112,7 @@ export default function TicketSelection() {
       navigate('/');
       return;
     }
-    
+
     // Check if sessionId already exists in cookies
     const existingSessionId = getCookieStart('sessionId')
     console.log('chance existe', existingSessionId)

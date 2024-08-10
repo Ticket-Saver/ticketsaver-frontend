@@ -7,8 +7,10 @@ exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
+
       const domainUrl = process.env.DOMAIN_URL || ''
       console.log(domainUrl)
+      
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
