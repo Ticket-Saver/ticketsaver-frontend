@@ -89,7 +89,6 @@ export default function FeaturedEvents() {
     let filteredVenue: Venue[] = []
 
     const findData = (venues: Venue[], label: string) => {
-      console.log('venues', venues)
       return venues.filter((venue) => venue.label === label)
     }
 
@@ -99,7 +98,6 @@ export default function FeaturedEvents() {
         ...findData(venuesArray, 'unioncounty_nj'),
         ...findData(venuesArray, 'californiatheatre_ca')
       ]
-      console.log('filteredVenue', filteredVenue)
     }
 
     setVenues(filteredVenue)

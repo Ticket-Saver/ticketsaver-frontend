@@ -66,7 +66,6 @@ export default function TicketSelectionNoSeat() {
         console.error('Error fetching zone data', error)
       }
     }
-
     const fetchVenues = async () => {
       const storedVenues = localStorage.getItem('Venues')
       localStorage.removeItem('Venues')
@@ -188,7 +187,7 @@ export default function TicketSelectionNoSeat() {
                 </thead>
                 <tbody>
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
-                    Object.entries(priceTypes).map(([priceType]) => {
+                    Object.entries(priceTypes as any[]).map(([priceType]) => {
                       const priceBase = priceTagList[priceType]?.price_base / 100
                       const priceFinal = priceTagList[priceType]?.price_final / 100
 

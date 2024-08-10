@@ -3,29 +3,28 @@ import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 
 export default function EventPage() {
-  const navigate = useNavigate();
-  const { venue, name, date, label, delete: deleteParam} = useParams()
+  const navigate = useNavigate()
+  const { venue, name, date, label, delete: deleteParam } = useParams()
   console.log(deleteParam)
   const [venues, setVenue] = useState<any>(null)
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
   useEffect(() => {
-     
     if (deleteParam === 'delete') {
-      navigate('/');
-      return;
+      navigate('/')
+      return
     }
 
-    const currentDate = new Date();
-    const endDate = date ? new Date(date) : new Date();
-    console.log('faak',endDate)
-    console.log('faak2',currentDate)
-    endDate.setDate(endDate.getDate() + 2);
+    const currentDate = new Date()
+    const endDate = date ? new Date(date) : new Date()
+    console.log('faak', endDate)
+    console.log('faak2', currentDate)
+    endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
-      navigate('/');
-      return;
+      navigate('/')
+      return
     }
 
     const fetchVenues = async () => {
@@ -85,7 +84,6 @@ export default function EventPage() {
         console.error('Error fetching zone prices', error)
       }
     }
-
     fetchZonePrices()
   }, [])
 
