@@ -187,6 +187,12 @@ export default function TicketSelection() {
         priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
       }
     },
+    las_leonas01: {
+      Map: {
+        zones: ['Yellow', 'Blue', 'Orange', 'Green'],
+        priceTag: ['P1', 'P2', 'P3', 'P4']
+      }
+    },
     india_yuridia01: {
       orchestra: {
         zones: ['Orange', 'Green', 'Pink', 'Yellow', 'Purple'],
