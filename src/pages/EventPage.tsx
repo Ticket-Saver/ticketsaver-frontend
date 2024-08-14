@@ -1,12 +1,15 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
+import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 export default function EventPage() {
   const navigate = useNavigate()
   const { venue, name, date, label, delete: deleteParam } = useParams()
-  console.log(deleteParam)
   const [venues, setVenue] = useState<any>(null)
+  const [description, setDescription] = useState<string>('')
+  const [image, setImage] = useState<string>('')
+
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
@@ -87,6 +90,29 @@ export default function EventPage() {
     fetchZonePrices()
   }, [])
 
+  useEffect(() => {
+    const fetchDescriptions = async () => {
+      const description = await fetchDescription(label!, options)
+
+      setDescription(description)
+    }
+
+    if (label) {
+      fetchDescriptions()
+    }
+  }, [label])
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const image = await fetchGitHubImage(label!)
+      setImage(image)
+    }
+
+    if (label) {
+      fetchImages()
+    }
+  }, [label])
+
   return (
     <div className='bg-white'>
       <div className='bg-gray-100 relative'>
@@ -97,7 +123,7 @@ export default function EventPage() {
             {/* Event Profile Image */}
             <div className='absolute inset-0 overflow-hidden'>
               <img
-                src='/events/Leonas.jpg' // Replace with a default image
+                src={image} // Replace with a default image
                 alt='Event Profile'
                 className='w-full h-full object-cover overflow-hidden blur-sm object-top'
               />
@@ -157,33 +183,23 @@ export default function EventPage() {
       <div className='w-3/4 mx-auto py-10 sm:px-2 lg:px-20'>
         {/* Event Description */}
         <div className='prose lg:prose-xl text-black w-full'>
-          <h1 className='text-black '>US Tour</h1>
+          <h1 className='text-black '>{name}</h1>
           <h2 className='text-black'>{date}</h2>
           <h3 className='text-black'>Sobre el evento</h3>
-          <p className='text-left'>
-            ¡No te pierdas en escena a: Victoria Ruffo, Angélica Aragón, Ana Patricia Rojo, Paola
-            Rojas, María Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra espectacular! Las
-            protagonistas de esta puesta en escena dejan claro que el legado de una leona, al igual
-            que el de una mujer, se construye diariamente. Las historias que se viven durante la
-            obra nos ofrecen una visión realista del poder que tiene el ser humano para enfrentar
-            las adversidades. Las Leonas te enseñarán cómo recuperar tu fuerza emocional, además te
-            mostrarán el camino para liberarte de la culpa, evitar apegos y forjar tu propio
-            destino, para que así encuentres a la leona que vive dentro de ti! Sé una Reina, pero
-            ruge como una leona!! ¡No te la puedes perder!
-          </p>
+          <p className='text-left'>{description}</p>
         </div>
         <div className='carousel carousel-center flex justify-center max-h-50 min-w-full abs'>
           <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src='/events/Leonas.jpg' />
+            <img src={image} />
           </div>
           <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src='/events/Leonas.jpg' />
+            <img src={image} />
           </div>
           <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src='/events/Leonas.jpg' />
+            <img src={image} />
           </div>
           <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src='/events/Leonas.jpg' />
+            <img src={image} />
           </div>
         </div>
       </div>

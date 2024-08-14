@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { EventCard } from './EventCard'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchJson } from './Utils/FetchDataJson'
+import { useFetchJson, fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
 
 interface Event {
   eventId: string
@@ -37,6 +37,9 @@ interface EventWithVenue extends Event {
 export default function FeaturedEvents() {
   const [events, setEvents] = useState<Event[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<Record<string, string>>({})
+
   const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
@@ -56,20 +59,13 @@ export default function FeaturedEvents() {
   useEffect(() => {
     let filteredEvents: Event[] = []
 
-    const findData = (events: Event[], label: string) => {
-      return events.filter((event) => event.event_label === label)
-    }
-
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
 
       console.log('currentDate', currentDate)
 
-      filteredEvents = [
-        ...findData(eventsArray, 'las_leonas.02'),
-        ...findData(eventsArray, 'las_leonas.03')
-      ].filter((event) => {
+      filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
           return false
         }
@@ -88,16 +84,9 @@ export default function FeaturedEvents() {
   useEffect(() => {
     let filteredVenue: Venue[] = []
 
-    const findData = (venues: Venue[], label: string) => {
-      return venues.filter((venue) => venue.label === label)
-    }
-
     if (data2) {
       const venuesArray = Object.values(data2)
-      filteredVenue = [
-        ...findData(venuesArray, 'unioncounty_nj'),
-        ...findData(venuesArray, 'californiatheatre_ca')
-      ]
+      filteredVenue = venuesArray
     }
 
     setVenues(filteredVenue)
@@ -110,6 +99,40 @@ export default function FeaturedEvents() {
     })
     setEventsWithVenues(combinedData)
   }, [events, venues])
+
+  useEffect(() => {
+    const fetchAllDescriptions = async () => {
+      const descriptionsDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const description = await fetchDescription(event.event_label, options)
+        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+      }
+
+      setDescriptions(descriptionsDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllDescriptions()
+    }
+  }, [events])
+
+  useEffect(() => {
+    const fetchAllImages = async () => {
+      const imagesDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const image = await fetchGitHubImage(event.event_label)
+        imagesDict[event.event_label] = image
+      }
+
+      setImages(imagesDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllImages()
+    }
+  }, [events])
 
   const setSessionId = useState<string>('')[1] // State to store sessionId
 
@@ -158,10 +181,8 @@ export default function FeaturedEvents() {
                 id={event.eventId}
                 eventId={event.eventId}
                 title={event.event_name}
-                description={
-                  'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!'
-                } // Add description if available
-                thumbnailURL={'/events/Leonas.jpg'}
+                description={descriptions[event.event_label]} // Add description if available
+                thumbnailURL={images[event.event_label]}
                 venue={event.venue?.name || event.venue_label}
                 date={event.event_date}
                 city={event.venue?.location.city} // Pass the city property from the venue object

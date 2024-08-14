@@ -32,10 +32,11 @@ const findData = (data: any[], id: string) => {
   return data.find((item) => item.id === id)
 }
 
-const fetchGitHubImage = async (url: string): Promise<string> => {
+const fetchGitHubImage = async (label: string): Promise<string> => {
   const token = import.meta.env.VITE_GITHUB_TOKEN //
+  const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
 
-  const response = await fetch(url, {
+  const response = await fetch(Url, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3.raw'
@@ -54,5 +55,18 @@ const fetchGitHubImage = async (url: string): Promise<string> => {
 
   return imageUrl
 }
-
-export { useFetchJson, findData, fetchGitHubImage }
+const fetchDescription = async (label: string, options: any): Promise<any> => {
+  const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/description.txt`
+  try {
+    const response = await fetch(Url, options)
+    if (!response.ok) {
+      throw new Error(`Error en la respuesta de GitHub: ${response.status} ${response.statusText}`)
+    }
+    const description = response.text()
+    return description
+  } catch (error) {
+    console.error('Error obteniendo los datos', error)
+    throw error
+  }
+}
+export { useFetchJson, findData, fetchGitHubImage, fetchDescription }

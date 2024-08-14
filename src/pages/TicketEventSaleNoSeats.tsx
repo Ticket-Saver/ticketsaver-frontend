@@ -21,7 +21,6 @@ export default function TicketSelectionNoSeat() {
   const { name, venue, date, location, label } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png?ref=event-test`
 
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
@@ -40,7 +39,7 @@ export default function TicketSelectionNoSeat() {
   useEffect(() => {
     const loadImage = async () => {
       try {
-        const url = await fetchGitHubImage(githubApiUrl3)
+        const url = await fetchGitHubImage(label!)
         setImageUrl(url)
       } catch (error) {
         console.error('Error loading image:', error)
@@ -48,7 +47,7 @@ export default function TicketSelectionNoSeat() {
     }
 
     loadImage()
-  }, [])
+  }, [label])
 
   useEffect(() => {
     const fetchData = async () => {

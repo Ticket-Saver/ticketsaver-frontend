@@ -1,18 +1,24 @@
-import {
-  useState,
-  //ChangeEvent,
-  useEffect,
-  useRef,
-  useCallback
-} from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import SeatchartJS, { CartChangeEvent } from 'seatchart'
 import Seatchart from '../components/Seatchart'
 import InteractiveMap from '../components/InteractiveMap'
-import CalifoniaTheatreMap from '../components/maps/californiatheatre_ca'
-import Unioncountry from '../components/maps/unioncounty_nj'
-import californiaTheatreSvg from '../assets/maps/californiaTheatre.svg'
-import unionCountySvg from '../assets/maps/union_county.svg'
+
+import californiaTheatreSvg from '../assets/maps/Leonas/californiaTheatre.svg'
+import unionCountySvg from '../assets/maps/Leonas/union_county.svg'
+import SanJoseMapPng from '../assets/maps/IndiaYuridia/sanjose_ca.png'
+import OrchestraMapPng from '../assets/maps/IndiaYuridia/Orchestra.png'
+import LogeMapPng from '../assets/maps/IndiaYuridia/Loge.png'
+import ManuelArtTimePng from '../assets/maps/Leonas/manuelartime_fl.svg'
+
+import LogeMap from '../components/maps/IndiaYuridia/LogeMap'
+import OrchestraMap from '../components/maps/IndiaYuridia/OrchestraMap'
+import SanJoseMap from '../components/maps//IndiaYuridia/sanjose_ca'
+
+import CalifoniaTheatreMap from '../components/maps/Leonas/californiatheatre_ca'
+import Unioncountry from '../components/maps/Leonas/unioncounty_nj'
+import ManuelArtTime from '../components/maps/Leonas/ManuelArtTimeMap'
+
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import { extractZonePrices } from '../components/Utils/priceUtils'
@@ -32,12 +38,32 @@ interface Cart {
   priceType: string
   ticketId: string
 }
+type EventZoneData = {
+  zones: string[]
+  priceTag: string[]
+}
 
+type EventData = {
+  [eventName: string]: {
+    [zoneName: string]: EventZoneData
+  }
+}
+interface MapConfig {
+  [label: string]: {
+    defaultMap?: any // O el tipo adecuado para tu mapa por defecto
+    src?: string
+    zones?: {
+      [zone: string]: {
+        defaultMap: any // O el tipo adecuado para tu mapa por defecto
+        src: string
+      }
+    }
+  }
+}
 export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const githubApiUrl3 = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
 
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
@@ -48,43 +74,59 @@ export default function TicketSelection() {
   }
 
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [zonePriceList, setZonePriceList] = useState<any[]>([])
+  const [priceTagList, setPriceTags] = useState<any>([])
+  const [zoneData, setZoneData] = useState<any>([])
+  const [venueInfo, setVenue] = useState<any>(null)
+  const [eventSelected, setEventSelected] = useState<string | ''>('las_leonas.02')
+  const [, setSessionId] = useState<string>('')
+
+  // Load image when label changes
   useEffect(() => {
     const loadImage = async () => {
       try {
-        const url = await fetchGitHubImage(githubApiUrl3)
+        const url = await fetchGitHubImage(label!)
         setImageUrl(url)
       } catch (error) {
         console.error('Error loading image:', error)
       }
     }
+    if (label) loadImage()
+  }, [label])
 
-    loadImage()
-  }, [])
-
-  const [zonePriceList, setZonePriceList] = useState<any[]>([])
-
+  // Fetch zone data when label changes
   useEffect(() => {
-    const fetchZonePrices = async () => {
+    const fetchZoneData = async () => {
       try {
         const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePrices = await response.json()
-        console.log('eventData', zonePrices)
-        const zonePriceListData = extractZonePrices(zonePrices)
-        console.log('zonePriceList', zonePriceListData)
-        setZonePriceList(zonePriceListData)
+        if (!response.ok) throw new Error('response error')
+        const data = await response.json()
+
+        setZoneData(data)
+        setPriceTags(extractLatestPrices(data))
+        setZonePriceList(extractZonePrices(data))
       } catch (error) {
-        console.error('Error fetching zone prices', error)
+        console.error('Error fetching zone data:', error)
       }
     }
 
-    fetchZonePrices()
-  }, [])
+    if (label) fetchZoneData()
+  }, [githubApiUrl])
 
-  // Remove the unused sessionId variable
-  const [, setSessionId] = useState<string>('') // State to store sessionId
+  // Fetch venue data when venue changes
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const response = await fetch(githubApiUrl2, options)
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+        const data = await response.json()
+        setVenue(data[venue!])
+      } catch (error) {
+        console.error('Error fetching data: ', error)
+      }
+    }
+    if (venue) fetchVenues()
+  }, [githubApiUrl2, venue])
 
   const getCookieStart = (name: string) => {
     const cookies = document.cookie.split(';')
@@ -104,8 +146,6 @@ export default function TicketSelection() {
 
     const currentDate = new Date()
     const endDate = date ? new Date(date) : new Date()
-    console.log('faak', endDate)
-    console.log('faak2', currentDate)
     endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
@@ -115,7 +155,6 @@ export default function TicketSelection() {
 
     // Check if sessionId already exists in cookies
     const existingSessionId = getCookieStart('sessionId')
-    console.log('chance existe', existingSessionId)
 
     // If sessionId doesn't exist, generate a new one and store it as a cookie
     if (!existingSessionId) {
@@ -128,71 +167,98 @@ export default function TicketSelection() {
     }
   }, [])
 
-  const [eventSelected, setEventSelected] = useState<string | ''>('las_leonas.02')
-  const [priceTagList, setPriceTags] = useState<any>([])
-  const [zoneData, setZoneData] = useState<any>([])
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePriceData = await response.json()
-        setZoneData(zonePriceData)
+    if (label) setEventSelected(label.replace(/\./g, ''))
+  }, [label])
 
-        const zonePriceListData = extractLatestPrices(zonePriceData)
-        setPriceTags(zonePriceListData)
-      } catch (error) {
-        console.error('Error fetching zone Data', error)
+  const [eventZoneSelected, setEventZoneSelected] = useState<string>('')
+
+  // esto debería ir en alguna db
+  const eventData: EventData = {
+    las_leonas03: {
+      Map: {
+        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
+        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+      }
+    },
+    las_leonas02: {
+      Map: {
+        zones: ['Pink', 'Aqua', 'Blue', 'Gray', 'Coral'],
+        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+      }
+    },
+    india_yuridia01: {
+      orchestra: {
+        zones: ['Orange', 'Green', 'Pink', 'Yellow', 'Purple'],
+        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+      },
+      loge: {
+        zones: [
+          'Yellow',
+          'Purple',
+          'Gray',
+          'Section 1',
+          'Section 2',
+          'Section 3',
+          'Section 4',
+          'Section 5',
+          'Section 6'
+        ],
+        priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
+      }
+    },
+    india_yuridia02: {
+      Map: {
+        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
+        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
       }
     }
-    fetchData()
-  }, [])
-
-  const [venueInfo, setVenue] = useState<any>(null)
-
-  useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const response = await fetch(githubApiUrl2, options)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+  }
+  const mapConfig: MapConfig = {
+    'las_leonas.03': {
+      zones: {
+        Map: {
+          defaultMap: CalifoniaTheatreMap,
+          src: californiaTheatreSvg
         }
-        const data = await response.json()
-
-        const matchingVenue = data[venue!]
-        console.log('miremos ', matchingVenue)
-        setVenue(matchingVenue)
-      } catch (error) {
-        console.error('Error fetching data: ', error)
+      }
+    },
+    'las_leonas.02': {
+      zones: {
+        Map: {
+          defaultMap: Unioncountry,
+          src: unionCountySvg
+        }
+      }
+    },
+    'las_leonas.01': {
+      zones: {
+        Map: {
+          defaultMap: ManuelArtTime,
+          src: ManuelArtTimePng
+        }
+      }
+    },
+    'india_yuridia.01': {
+      zones: {
+        orchestra: {
+          defaultMap: OrchestraMap,
+          src: OrchestraMapPng
+        },
+        loge: {
+          defaultMap: LogeMap,
+          src: LogeMapPng
+        }
+      }
+    },
+    'india_yuridia.02': {
+      zones: {
+        Map: {
+          defaultMap: SanJoseMap,
+          src: SanJoseMapPng
+        }
       }
     }
-    fetchVenues()
-  }, [])
-  console.log('label de esto', venueInfo)
-  useEffect(() => {
-    if (label) {
-      let eventlabel = label.replace(/\./g, '')
-      setEventSelected(eventlabel)
-    }
-  })
-
-  const eventZones: { [key: string]: string[] } = {
-    //seatchartCurrentArea.title
-    las_leonas03: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-    las_leonas02: ['Pink', 'Aqua', 'Blue', 'Gray', 'Coral']
-  }
-
-  const priceTag: { [key: string]: string[] } = {
-    las_leonas03: ['P1', 'P2', 'P3', 'P4', 'P5'],
-    las_leonas02: ['P1', 'P2', 'P3', 'P4', 'P5']
-  }
-
-  const eventZonePrices: { [key: string]: number[] } = {
-    las_leonas03: [110, 90, 75, 60, 40],
-    las_leonas02: [110, 90, 70, 55, 40]
   }
 
   const { user } = useAuth0()
@@ -282,41 +348,52 @@ export default function TicketSelection() {
           const newTicketId = ticketId(label || '', eventSelected, cartLength + 1, issuedAt)
 
           const zoneColorType_ = seatchartCurrentArea?.name as string // referente a los nombres de cada zona del mapa
+          const eventInfo = eventData[eventSelected]
 
-          const zoneColors = eventZones[eventSelected] //referente a las zonas de los mapas( por colores)
+          // Determine the type of zone (orchestra or loge)
+          const zoneType =
+            Object.keys(eventData[eventSelected] || {}).find((zone) =>
+              eventData[eventSelected][zone]?.zones.includes(zoneColorType_)
+            ) || ''
 
-          const colorIndex = zoneColors.indexOf(zoneColorType_)
+          // Get the information for the selected zone type
+          const zoneInfo = eventInfo[zoneType]
 
-          let price_base: number
-          let priceType: string
+          if (zoneInfo) {
+            const zoneColors = zoneInfo.zones
+            const colorIndex = zoneColors.indexOf(zoneColorType_)
 
-          if (label == 'las_leonas.02' || label == 'las_leonas.03') {
-            ;(priceType = priceTag[eventSelected][colorIndex]),
-              (price_base = eventZonePrices[eventSelected][colorIndex])
-          } else {
-            ;(priceType = zoneseatToPrice(zoneData.zones, seatchartCurrentArea.title, globalSeat)),
-              (price_base = find_price(zoneData, seatchartCurrentArea.title, globalSeat))
+            let price_base: number
+            let priceType: string
+
+            if (colorIndex !== -1) {
+              priceType = zoneInfo.priceTag[colorIndex]
+              price_base = priceTagList[priceType].price_base / 100
+            } else {
+              priceType = zoneseatToPrice(zoneData.zones, seatchartCurrentArea.title, globalSeat)
+              price_base = find_price(zoneData, seatchartCurrentArea.title, globalSeat)
+            }
+
+            setCart((prev: Cart[] | undefined) => {
+              const newCart = [
+                ...(prev || []),
+                {
+                  price_base: price_base,
+                  price_final: priceTagList[priceType].price_final / 100,
+                  zoneName: eventSelected,
+                  seatLabel: e.seat.label,
+                  seatType: zoneColorType_,
+                  subZone: seatchartCurrentArea.title,
+                  coords: { row: e.seat.index.row, col: e.seat.index.col },
+                  priceType: priceType,
+                  ticketId: newTicketId,
+                  issuedAt: issuedAt
+                }
+              ]
+              console.log(newCart)
+              return newCart
+            })
           }
-
-          setCart((prev: Cart[] | undefined) => {
-            const newCart = [
-              ...(prev || []),
-              {
-                price_base: price_base, //
-                price_final: priceTagList[priceType].price_final / 100,
-                zoneName: eventSelected,
-                seatLabel: e.seat.label,
-                seatType: zoneColorType_,
-                subZone: seatchartCurrentArea.title,
-                coords: { row: e.seat.index.row, col: e.seat.index.col },
-                priceType: priceType,
-                ticketId: newTicketId,
-                issuedAt: issuedAt
-              }
-            ]
-            console.log(newCart)
-            return newCart
-          })
         }
       } catch (error) {
         console.error('Failed to lock seat:', error)
@@ -342,6 +419,7 @@ export default function TicketSelection() {
       }
     }
   }
+
   const [windowSize, setWindowSize] = useState(0)
 
   const handleWindowResize = useCallback(() => {
@@ -426,6 +504,16 @@ export default function TicketSelection() {
     setSeatchartCurrentOptions(newOptions)
   }
 
+  useEffect(() => {
+    const selectedEventData = eventData[eventSelected]
+    const zones = selectedEventData ? Object.keys(selectedEventData) : []
+
+    if (zones.length === 1) {
+      setEventZoneSelected(zones[0])
+    } else if (!eventZoneSelected) {
+      setEventZoneSelected('')
+    }
+  }, [eventData, eventSelected])
   return (
     <div className='bg-gray-100'>
       <div className='bg-gray-100 relative'>
@@ -452,9 +540,13 @@ export default function TicketSelection() {
               {name}
             </h1>
             <div className='block'>
-              <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-                {venue}, {location}
-              </h2>
+              {venueInfo ? (
+                <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
+                  {venueInfo.name}, {location}
+                </h2>
+              ) : (
+                <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'></h2>
+              )}
             </div>
             <div className='ml-auto sm:w-full md:w-96 text-black bg-white rounded-lg shadow-sm p-6'>
               <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
@@ -490,50 +582,72 @@ export default function TicketSelection() {
         {/* Event Description */}
         <div className='relative justify-center bg-gray-100 text-black'>
           {/* Selection Elements */}
-          <div className='md:flex sm:flex-row justify-center w-full'>
-            <div className='w-full md:w-1/2 justify-items-center  mr-20'>
-              <h2 className='text-4xl font-bold mb-10 text-center '>Choose your tickets</h2>
+          <div className='md:flex sm:flex-row justify-left w-full'>
+            <div className='w-full md:w-1/2 px-8'>
+              <h2 className='text-4xl font-bold mb-10'>Choose your tickets</h2>
+
               {/* Ticket Type */}
-              <div className='mb-4'>
+              <div>
+                {Object.keys(eventData[eventSelected] || {}).length > 1 && (
+                  <div className='mb-4'>
+                    <label htmlFor='ticketType' className='block text-xl mb-4 font-bold'>
+                      Select a Venue Floor
+                    </label>
+
+                    <select
+                      id='ticketType'
+                      name='ticketType'
+                      value={eventZoneSelected}
+                      onChange={(e) => setEventZoneSelected(e.target.value)}
+                      className='mt-1 bg-white block w-3/4 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md'
+                    >
+                      <option value=''>Select zone</option>
+                      {Object.keys(eventData[eventSelected] || {}).map((zone) => (
+                        <option key={zone} value={zone}>
+                          {zone.charAt(0).toUpperCase() + zone.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className='w-full justify-center items-center'>
-                  {
+                  {eventZoneSelected !== '' && (
                     <>
-                      <div className='mt-4 font-bold text-xl text-center'>
+                      <div className='mt-4 font-bold text-xl'>
                         Click on the map to select a Zone
                       </div>
-                      <div className='items-center flex justify-center'>
-                        <InteractiveMap
-                          handleClickImageZone={async (area) => {
-                            console.log('Area: ', area.title)
-                            handleGetAreaSeats(area.title).then((parsedSeats) => {
-                              let selectedOptions = area.Options
-                              selectedOptions.map.reservedSeats = parsedSeats
-                              setSeatchartCurrentOptions(selectedOptions)
-                            })
+                      <InteractiveMap
+                        key={eventZoneSelected}
+                        handleClickImageZone={async (area) => {
+                          console.log('Area: ', area.title)
+                          try {
+                            const parsedSeats = await handleGetAreaSeats(area.title)
+                            let selectedOptions = area.Options
+                            selectedOptions.map.reservedSeats = parsedSeats
+                            setSeatchartCurrentOptions(selectedOptions)
                             setSeatchartCurrentArea(area)
-                          }}
-                          getDefaultMap={
-                            label === 'las_leonas.03'
-                              ? CalifoniaTheatreMap
-                              : label === 'las_leonas.02'
-                                ? Unioncountry
-                                : () => ({ name: '', areas: [] }) // Default empty map
+                          } catch (error) {
+                            console.error('Error fetching area seats:', error)
                           }
-                          width={windowSize < 768 ? (windowSize * 7) / 8 : windowSize / 2}
-                          src={
-                            label === 'las_leonas.03'
-                              ? californiaTheatreSvg
-                              : label === 'las_leonas.02'
-                                ? unionCountySvg
-                                : '' // Default empty string
-                          }
-                        />
-                      </div>
+                        }}
+                        getDefaultMap={
+                          mapConfig[label!]?.zones?.[eventZoneSelected]?.defaultMap ||
+                          mapConfig[label!]?.defaultMap ||
+                          (() => ({ name: '', areas: [] })) // Default empty map
+                        }
+                        width={windowSize < 768 ? (windowSize * 7) / 8 : windowSize / 2}
+                        src={
+                          mapConfig[label!]?.zones?.[eventZoneSelected]?.src ||
+                          mapConfig[label!]?.src ||
+                          '' // Default empty string
+                        }
+                      />
                     </>
-                  }
+                  )}
                 </div>
               </div>
             </div>
+
             {seatchartCurrentOptions && (
               <div className='mt-4 w-auto'>
                 <div className='bg-gray-300 rounded-xl p-4 m-4'>
@@ -547,6 +661,7 @@ export default function TicketSelection() {
               </div>
             )}
           </div>
+
           {/* Receipt */}
           <div className='w-full p-4'>
             <div className='bg-white rounded-lg shadow-md p-6'>
@@ -588,11 +703,15 @@ export default function TicketSelection() {
                             {' '}
                             X
                           </button>
-                          <p> Fees</p>
+                          <p> Facility Fee + Service Charge + Credit Card Fee</p>
                           <p className='font-bold'>Ticket Total</p>
                         </div>
+
                         <div>
-                          <p>${ticket.price_base.toFixed(2)}</p>
+                          <p>
+                            ${ticket.price_base.toFixed(2)}
+                            <br /> <br />
+                          </p>
                           <p>${(ticket.price_final - ticket.price_base).toFixed(2)}</p>
 
                           <p className='font-bold'>${ticket.price_final.toFixed(2)}</p>
