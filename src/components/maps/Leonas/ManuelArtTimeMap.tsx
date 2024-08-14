@@ -1,4 +1,5 @@
 import { SeatIndex } from 'seatchart'
+import { SeatIndex } from 'seatchart'
 
 const getDefaultMap = () => ({
   name: 'ManuelArtTime-map',
