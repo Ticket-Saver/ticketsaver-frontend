@@ -22,8 +22,15 @@ exports.handler = async function (event, _context) {
           currency: 'USD',
           unit_amount: Math.round(ticket.price_final * 100), // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket ${ticket.seatLabel}; Zone ${ticket.priceType}; ${ticket.subZone}`,
-            description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`
+            name: `Ticket ${ticket.seatLabel}; Zone ${ticket.seatType}; ${ticket.subZone}`,
+            description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`,
+            metadata: {
+              event_label: eventInfo.id,
+              price_type: ticket.priceType,
+              ticket_zone: ticket.seatType,
+              ticket_id: ticket.seatLabel,
+              is_seat: true
+            }
           }
         },
         quantity: 1
@@ -41,14 +48,18 @@ exports.handler = async function (event, _context) {
           enabled: true,
           invoice_data: {
             metadata: {
-              ticketId: cart.ticketId,
-              eventId: eventInfo.id,
-              eventName: eventInfo.name,
-              venue: eventInfo.venue,
-              venueId: eventInfo.venueId,
-              date: eventInfo.date,
-              location: eventInfo.location,
-              issuedAt: cart.issuedAt,
+              eventName: eventInfo.name, // event_name
+              venue: eventInfo.venue, //venue_name
+              date: eventInfo.date, // event_date
+              // esos primeros correpsonden a la información necesaria de los eventos pasados.
+
+              priceType: cart.priceType,
+              ticketId: cart.ticketId, //generado mediante ticket()
+              eventId: eventInfo.id, //event_label
+              venueId: eventInfo.venueId, // venue_label
+              location: eventInfo.location, //location
+              issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
+              numberOfTicket: cart.numberOfTicket || '',
               name: customer?.name,
               email: customer?.email
             }
