@@ -288,7 +288,7 @@ export default function TicketSelection() {
         eventInfo: {
           id: label,
           name: name,
-          venue: venueInfo.name,
+          venue: venueInfo.venue_name,
           venueId: venue,
           date: date,
           location: location
@@ -548,7 +548,7 @@ export default function TicketSelection() {
             <div className='block'>
               {venueInfo ? (
                 <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-                  {venueInfo.name}, {location}
+                  {venueInfo.venue_name}, {location}
                 </h2>
               ) : (
                 <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'></h2>

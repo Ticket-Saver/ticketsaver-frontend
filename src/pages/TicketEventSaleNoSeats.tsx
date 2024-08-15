@@ -126,7 +126,8 @@ export default function TicketSelectionNoSeat() {
         subZone: zoneLabel,
         priceType: priceType,
         ticketId: newTicketId,
-        issuedAt
+        issuedAt: issuedAt,
+        numberOfTicket: cartLength + 1
       }
     ])
   }
@@ -139,7 +140,7 @@ export default function TicketSelectionNoSeat() {
         eventInfo: {
           id: label,
           name,
-          venue: venueInfo?.name,
+          venue: venueInfo?.venue_name,
           venueId: venue,
           date,
           location
@@ -149,6 +150,15 @@ export default function TicketSelectionNoSeat() {
     )
     navigate('/checkout')
   }
+
+  const handleRemoveTicket = (ticketId: string) => {
+    // Elimina solo el ticket específico basado en su `ticketId`
+    const updatedCart = cart.filter((ticket) => ticket.ticketId !== ticketId)
+
+    // Actualiza el carrito
+    setCart(updatedCart)
+  }
+
   return (
     <div className='bg-white'>
       <div className='relative bg-gray-100'>
@@ -168,20 +178,17 @@ export default function TicketSelectionNoSeat() {
             <div className='absolute inset-0 bg-black opacity-50'></div>
           </div>
         </div>
-
         <div className='relative z-10 p-8'>
-          {zoneData.zones && Object.keys(zoneData.zones).length > 0 && (
+          {/* Sección de la tabla de precios */}
+          {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
             <div className='bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
               <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
               <table className='w-full'>
                 <thead>
                   <tr>
                     <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
-                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Type</th>
                     <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
-                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
-                      Action
-                    </th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Add</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,9 +202,6 @@ export default function TicketSelectionNoSeat() {
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
                             {zoneLabel}
                           </td>
-                          <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
-                            {priceType}
-                          </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
                             <p>${priceBase?.toFixed(2)}</p>
                             <p className='text-sm text-gray-600'>
@@ -206,7 +210,7 @@ export default function TicketSelectionNoSeat() {
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
                             <button
-                              className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300'
+                              className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 mr-2'
                               onClick={() => handleBuyTicket(zoneLabel, priceType)}
                             >
                               Add to Cart
@@ -219,24 +223,34 @@ export default function TicketSelectionNoSeat() {
                 </tbody>
               </table>
             </div>
+          ) : (
+            <p>Loading zones and prices...</p>
           )}
 
+          {/* Sección del carrito */}
           {cart.length > 0 && (
             <div className='bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
               <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
-              {cart.map((ticket, index) => (
+              {cart.map((ticket) => (
                 <div
-                  key={index}
+                  key={ticket.ticketId} // Usa ticketId como key
                   className='mb-4 pb-4 border-b-2 border-gray-300 flex justify-between text-black'
                 >
                   <div>
-                    <span className='font-semibold'>
-                      Ticket - {ticket.zoneName} ({ticket.priceType})
-                    </span>
+                    <span className='font-semibold'>Ticket - {ticket.zoneName}</span>
                     <p>Price: ${ticket.price_base.toFixed(2)}</p>
-                    <p className='text-sm text-gray-600'>
+
+                    <p className='text-sm text--600'>
                       Price + Fees: ${ticket.price_final.toFixed(2)}
                     </p>
+                  </div>
+                  <div className='flex items-center'>
+                    <button
+                      className='bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300'
+                      onClick={() => handleRemoveTicket(ticket.ticketId)}
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               ))}

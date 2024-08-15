@@ -9,9 +9,38 @@ export default function EventPage() {
   const [venues, setVenue] = useState<any>(null)
   const [description, setDescription] = useState<string>('')
   const [image, setImage] = useState<string>('')
+  const [hour, setHour] = useState<string>('')
 
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
+  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
+  const options = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3.raw'
+    }
+  }
+  useEffect(() => {
+    const fetchHour = async () => {
+      try {
+        const response = await fetch(githubApiUrl2, options)
+        if (!response.ok) {
+          throw new Error('response error')
+        }
+        const events = await response.json()
+        const event = events[label!]
+        if (event) {
+          setHour(event.event_hour)
+        }
+      } catch (error) {
+        console.error('Failed to fetch event hour:', error)
+      }
+    }
+
+    if (label) {
+      fetchHour()
+    }
+  }, [label, githubApiUrl2, options])
 
   useEffect(() => {
     if (deleteParam === 'delete') {
@@ -21,8 +50,7 @@ export default function EventPage() {
 
     const currentDate = new Date()
     const endDate = date ? new Date(date) : new Date()
-    console.log('faak', endDate)
-    console.log('faak2', currentDate)
+
     endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
@@ -60,13 +88,6 @@ export default function EventPage() {
     }
     fetchVenues()
   }, [venue, githubApiUrl, token])
-
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
 
   const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
@@ -139,7 +160,10 @@ export default function EventPage() {
               {name}
             </h1>
             <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              {venues?.name}, {venues?.location.city}
+              {venues?.venue_name}, {venues?.location.city}
+            </h2>
+            <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
+              {hour} hrs,
             </h2>
             <div className='ml-auto md:w-96 sm:w-full text-black bg-white rounded-lg shadow-sm p-6'>
               <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
@@ -170,7 +194,7 @@ export default function EventPage() {
               {/* Buy Tickets Button */}
               <div className='mt-6'>
                 <Link
-                  to={`/sale/${name}/${venues?.label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
+                  to={`/sale/${name}/${venues?.venue_label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
                   className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
                 >
                   Buy Tickets!
@@ -184,7 +208,9 @@ export default function EventPage() {
         {/* Event Description */}
         <div className='prose lg:prose-xl text-black w-full'>
           <h1 className='text-black '>{name}</h1>
-          <h2 className='text-black'>{date}</h2>
+          <h2 className='text-black'>
+            {date} - {hour} hrs
+          </h2>
           <h3 className='text-black'>Sobre el evento</h3>
           <p className='text-left'>{description}</p>
         </div>

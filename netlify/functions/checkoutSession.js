@@ -22,7 +22,7 @@ exports.handler = async function (event, _context) {
           currency: 'USD',
           unit_amount: Math.round(ticket.price_final * 100), // Stripe expects the amount in cents
           product_data: {
-            name: `Ticket: ${ticket.seatLabel}; ${ticket.priceType}; Zone: ${ticket.subZone}`,
+            name: `Ticket ${ticket.seatLabel}; Zone ${ticket.priceType}; ${ticket.subZone}`,
             description: `Event: ${eventInfo.name} at ${eventInfo.venue} on ${eventInfo.date}`
           }
         },

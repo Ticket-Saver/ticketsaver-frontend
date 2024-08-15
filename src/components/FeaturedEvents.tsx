@@ -24,9 +24,9 @@ interface Location {
 
 interface Venue {
   capacity: number
-  label: string
+  venue_label: string
   location: Location
-  name: string
+  venue_name: string
   seatmap: boolean
 }
 
@@ -54,16 +54,12 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
-  console.log('data', data)
-
   useEffect(() => {
     let filteredEvents: Event[] = []
 
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
-
-      console.log('currentDate', currentDate)
 
       filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
@@ -94,7 +90,7 @@ export default function FeaturedEvents() {
 
   useEffect(() => {
     const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.label === event.venue_label)
+      const venue = venues.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
@@ -160,7 +156,12 @@ export default function FeaturedEvents() {
       setSessionId(existingSessionId)
     }
   }, [])
-
+  const optionsDate: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }
   return (
     <section className='py-10 md:py-16 bg-base-300'>
       <div className='container'>
@@ -183,8 +184,10 @@ export default function FeaturedEvents() {
                 title={event.event_name}
                 description={descriptions[event.event_label]} // Add description if available
                 thumbnailURL={images[event.event_label]}
-                venue={event.venue?.name || event.venue_label}
-                date={event.event_date}
+                venue={event.venue?.venue_name || event.venue_label}
+                date={new Date(event.event_date)
+                  .toLocaleDateString('en-GB', optionsDate)
+                  .replace(',', '')}
                 city={event.venue?.location.city} // Pass the city property from the venue object
               />
             </Link>
