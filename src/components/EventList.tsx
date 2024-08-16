@@ -94,13 +94,14 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
 
       const data: EventData = await response.json()
       console.log('Tickets:', data)
-
-      const images = await imagesFromGithub(data)
-      const descriptions = await descriptionsFromGithub(data)
+      const [images, descriptions] = await Promise.all([
+        imagesFromGithub(data),
+        descriptionsFromGithub(data)
+      ])
 
       setImages(images)
       setDescriptions(descriptions)
-      console.log(descriptions)
+
       const groupedEvents = Object.entries(data).map(([key, items]) => {
         const firstItem = items[0]
 
@@ -110,8 +111,8 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           eventName: firstItem.eventName,
           artistName: firstItem.eventName,
           tour: 'US Tour',
-          description: Descriptions[key],
-          cardImage: Images[key],
+          description: descriptions[key],
+          cardImage: images[key],
           venue: firstItem.venue,
           date: firstItem.date,
           city: firstItem.location,
@@ -140,7 +141,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
 
   return (
     <div className='space-y-5'>
-      {events.length === 0 ? (
+      {!events || events.length === 0 ? (
         <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
       ) : (
         events.map((event) => (
@@ -149,7 +150,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
             eventId={event.eventId}
             id={event.id}
             title={event.eventName}
-            description={event.description}
+            description={Descriptions[event.id]}
             thumbnailURL={Images[event.id]}
             venue={event.venue}
             date={event.date}
