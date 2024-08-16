@@ -11,6 +11,7 @@ exports.handler = async function (event, _context) {
       const domainUrl = process.env.DOMAIN_URL || ''
       console.log(domainUrl)
 
+
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
@@ -31,6 +32,7 @@ exports.handler = async function (event, _context) {
               ticket_id: ticket.seatLabel,
               is_seat: true
             }
+
           }
         },
         quantity: 1
@@ -60,6 +62,7 @@ exports.handler = async function (event, _context) {
               location: eventInfo.location, //location
               issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
               numberOfTicket: cart.numberOfTicket || '',
+
               name: customer?.name,
               email: customer?.email
             }

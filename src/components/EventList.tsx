@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import EventClaim from '../components/EventsClaim'
 import { fetchGitHubImage, fetchDescription } from './Utils/FetchDataJson'
+
 interface Event {
   eventId: string
   id: string
@@ -65,6 +66,7 @@ interface EventListProps {
 const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }) => {
   const [Images, setImages] = useState<any>({})
   const [Descriptions, setDescriptions] = useState<any>({})
+
   const { user } = useAuth0()
   const [events, setEvents] = useState<Event[]>([])
 
@@ -102,6 +104,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       setImages(images)
       setDescriptions(descriptions)
 
+
       const groupedEvents = Object.entries(data).map(([key, items]) => {
         const firstItem = items[0]
 
@@ -113,6 +116,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           tour: 'US Tour',
           description: descriptions[key],
           cardImage: images[key],
+
           venue: firstItem.venue,
           date: firstItem.date,
           city: firstItem.location,
@@ -142,6 +146,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
   return (
     <div className='space-y-5'>
       {!events || events.length === 0 ? (
+
         <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
       ) : (
         events.map((event) => (
@@ -152,6 +157,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
             title={event.eventName}
             description={Descriptions[event.id]}
             thumbnailURL={Images[event.id]}
+
             venue={event.venue}
             date={event.date}
             route={event.route}
@@ -186,5 +192,6 @@ async function descriptionsFromGithub(data: EventData) {
 
   return descriptions
 }
+
 
 export default EventList

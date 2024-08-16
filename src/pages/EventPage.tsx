@@ -45,6 +45,7 @@ export default function EventPage() {
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
+
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -167,6 +168,7 @@ export default function EventPage() {
         <div className='text-center'>
           <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
+
         </div>
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
