@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import EventClaim from '../components/EventsClaim'
-
+import { fetchGitHubImage, fetchDescription } from './Utils/FetchDataJson'
 interface Event {
   eventId: string
   id: string
@@ -36,6 +36,15 @@ interface EventData {
   [key: string]: Ticket[]
 }
 
+const token = import.meta.env.VITE_GITHUB_TOKEN
+
+const options = {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github.v3.raw'
+  }
+}
+
 export const isUpcomingEvent = (eventDate: string): boolean => {
   const eventDateObj = new Date(eventDate)
   const currentDate = new Date()
@@ -54,6 +63,8 @@ interface EventListProps {
 }
 
 const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }) => {
+  const [Images, setImages] = useState<any>({})
+  const [Descriptions, setDescriptions] = useState<any>({})
   const { user } = useAuth0()
   const [events, setEvents] = useState<Event[]>([])
 
@@ -84,6 +95,12 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       const data: EventData = await response.json()
       console.log('Tickets:', data)
 
+      const images = await imagesFromGithub(data)
+      const descriptions = await descriptionsFromGithub(data)
+
+      setImages(images)
+      setDescriptions(descriptions)
+      console.log(descriptions)
       const groupedEvents = Object.entries(data).map(([key, items]) => {
         const firstItem = items[0]
 
@@ -93,9 +110,8 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           eventName: firstItem.eventName,
           artistName: firstItem.eventName,
           tour: 'US Tour',
-          description:
-            'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!',
-          cardImage: 'events/Leonas.jpg',
+          description: Descriptions[key],
+          cardImage: Images[key],
           venue: firstItem.venue,
           date: firstItem.date,
           city: firstItem.location,
@@ -134,7 +150,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
             id={event.id}
             title={event.eventName}
             description={event.description}
-            thumbnailURL={`/${event.cardImage}`}
+            thumbnailURL={Images[event.id]}
             venue={event.venue}
             date={event.date}
             route={event.route}
@@ -144,6 +160,30 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       )}
     </div>
   )
+}
+
+async function imagesFromGithub(data: EventData) {
+  const Images: { [key: string]: string } = {}
+
+  for (const eventId of Object.keys(data)) {
+    const imageUrl = await fetchGitHubImage(eventId)
+
+    Images[eventId] = imageUrl
+  }
+
+  return Images
+}
+
+async function descriptionsFromGithub(data: EventData) {
+  const descriptions: { [key: string]: string } = {}
+
+  for (const eventId of Object.keys(data)) {
+    const description = await fetchDescription(eventId!, options)
+
+    descriptions[eventId] = description
+  }
+
+  return descriptions
 }
 
 export default EventList

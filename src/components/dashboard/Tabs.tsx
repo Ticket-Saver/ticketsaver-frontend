@@ -12,9 +12,9 @@ export default function Tabs() {
   const navigate = useNavigate()
 
   const tabs = [
-    { id: 'tab1', title: 'See upcoming event', path: 'upcomingevent' },
-    { id: 'tab2', title: 'View on past event', path: 'pastevent' },
-    { id: 'tab3', title: 'My collectibles', path: 'collectibles' }
+    { id: 'tab1', title: 'See upcoming event', path: 'upcomingevent' }
+    // { id: 'tab2', title: 'View on past event', path: 'pastevent' }
+    // { id: 'tab3', title: 'My collectibles', path: 'collectibles' }
   ]
 
   const handleTabClick = (tab: Tab) => {
