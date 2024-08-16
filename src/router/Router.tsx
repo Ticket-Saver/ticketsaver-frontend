@@ -57,7 +57,6 @@ export const AppRouter = () => (
         }
       />
 
-
       <Route
         path='/events'
         element={
@@ -73,7 +72,6 @@ export const AppRouter = () => (
           <LayoutHeaderFooter>
             <EventSalePage />{' '}
           </LayoutHeaderFooter>
-
         }
       />
 

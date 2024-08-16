@@ -128,7 +128,6 @@ export default function TicketSelection() {
     if (venue) fetchVenues()
   }, [githubApiUrl2, venue])
 
-
   const getCookieStart = (name: string) => {
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
@@ -220,7 +219,6 @@ export default function TicketSelection() {
         priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
       }
     }
-
   }
   const mapConfig: MapConfig = {
     'las_leonas.03': {
@@ -556,7 +554,6 @@ export default function TicketSelection() {
               ) : (
                 <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'></h2>
               )}
-
             </div>
             <div className='ml-auto sm:w-full md:w-96 text-black bg-white rounded-lg shadow-sm p-6'>
               <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>

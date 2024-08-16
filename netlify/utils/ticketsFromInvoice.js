@@ -103,5 +103,4 @@ const parseDescription = (description) => {
 
     return Object.keys(parsedObject).length > 0 ? parsedObject : null
   }
-
 }

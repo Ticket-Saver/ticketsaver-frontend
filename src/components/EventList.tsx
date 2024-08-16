@@ -104,7 +104,6 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       setImages(images)
       setDescriptions(descriptions)
 
-
       const groupedEvents = Object.entries(data).map(([key, items]) => {
         const firstItem = items[0]
 
@@ -146,7 +145,6 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
   return (
     <div className='space-y-5'>
       {!events || events.length === 0 ? (
-
         <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
       ) : (
         events.map((event) => (
@@ -157,7 +155,6 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
             title={event.eventName}
             description={Descriptions[event.id]}
             thumbnailURL={Images[event.id]}
-
             venue={event.venue}
             date={event.date}
             route={event.route}
@@ -192,6 +189,5 @@ async function descriptionsFromGithub(data: EventData) {
 
   return descriptions
 }
-
 
 export default EventList
