@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { EventCard } from './EventCard'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchJson } from './Utils/FetchDataJson'
+import { useFetchJson, fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
 
 interface Event {
   eventId: string
@@ -11,6 +11,9 @@ interface Event {
   event_name: string
   venue_label: string
   event_label: string
+  event_deleted_at: string | null
+  sale_starts_at: string
+  tricket_url: string
 }
 
 interface Location {
@@ -36,6 +39,9 @@ interface EventWithVenue extends Event {
 export default function FeaturedEvents() {
   const [events, setEvents] = useState<Event[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<Record<string, string>>({})
+
   const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
@@ -50,16 +56,27 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
+  console.log('data', data)
+
   useEffect(() => {
     let filteredEvents: Event[] = []
 
-    const findData = (events: Event[], label: string) => {
-      return events.filter((event) => event.event_label === label)
-    }
-
     if (data) {
-      filteredEvents = [...findData(data, 'las_leonas.02'), ...findData(data, 'las_leonas.03')]
-      console.log('filteredEvents', filteredEvents)
+      const eventsArray = Object.values(data)
+      const currentDate = new Date()
+
+      console.log('currentDate', currentDate)
+
+      filteredEvents = eventsArray.filter((event) => {
+        if (event.event_deleted_at) {
+          return false
+        }
+
+        const endDate = new Date(event.event_date)
+        endDate.setDate(endDate.getDate() + 2)
+
+        return endDate.getTime() > currentDate.getTime()
+      })
     }
     setEvents(filteredEvents)
   }, [data])
@@ -69,17 +86,9 @@ export default function FeaturedEvents() {
   useEffect(() => {
     let filteredVenue: Venue[] = []
 
-    const findData = (venues: Venue[], label: string) => {
-      console.log('venues', venues)
-      return venues.filter((venue) => venue.label === label)
-    }
-
     if (data2) {
-      filteredVenue = [
-        ...findData(data2, 'unioncounty_nj'),
-        ...findData(data2, 'californiatheatre_ca')
-      ]
-      console.log('filteredVenue', filteredVenue)
+      const venuesArray = Object.values(data2)
+      filteredVenue = venuesArray
     }
 
     setVenues(filteredVenue)
@@ -92,6 +101,40 @@ export default function FeaturedEvents() {
     })
     setEventsWithVenues(combinedData)
   }, [events, venues])
+
+  useEffect(() => {
+    const fetchAllDescriptions = async () => {
+      const descriptionsDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const description = await fetchDescription(event.event_label, options)
+        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+      }
+
+      setDescriptions(descriptionsDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllDescriptions()
+    }
+  }, [events])
+
+  useEffect(() => {
+    const fetchAllImages = async () => {
+      const imagesDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const image = await fetchGitHubImage(event.event_label)
+        imagesDict[event.event_label] = image
+      }
+
+      setImages(imagesDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllImages()
+    }
+  }, [events])
 
   const setSessionId = useState<string>('')[1] // State to store sessionId
 
@@ -130,26 +173,43 @@ export default function FeaturedEvents() {
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map((event, index) => (
-            <Link
-              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}`}
-              key={index}
-            >
-              <EventCard
+          {eventsWithVenues.map((event, index) =>
+            event.tricket_url ? (
+              <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.name || event.venue_label}
+                  date={event.event_date}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </a>
+            ) : (
+              <Link
+                to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
                 key={index}
-                id={event.eventId}
-                eventId={event.eventId}
-                title={event.event_name}
-                description={
-                  'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!'
-                } // Add description if available
-                thumbnailURL={'/events/Leonas.jpg'}
-                venue={event.venue?.name || event.venue_label}
-                date={event.event_date}
-                city={event.venue?.location.city} // Pass the city property from the venue object
-              />
-            </Link>
-          ))}
+                state={{
+                  sale_starts_at: event.sale_starts_at
+                }}
+              >
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.name || event.venue_label}
+                  date={event.event_date}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </Link>
+            )
+          )}
         </div>
       </div>
     </section>

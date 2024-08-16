@@ -1,6 +1,13 @@
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import { useNavigate } from 'react-router-dom'
 
 export default function Footer() {
+  const navigate = useNavigate()
+
+  const handleRedirect = () => {
+    navigate('/footer/contact')
+  }
+
   return (
     <footer className='bg-base-200 text-base-content '>
       <div className='container '>
@@ -10,7 +17,7 @@ export default function Footer() {
             <a href='#!' className='link link-hover'>
               About us
             </a>
-            <a href='/footer/Contact' className='link link-hover'>
+            <a onClick={handleRedirect} className='link link-hover'>
               Contact
             </a>
           </div>
