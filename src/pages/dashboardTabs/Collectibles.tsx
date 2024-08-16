@@ -1,3 +1,3 @@
 export default function Collectibles() {
-  return <div className='w-full h-40 bg-neutral rounded-xl'>Collectibles</div>
+  return <p className='text-center text-lg font-semibold'>You don't have collectibles to claim</p>
 }

@@ -289,6 +289,7 @@ export default function TicketSelection() {
           id: label,
           name: name,
           venue: venueInfo.venue_name,
+
           venueId: venue,
           date: date,
           location: location

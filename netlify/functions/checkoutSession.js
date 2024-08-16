@@ -60,6 +60,7 @@ exports.handler = async function (event, _context) {
               location: eventInfo.location, //location
               issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
               numberOfTicket: cart.numberOfTicket || '',
+
               name: customer?.name,
               email: customer?.email
             }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import EventClaim from '../components/EventsClaim'
 import { fetchGitHubImage, fetchDescription } from './Utils/FetchDataJson'
+
 interface Event {
   eventId: string
   id: string
@@ -65,6 +66,7 @@ interface EventListProps {
 const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }) => {
   const [Images, setImages] = useState<any>({})
   const [Descriptions, setDescriptions] = useState<any>({})
+
   const { user } = useAuth0()
   const [events, setEvents] = useState<Event[]>([])
 
@@ -113,6 +115,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           tour: 'US Tour',
           description: descriptions[key],
           cardImage: images[key],
+
           venue: firstItem.venue,
           date: firstItem.date,
           city: firstItem.location,
