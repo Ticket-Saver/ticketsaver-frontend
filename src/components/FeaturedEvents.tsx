@@ -13,7 +13,7 @@ interface Event {
   event_label: string
   event_deleted_at: string | null
   sale_starts_at: string
-  hiEvents_url: string
+  tricket_url: string
 }
 
 interface Location {
@@ -174,23 +174,41 @@ export default function FeaturedEvents() {
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
           {eventsWithVenues.map((event, index) => (
-            <Link
-              to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
-              key={index}
-              state={{}}
-            >
-              <EventCard
+            event.tricket_url ? (
+              <a href={event.tricket_url} key={index} target="_blank" rel="noopener noreferrer">
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.name || event.venue_label}
+                  date={event.event_date}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </a>
+            ) : (
+              <Link
+                to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
                 key={index}
-                id={event.eventId}
-                eventId={event.eventId}
-                title={event.event_name}
-                description={descriptions[event.event_label]} // Add description if available
-                thumbnailURL={images[event.event_label]}
-                venue={event.venue?.name || event.venue_label}
-                date={event.event_date}
-                city={event.venue?.location.city} // Pass the city property from the venue object
-              />
-            </Link>
+                state={{
+                  sale_starts_at: event.sale_starts_at
+                }}
+              >
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.name || event.venue_label}
+                  date={event.event_date}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </Link>
+            )
           ))}
         </div>
       </div>

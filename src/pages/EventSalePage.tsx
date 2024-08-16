@@ -1,11 +1,14 @@
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 export default function EventPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { venue, name, date, label, delete: deleteParam } = useParams()
+  console.log('delete', date)
+  const { sale_starts_at } = location.state || {}
   const [venues, setVenue] = useState<any>(null)
   const [description, setDescription] = useState<string>('')
   const [image, setImage] = useState<string>('')
@@ -134,6 +137,10 @@ export default function EventPage() {
     }
   }, [label])
 
+  const currentDate = new Date()
+  const saleStartsAtDate = sale_starts_at ? new Date(sale_starts_at) : null
+  const isSaleActive = saleStartsAtDate ? currentDate >= saleStartsAtDate : false
+
   return (
     <div className='bg-white'>
       <div className='bg-gray-100 relative'>
@@ -195,9 +202,9 @@ export default function EventPage() {
               <div className='mt-6'>
                 <Link
                   to={`/sale/${name}/${venues?.venue_label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
-                  className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
+                  className={`btn ${isSaleActive ? 'btn-active bg-blue-500 hover:bg-blue-600' : 'btn-disabled bg-gray-400'} text-white py-2 px-4 rounded w-full`}
                 >
-                  Buy Tickets!
+                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${sale_starts_at}`}
                 </Link>
               </div>
             </div>
