@@ -1,234 +1,196 @@
-import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { extractZonePrices } from '../components/Utils/priceUtils'
-import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { useState, useEffect } from 'react'
+import { EventCard } from '../components/EventCard'
+import { Link } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid'
+import { useFetchJson, fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
+
+interface Event {
+  eventId: string
+  event_date: string
+  event_hour: string
+  event_name: string
+  venue_label: string
+  event_label: string
+  event_deleted_at: string | null
+}
+
+interface Location {
+  address: string
+  city: string
+  country: string
+  maps_url: string
+  zip_code: string
+}
+
+interface Venue {
+  capacity: number
+  label: string
+  location: Location
+  name: string
+  seatmap: boolean
+}
+
+interface EventWithVenue extends Event {
+  venue: Venue | undefined
+}
 
 export default function EventPage() {
-  const navigate = useNavigate()
-  const { venue, name, date, label, delete: deleteParam } = useParams()
-  const [venues, setVenue] = useState<any>(null)
-  const [description, setDescription] = useState<string>('')
-  const [image, setImage] = useState<string>('')
-  const [hour, setHour] = useState<string>('')
+    const [events, setEvents] = useState<Event[]>([])
+  const [venues, setVenues] = useState<Venue[]>([])
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<Record<string, string>>({})
 
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
+  const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
+  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
+  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
+
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3.raw'
     }
   }
-  useEffect(() => {
-    const fetchHour = async () => {
-      try {
-        const response = await fetch(githubApiUrl2, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const events = await response.json()
-        const event = events[label!]
-        if (event) {
-          setHour(event.event_hour)
-        }
-      } catch (error) {
-        console.error('Failed to fetch event hour:', error)
-      }
-    }
 
-    if (label) {
-      fetchHour()
-    }
-  }, [label, githubApiUrl2, options])
+  const { data } = useFetchJson(githubApiUrl, options)
+
+  console.log('data', data)
 
   useEffect(() => {
-    if (deleteParam === 'delete') {
-      navigate('/')
-      return
-    }
+    let filteredEvents: Event[] = []
 
-    const currentDate = new Date()
-    const endDate = date ? new Date(date) : new Date()
+    if (data) {
+      const eventsArray = Object.values(data)
+      const currentDate = new Date()
 
-    endDate.setDate(endDate.getDate() + 2)
+      console.log('currentDate', currentDate)
 
-    if (currentDate.getTime() > endDate.getTime()) {
-      navigate('/')
-      return
-    }
-
-    const fetchVenues = async () => {
-      const storedVenues = localStorage.getItem('Venues')
-      localStorage.removeItem('Venues')
-
-      if (storedVenues) {
-        setVenue(JSON.parse(storedVenues))
-      } else {
-        try {
-          const response = await fetch(githubApiUrl, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/vnd.github.v3.raw'
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          const matchingVenue = data[venue!]
-          setVenue(matchingVenue)
-        } catch (error) {
-          console.error('Error fetching data: ', error)
+      filteredEvents = eventsArray.filter((event) => {
+        if (event.event_deleted_at) {
+          return false
         }
-      }
-    }
-    fetchVenues()
-  }, [venue, githubApiUrl, token])
 
-  const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
-  const [zonePriceList, setZonePriceList] = useState<any[]>([])
+        const endDate = new Date(event.event_date)
+        endDate.setDate(endDate.getDate() + 2)
+
+        return endDate.getTime() > currentDate.getTime()
+      })
+    }
+    setEvents(filteredEvents)
+  }, [data])
+
+  const { data: data2 } = useFetchJson(githubApiUrl2, options)
 
   useEffect(() => {
-    const fetchZonePrices = async () => {
-      try {
-        const response = await fetch(customUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePrices = await response.json()
-        console.log('eventData', zonePrices)
-        const zonePriceListData = extractZonePrices(zonePrices)
-        console.log('zonePriceList', zonePriceListData)
-        setZonePriceList(zonePriceListData)
-      } catch (error) {
-        console.error('Error fetching zone prices', error)
+    let filteredVenue: Venue[] = []
+
+    if (data2) {
+      const venuesArray = Object.values(data2)
+      filteredVenue = venuesArray
+    }
+
+    setVenues(filteredVenue)
+  }, [data2])
+
+  useEffect(() => {
+    const combinedData = events.map((event) => {
+      const venue = venues.find((v) => v.label === event.venue_label)
+      return { ...event, venue }
+    })
+    setEventsWithVenues(combinedData)
+  }, [events, venues])
+
+  useEffect(() => {
+    const fetchAllDescriptions = async () => {
+      const descriptionsDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const description = await fetchDescription(event.event_label, options)
+        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+      }
+
+      setDescriptions(descriptionsDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllDescriptions()
+    }
+  }, [events])
+
+  useEffect(() => {
+    const fetchAllImages = async () => {
+      const imagesDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const image = await fetchGitHubImage(event.event_label)
+        imagesDict[event.event_label] = image
+      }
+
+      setImages(imagesDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllImages()
+    }
+  }, [events])
+
+  const setSessionId = useState<string>('')[1] // State to store sessionId
+
+  const getCookie = (name: string) => {
+    const cookies = document.cookie.split(';')
+    for (const cookie of cookies) {
+      const [cookieName, cookieValue] = cookie.split('=')
+      if (cookieName.trim() === name) {
+        return cookieValue
       }
     }
-    fetchZonePrices()
+    return null
+  }
+  useEffect(() => {
+    // Check if sessionId already exists in cookies
+    const existingSessionId = getCookie('sessionId')
+
+    // If sessionId doesn't exist, generate a new one and store it as a cookie
+    if (!existingSessionId) {
+      const newSessionId = uuidv4()
+      setSessionId(newSessionId)
+      document.cookie = `sessionId=${newSessionId}; path=/` // Set the cookie with name 'sessionId'
+    } else {
+      // Use existing sessionId if it exists
+      setSessionId(existingSessionId)
+    }
   }, [])
 
-  useEffect(() => {
-    const fetchDescriptions = async () => {
-      const description = await fetchDescription(label!, options)
-
-      setDescription(description)
-    }
-
-    if (label) {
-      fetchDescriptions()
-    }
-  }, [label])
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      const image = await fetchGitHubImage(label!)
-      setImage(image)
-    }
-
-    if (label) {
-      fetchImages()
-    }
-  }, [label])
-
   return (
-    <div className='bg-white'>
-      <div className='bg-gray-100 relative'>
-        {/* Event Header */}
-        <div className='absolute inset-0'>
-          {/* Cover Image */}
-          <div className='relative h-96 bg-gray-500'>
-            {/* Event Profile Image */}
-            <div className='absolute inset-0 overflow-hidden'>
-              <img
-                src={image} // Replace with a default image
-                alt='Event Profile'
-                className='w-full h-full object-cover overflow-hidden blur-sm object-top'
+    <section className='py-10 md:py-16 bg-base-300'>
+      <div className='container'>
+        <div className='text-center'>
+          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
+          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
+        </div>
+        <div
+          className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
+        >
+          {eventsWithVenues.map((event, index) => (
+            <Link
+              to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
+              key={index}
+            >
+              <EventCard
+                key={index}
+                id={event.eventId}
+                eventId={event.eventId}
+                title={event.event_name}
+                description={descriptions[event.event_label]} // Add description if available
+                thumbnailURL={images[event.event_label]}
+                venue={event.venue?.name || event.venue_label}
+                date={event.event_date}
+                city={event.venue?.location.city} // Pass the city property from the venue object
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8'>
-          {/* Event Description */}
-          <div className='text-primary-content relative'>
-            <h1 className='text-6xl font-bold mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto '>
-              {name}
-            </h1>
-            <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              {venues?.venue_name}, {venues?.location.city}
-            </h2>
-            <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              {hour} hrs,
-            </h2>
-            <div className='ml-auto md:w-96 sm:w-full text-black bg-white rounded-lg shadow-sm p-6'>
-              <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
-              {/* Static Table */}
-              <table className='w-full gap-y-2'>
-                <thead>
-                  <tr>
-                    <th className='text-left'>Type</th>
-                    <th className='text-right'>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Static ticket data */}
-                  {zonePriceList.map((zoneItem) => (
-                    <tr key={zoneItem.zone}>
-                      <th className='text-left font-normal'>{zoneItem.zone}</th>
-                      <th className='text-right font-normal'>
-                        Starting prices from
-                        <a className='font-bold'>
-                          {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
-                        </a>
-                      </th>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {/* Buy Tickets Button */}
-              <div className='mt-6'>
-                <Link
-                  to={`/sale/${name}/${venues?.venue_label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
-                  className='btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full'
-                >
-                  Buy Tickets!
-                </Link>
-              </div>
-            </div>
-          </div>
+            </Link>
+          ))}
         </div>
       </div>
-      <div className='w-3/4 mx-auto py-10 sm:px-2 lg:px-20'>
-        {/* Event Description */}
-        <div className='prose lg:prose-xl text-black w-full'>
-          <h1 className='text-black '>{name}</h1>
-          <h2 className='text-black'>
-            {date} - {hour} hrs
-          </h2>
-          <h3 className='text-black'>Sobre el evento</h3>
-          <p className='text-left'>{description}</p>
-        </div>
-        <div className='carousel carousel-center flex justify-center max-h-50 min-w-full abs'>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   )
 }

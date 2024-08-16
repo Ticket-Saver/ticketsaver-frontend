@@ -16,8 +16,10 @@ import PastEvent from '../pages/dashboardTabs/PastEvent'
 import Collectibles from '../pages/dashboardTabs/Collectibles'
 import ReturnPage from '../pages/ReturnPage'
 import CheckoutPage from '../pages/checkout'
-import EventPage from '../pages/EventPage'
+import EventSalePage from '../pages/EventSalePage'
 import SalePage from '../pages/SalePage'
+import EventPage from '../pages/EventPage'
+import Contact from '../pages/Contact'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
@@ -47,10 +49,28 @@ export const AppRouter = () => (
       <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
       <Route
-        path='/events/:name/:venue/:date/:label/:delete?'
+        path='/footer/contact'
         element={
           <LayoutHeaderFooter>
-            <EventPage />{' '}
+            <Contact />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/events'
+        element={
+          <LayoutHeaderFooter>
+            <EventPage />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/event/:name/:venue/:date/:label/:delete?'
+        element={
+          <LayoutHeaderFooter>
+            <EventSalePage />{' '}
           </LayoutHeaderFooter>
         }
       />
