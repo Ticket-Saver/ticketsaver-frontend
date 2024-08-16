@@ -35,7 +35,7 @@ interface EventWithVenue extends Event {
 }
 
 export default function EventPage() {
-    const [events, setEvents] = useState<Event[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string>>({})

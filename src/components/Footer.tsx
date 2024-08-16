@@ -1,13 +1,12 @@
 import 'bootstrap-icons/font/bootstrap-icons.css'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export default function Footer() {
-
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleRedirect = () => {
-    navigate('/footer/contact');
-  };
+    navigate('/footer/contact')
+  }
 
   return (
     <footer className='bg-base-200 text-base-content '>

@@ -177,9 +177,7 @@ export default function FeaturedEvents() {
             <Link
               to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
               key={index}
-              state={{
-                
-              }}
+              state={{}}
             >
               <EventCard
                 key={index}
