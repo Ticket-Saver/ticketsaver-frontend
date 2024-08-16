@@ -173,9 +173,9 @@ export default function FeaturedEvents() {
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map((event, index) => (
+          {eventsWithVenues.map((event, index) =>
             event.tricket_url ? (
-              <a href={event.tricket_url} key={index} target="_blank" rel="noopener noreferrer">
+              <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
                 <EventCard
                   key={index}
                   id={event.eventId}
@@ -209,7 +209,7 @@ export default function FeaturedEvents() {
                 />
               </Link>
             )
-          ))}
+          )}
         </div>
       </div>
     </section>
