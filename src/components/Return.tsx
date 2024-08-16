@@ -35,8 +35,8 @@ const Return = () => {
               Thank you for your purchase! A confirmation email will be sent to{' '}
               <strong className='text-gray-800'>{customerEmail}</strong>. If you have any questions
               or need assistance, please feel free to email us at{' '}
-              <a href='mailto:orders@example.com' className='text-[#E779C1] hover:underline'>
-                info@techdetech.co
+              <a href='mailto:ticketing@ticketsaver.net' className='text-[#E779C1] hover:underline'>
+                ticketing@ticketsaver.net
               </a>
               .
             </p>
