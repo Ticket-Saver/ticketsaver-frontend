@@ -1,11 +1,8 @@
 import { Handler, HandlerEvent } from "@netlify/functions";
 import { supabase } from '../utils/supabaseClient'
 import bcrypt from 'bcryptjs'
+
 interface DataDict {
-  client_info: string
-  ticket_tag: string
-  charge_id: string
-  event_label: string
   ticket_token: string,
   password: string
 }
@@ -23,7 +20,7 @@ export const handler: Handler = async (event) => {
   const data: DataDict = JSON.parse(event.body)
 
   //check if password is correct
-  if (bcrypt.compareSync("B4c0/\/", scanPassword)) {
+  if (bcrypt.compareSync(data.password, scanPassword)) {
     return {
       statusCode: 401,
       body: JSON.stringify({ error: 'Unauthorized' })
@@ -39,11 +36,15 @@ export const handler: Handler = async (event) => {
 
   //if ticket does not exist, insert ticket_token and the scan date into tickets table
   if (ticket === null) {
-    await supabase
-      .from('tickets')
-      .insert([
-        { ticket_token: data.ticket_token, scan_date: new Date() }
-      ])
+    try {
+      await supabase
+        .from('tickets')
+        .insert([
+          { ticket_token: data.ticket_token, scan_date: new Date() }
+        ])
+    } catch (error) {
+      throw new Error('Failed to insert ticket into database');
+    }
     // if ticket is not here, is valid, user can enter the event
     return {
       statusCode: 200,
