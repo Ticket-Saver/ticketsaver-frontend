@@ -26,9 +26,9 @@ interface Location {
 
 interface Venue {
   capacity: number
-  label: string
+  venue_label: string
   location: Location
-  name: string
+  venue_name: string
   seatmap: boolean
 }
 
@@ -93,10 +93,9 @@ export default function FeaturedEvents() {
 
     setVenues(filteredVenue)
   }, [data2])
-
   useEffect(() => {
     const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.label === event.venue_label)
+      const venue = venues.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
@@ -183,7 +182,7 @@ export default function FeaturedEvents() {
                   title={event.event_name}
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.name || event.venue_label}
+                  venue={event.venue?.venue_name || event.venue_label}
                   date={event.event_date}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
@@ -203,7 +202,7 @@ export default function FeaturedEvents() {
                   title={event.event_name}
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.name || event.venue_label}
+                  venue={event.venue?.venue_name || event.venue_label}
                   date={event.event_date}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
