@@ -169,7 +169,7 @@ export default function EventPage() {
         <div className='text-center'>
           <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
-            Don’t miss out! Buy now before tickets.
+            Don’t miss out! Buy now before tickets sell out!.
           </p>
         </div>
         <div
