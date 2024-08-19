@@ -166,8 +166,8 @@ export default function FeaturedEvents() {
     <section className='py-10 md:py-16 bg-base-300'>
       <div className='container'>
         <div className='text-center'>
-          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
-          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
+          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
+          <p className='text-lg sm:text-2xl mb-6 md:mb-14'> Don’t miss out! Buy now before tickets.</p>
         </div>
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
