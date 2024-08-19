@@ -16,7 +16,7 @@ export default function CoverCarousel() {
     {
       id: 3,
       imageUrl: '/carouselImg/artistAlebrije.png',
-      caption: 'Join us for great deals!'
+      caption: 'We save you the seats so you can savour the night'
     }
   ]
 

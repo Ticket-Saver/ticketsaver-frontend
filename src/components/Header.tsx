@@ -1,6 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link } from 'react-router-dom'
 import Logo from '/logos/ticketsaver-logo.svg'
+import flecha from '../assets/icons/flechita.svg'
 
 export default function Header() {
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
@@ -27,10 +28,12 @@ export default function Header() {
                   <a href='/events'>Events</a>
                 </li>
                 <li>
-                  <a href='#!'>Venues</a>
+                  <a href='/about'>About</a>
                 </li>
                 <li>
-                  <a href='#!'>About</a>
+                  <a href='/Faqs'>
+                    FAQS
+                  </a>
                 </li>
               </ul>
             </div>
@@ -69,11 +72,15 @@ export default function Header() {
                 </ul>
               </div>
             ) : (
-              <a>
-                <button className='btn btn-primary btn-outline mr-100 px-10' onClick={handleLogin}>
-                  Log In
-                </button>
-              </a>
+              <div className='flex items-center space-x-3'>
+                <h1 className='text-sm '>You will need to create an account to purchase tickets</h1>
+                <img src={flecha} alt="Arrow" className="w-4 h-4" />
+                <a>
+                  <button className='btn btn-primary btn-outline mr-100 px-10' onClick={handleLogin}>
+                    Create account  / Log in
+                  </button>
+                </a>
+              </div>
             )}
             <div className='dropdown'>
               <label tabIndex={0} className='btn btn-circle btn-primary lg:hidden mr-1'>
@@ -84,19 +91,18 @@ export default function Header() {
                 className='dropdown-content mt-1 w-52 menu menu-compact p-2 bg-base-200 shadow rounded-box right-0 left-auto origin-top-right absolute'
               >
                 <li>
-                  <a href='#!'>Home</a>
+                  <a href='/'>Home</a>
                 </li>
                 <li>
-                  <a href='#!'>Services</a>
+                  <a href='/events'>Events</a>
                 </li>
                 <li>
-                  <a href='#!'>About</a>
+                  <a href='/about'>About</a>
                 </li>
                 <li>
-                  <a href='#!'>Work</a>
-                </li>
-                <li>
-                  <a href='#!'>Case Study</a>
+                  <a href='/Faqs'>
+                    FAQS
+                  </a>
                 </li>
               </ul>
             </div>

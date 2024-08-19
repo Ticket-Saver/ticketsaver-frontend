@@ -574,7 +574,7 @@ export default function TicketSelection() {
                         Starting prices from
                         <a className='font-bold'>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
+                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100} USD
                         </a>
                       </th>
                     </tr>
@@ -716,12 +716,12 @@ export default function TicketSelection() {
 
                         <div>
                           <p>
-                            ${ticket.price_base.toFixed(2)}
-                            <br /> <br />
+                            ${ticket.price_base.toFixed(2)} USD
+                            <br /><br />
                           </p>
-                          <p>${(ticket.price_final - ticket.price_base).toFixed(2)}</p>
+                          <p>${(ticket.price_final - ticket.price_base).toFixed(2)} USD</p>
 
-                          <p className='font-bold'>${ticket.price_final.toFixed(2)}</p>
+                          <p className='font-bold'>${ticket.price_final.toFixed(2)} USD</p>
                         </div>
                       </div>
                     )
@@ -733,7 +733,7 @@ export default function TicketSelection() {
                       <p className='text-xl font-bold'>Total</p>
                     </div>
                     <div>
-                      <p className='text-xl font-bold'>${totalCost.toFixed(2)}</p>
+                      <p className='text-xl font-bold'>${totalCost.toFixed(2)} USD</p>
                     </div>
                   </div>
                   {/* Proceed to Checkout Button */}
