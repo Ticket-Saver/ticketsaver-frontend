@@ -191,7 +191,7 @@ export default function EventPage() {
                         Starting prices from
                         <a className='font-bold'>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
+                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100} USD
                         </a>
                       </th>
                     </tr>

@@ -20,6 +20,11 @@ import EventSalePage from '../pages/EventSalePage'
 import SalePage from '../pages/SalePage'
 import EventPage from '../pages/EventPage'
 import Contact from '../pages/Contact'
+import AboutPage from '../pages/AboutPage'
+import TermsConditionPage from '../pages/Terms&conditionsPage'
+import PrivayPolicyPage from '../pages/PrivayPolicyPage'
+import PCICompliancePage from '../pages/PciCompliancePage'
+import FaqsPage from '../pages/FaqsPage'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
@@ -53,6 +58,51 @@ export const AppRouter = () => (
         element={
           <LayoutHeaderFooter>
             <Contact />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/footer/terms&conditions'
+        element={
+          <LayoutHeaderFooter>
+            <TermsConditionPage />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/footer/PrivayPolicy'
+        element={
+          <LayoutHeaderFooter>
+            <PrivayPolicyPage />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/footer/PCICompliance'
+        element={
+          <LayoutHeaderFooter>
+            <PCICompliancePage />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/faqs'
+        element={
+          <LayoutHeaderFooter>
+            <FaqsPage />
+          </LayoutHeaderFooter>
+        }
+      />
+
+      <Route
+        path='/about'
+        element={
+          <LayoutHeaderFooter>
+            <AboutPage />
           </LayoutHeaderFooter>
         }
       />
