@@ -31,9 +31,7 @@ export default function Header() {
                   <a href='/about'>About</a>
                 </li>
                 <li>
-                  <a href='/Faqs'>
-                    FAQS
-                  </a>
+                  <a href='/Faqs'>FAQS</a>
                 </li>
               </ul>
             </div>
@@ -74,10 +72,13 @@ export default function Header() {
             ) : (
               <div className='flex items-center space-x-3'>
                 <h1 className='text-sm '>You will need to create an account to purchase tickets</h1>
-                <img src={flecha} alt="Arrow" className="w-4 h-4" />
+                <img src={flecha} alt='Arrow' className='w-4 h-4' />
                 <a>
-                  <button className='btn btn-primary btn-outline mr-100 px-10' onClick={handleLogin}>
-                    Create account  / Log in
+                  <button
+                    className='btn btn-primary btn-outline mr-100 px-10'
+                    onClick={handleLogin}
+                  >
+                    Create account / Log in
                   </button>
                 </a>
               </div>
@@ -100,9 +101,7 @@ export default function Header() {
                   <a href='/about'>About</a>
                 </li>
                 <li>
-                  <a href='/Faqs'>
-                    FAQS
-                  </a>
+                  <a href='/Faqs'>FAQS</a>
                 </li>
               </ul>
             </div>

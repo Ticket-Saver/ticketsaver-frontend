@@ -574,7 +574,9 @@ export default function TicketSelection() {
                         Starting prices from
                         <a className='font-bold'>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100} USD
+                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) /
+                            100}{' '}
+                          USD
                         </a>
                       </th>
                     </tr>
@@ -717,7 +719,8 @@ export default function TicketSelection() {
                         <div>
                           <p>
                             ${ticket.price_base.toFixed(2)} USD
-                            <br /><br />
+                            <br />
+                            <br />
                           </p>
                           <p>${(ticket.price_final - ticket.price_base).toFixed(2)} USD</p>
 
