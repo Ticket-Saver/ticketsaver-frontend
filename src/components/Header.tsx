@@ -71,8 +71,10 @@ export default function Header() {
               </div>
             ) : (
               <div className='flex items-center space-x-3'>
-                <h1 className='text-sm '>You will need to create an account to purchase tickets</h1>
-                <img src={flecha} alt='Arrow' className='w-4 h-4' />
+                <h1 className='text-sm hidden sm:block md:block'>
+                  You will need to create an account to purchase tickets
+                </h1>
+                <img src={flecha} alt='Arrow' className='w-4 h-4 hidden sm:block md:block' />
                 <a>
                   <button
                     className='btn btn-primary btn-outline mr-100 px-10'
@@ -83,7 +85,7 @@ export default function Header() {
                 </a>
               </div>
             )}
-            <div className='dropdown'>
+            <div className='dropdown pl-5'>
               <label tabIndex={0} className='btn btn-circle btn-primary lg:hidden mr-1'>
                 <i className='bi bi-list text-2xl'></i>
               </label>
