@@ -131,6 +131,7 @@ export default function TicketSelection() {
   useEffect(() => {
     // Limpia el localStorage al montar el componente
     localStorage.removeItem('local_cart')
+    localStorage.removeItem('cart_checkout')
   }, [])
 
   const getCookieStart = (name: string) => {
@@ -151,6 +152,8 @@ export default function TicketSelection() {
 
     const currentDate = new Date()
     const endDate = date ? new Date(date) : new Date()
+    console.log('faak', endDate)
+    console.log('faak2', currentDate)
     endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
