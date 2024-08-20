@@ -221,8 +221,8 @@ export default function TicketSelection() {
     },
     india_yuridia02: {
       Map: {
-        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+        zones: ['Purple', 'Green', 'Blue', 'Red', 'Orange', 'Brown'],
+        priceTag: ['P1', 'P2', 'P5', 'P3', 'P4', 'P6']
       }
     }
   }
@@ -502,12 +502,12 @@ export default function TicketSelection() {
   const [selectedSeats, setSelectedSeats] = useState<{ seatLabel: string; seatType: string }[]>([])
 
   const onTicketClick = (ticket: { seatLabel: string; seatType: string }) => {
+    console.log(ticket)
     setCart((prev) =>
       prev?.filter(
         (cart) => cart.seatLabel !== ticket.seatLabel && cart.seatType === ticket.seatType
       )
     )
-
     const newSelectedSeats = selectedSeats.filter(
       (seat) => seat.seatLabel !== ticket.seatLabel || seat.seatType !== ticket.seatType
     )
