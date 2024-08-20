@@ -131,6 +131,7 @@ export default function TicketSelection() {
   useEffect(() => {
     // Limpia el localStorage al montar el componente
     localStorage.removeItem('local_cart')
+    localStorage.removeItem('cart_checkout')
   }, [])
 
   const getCookieStart = (name: string) => {
