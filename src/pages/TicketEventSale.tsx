@@ -681,7 +681,7 @@ export default function TicketSelection() {
           <div className='w-full p-4'>
             <div className='bg-white rounded-lg shadow-md p-6'>
               <h2 className='text-2xl font-bold mb-4'>Summary</h2>
-              {cart?.length !== 0 ? (
+              {cart?.length > 0 ? (
                 <>
                   {cart?.map((ticket, index) => {
                     return (
