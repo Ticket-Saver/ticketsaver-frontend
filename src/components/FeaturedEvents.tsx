@@ -56,16 +56,12 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
-  console.log('data', data)
-
   useEffect(() => {
     let filteredEvents: Event[] = []
 
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
-
-      console.log('currentDate', currentDate)
 
       filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {

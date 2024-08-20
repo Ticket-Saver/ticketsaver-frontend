@@ -7,7 +7,6 @@ export default function EventPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { venue, name, date, label, delete: deleteParam } = useParams()
-  console.log('delete', date)
   const { sale_starts_at } = location.state || {}
   const [venues, setVenue] = useState<any>(null)
   const [description, setDescription] = useState<string>('')
@@ -103,9 +102,7 @@ export default function EventPage() {
           throw new Error('response error')
         }
         const zonePrices = await response.json()
-        console.log('eventData', zonePrices)
         const zonePriceListData = extractZonePrices(zonePrices)
-        console.log('zonePriceList', zonePriceListData)
         setZonePriceList(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone prices', error)
@@ -179,6 +176,7 @@ export default function EventPage() {
                 <thead>
                   <tr>
                     <th className='text-left'>Type</th>
+                    <th className='text-center'></th>
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
@@ -187,11 +185,12 @@ export default function EventPage() {
                   {zonePriceList.map((zoneItem) => (
                     <tr key={zoneItem.zone}>
                       <th className='text-left font-normal'>{zoneItem.zone}</th>
-                      <th className='text-right font-normal'>
-                        Starting prices from
-                        <a className='font-bold'>
+                      <th className='text-center font-normal'>Starting prices from</th>
+                      <th>
+                        <a className='font-bold' style={{ fontSize: '14px' }}>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) /
+                          $
+                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
                           USD
                         </a>

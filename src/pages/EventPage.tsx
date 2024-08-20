@@ -56,8 +56,6 @@ export default function EventPage() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
-  console.log('data', data)
-
   useEffect(() => {
     let filteredEvents: Event[] = []
 

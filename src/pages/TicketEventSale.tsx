@@ -350,7 +350,6 @@ export default function TicketSelection() {
 
       try {
         // Wait for the lockSeats to complete
-        console.log(lockingSeat)
         await lockSeats(lockingSeat)
 
         // Proceed only if lockSeats was successful
@@ -403,7 +402,6 @@ export default function TicketSelection() {
                   issuedAt: issuedAt
                 }
               ]
-              console.log(newCart)
               return newCart
             })
           }
@@ -502,7 +500,6 @@ export default function TicketSelection() {
   const [selectedSeats, setSelectedSeats] = useState<{ seatLabel: string; seatType: string }[]>([])
 
   const onTicketClick = (ticket: { seatLabel: string; seatType: string }) => {
-    console.log(ticket)
     setCart((prev) =>
       prev?.filter(
         (cart) => cart.seatLabel !== ticket.seatLabel && cart.seatType === ticket.seatType
@@ -568,6 +565,8 @@ export default function TicketSelection() {
                 <thead>
                   <tr>
                     <th className='text-left'>Type</th>
+                    <th className='text-center'></th>
+
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
@@ -576,11 +575,12 @@ export default function TicketSelection() {
                   {zonePriceList.map((zoneItem) => (
                     <tr key={zoneItem.zone}>
                       <th className='text-left font-normal'>{zoneItem.zone}</th>
-                      <th className='text-right font-normal'>
-                        Starting prices from
-                        <a className='font-bold'>
+                      <th className='text-center font-normal'>Starting prices from</th>
+                      <th>
+                        <a className='font-bold' style={{ fontSize: '14px' }}>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) /
+                          $
+                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
                           USD
                         </a>
@@ -634,7 +634,6 @@ export default function TicketSelection() {
                       <InteractiveMap
                         key={eventZoneSelected}
                         handleClickImageZone={async (area) => {
-                          console.log('Area: ', area.title)
                           try {
                             const parsedSeats = await handleGetAreaSeats(area.title)
                             let selectedOptions = area.Options
@@ -718,18 +717,13 @@ export default function TicketSelection() {
                             {' '}
                             X
                           </button>
-                          <p> Facility Fee + Service Charge + Credit Card Fee</p>
+
                           <p className='font-bold'>Ticket Total</p>
                         </div>
 
                         <div>
-                          <p>
-                            ${ticket.price_base.toFixed(2)} USD
-                            <br />
-                            <br />
-                          </p>
-                          <p>${(ticket.price_final - ticket.price_base).toFixed(2)} USD</p>
-
+                          <br />
+                          <br />
                           <p className='font-bold'>${ticket.price_final.toFixed(2)} USD</p>
                         </div>
                       </div>
