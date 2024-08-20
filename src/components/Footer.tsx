@@ -1,29 +1,39 @@
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import { useNavigate } from 'react-router-dom'
 
 export default function Footer() {
+  const navigate = useNavigate()
+
+  const handleRedirect = () => {
+    navigate('/footer/contact')
+  }
+
   return (
     <footer className='bg-base-200 text-base-content '>
       <div className='container '>
         <div className='footer py-10 md:py-16 grid-cols-2 sm:grid-cols-4 lg:grid-cols-auto'>
           <div>
             <span className='footer-title'>Company</span>
-            <a href='#!' className='link link-hover'>
-              About us
+            <a href='/about' className='link link-hover'>
+              About
             </a>
-            <a href='/footer/Contact' className='link link-hover'>
-              Contact
+            <a onClick={handleRedirect} className='link link-hover'>
+              Contact us
             </a>
           </div>
           <div>
             <span className='footer-title'>Legal</span>
-            <a href='#!' className='link link-hover'>
-              Terms of use
+            <a href='/footer/terms&conditions' className='link link-hover'>
+              Terms & Conditions
             </a>
-            <a href='#!' className='link link-hover'>
+            <a href='/footer/PrivayPolicy' className='link link-hover'>
               Privacy policy
             </a>
-            <a href='#!' className='link link-hover'>
-              Cookie policy
+            <a href='/footer/PCICompliance' className='link link-hover'>
+              PCI Compliance
+            </a>
+            <a href='/Faqs' className='link link-hover'>
+              FAQS
             </a>
           </div>
           <div className='w-full col-span-full md:col-auto'>

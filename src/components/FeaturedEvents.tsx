@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { EventCard } from './EventCard'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchJson } from './Utils/FetchDataJson'
+import { useFetchJson, fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
 
 interface Event {
   eventId: string
@@ -12,6 +12,8 @@ interface Event {
   venue_label: string
   event_label: string
   event_deleted_at: string | null
+  sale_starts_at: string
+  tricket_url: string
 }
 
 interface Location {
@@ -24,9 +26,9 @@ interface Location {
 
 interface Venue {
   capacity: number
-  label: string
+  venue_label: string
   location: Location
-  name: string
+  venue_name: string
   seatmap: boolean
 }
 
@@ -37,6 +39,9 @@ interface EventWithVenue extends Event {
 export default function FeaturedEvents() {
   const [events, setEvents] = useState<Event[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<Record<string, string>>({})
+
   const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
@@ -56,20 +61,13 @@ export default function FeaturedEvents() {
   useEffect(() => {
     let filteredEvents: Event[] = []
 
-    const findData = (events: Event[], label: string) => {
-      return events.filter((event) => event.event_label === label)
-    }
-
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
 
       console.log('currentDate', currentDate)
 
-      filteredEvents = [
-        ...findData(eventsArray, 'las_leonas.02'),
-        ...findData(eventsArray, 'las_leonas.03')
-      ].filter((event) => {
+      filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
           return false
         }
@@ -88,28 +86,54 @@ export default function FeaturedEvents() {
   useEffect(() => {
     let filteredVenue: Venue[] = []
 
-    const findData = (venues: Venue[], label: string) => {
-      return venues.filter((venue) => venue.label === label)
-    }
-
     if (data2) {
       const venuesArray = Object.values(data2)
-      filteredVenue = [
-        ...findData(venuesArray, 'unioncounty_nj'),
-        ...findData(venuesArray, 'californiatheatre_ca')
-      ]
+      filteredVenue = venuesArray
     }
 
     setVenues(filteredVenue)
   }, [data2])
-
   useEffect(() => {
     const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.label === event.venue_label)
+      const venue = venues.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
   }, [events, venues])
+
+  useEffect(() => {
+    const fetchAllDescriptions = async () => {
+      const descriptionsDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const description = await fetchDescription(event.event_label, options)
+        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+      }
+
+      setDescriptions(descriptionsDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllDescriptions()
+    }
+  }, [events])
+
+  useEffect(() => {
+    const fetchAllImages = async () => {
+      const imagesDict: Record<string, string> = {}
+
+      for (const event of events) {
+        const image = await fetchGitHubImage(event.event_label)
+        imagesDict[event.event_label] = image
+      }
+
+      setImages(imagesDict)
+    }
+
+    if (events.length > 0) {
+      fetchAllImages()
+    }
+  }, [events])
 
   const setSessionId = useState<string>('')[1] // State to store sessionId
 
@@ -137,37 +161,67 @@ export default function FeaturedEvents() {
       setSessionId(existingSessionId)
     }
   }, [])
+  const optionsDate: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }
 
   return (
     <section className='py-10 md:py-16 bg-base-300'>
       <div className='container'>
         <div className='text-center'>
-          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
-          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
+          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
+          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
+            {' '}
+            Don’t miss out! Buy now before tickets sell out!.
+          </p>
         </div>
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map((event, index) => (
-            <Link
-              to={`/events/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
-              key={index}
-            >
-              <EventCard
+          {eventsWithVenues.map((event, index) =>
+            event.tricket_url ? (
+              <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.venue_name || event.venue_label}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </a>
+            ) : (
+              <Link
+                to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
                 key={index}
-                id={event.eventId}
-                eventId={event.eventId}
-                title={event.event_name}
-                description={
-                  'No te pierdas en escena: ¡Victoria Ruffo, Angelica Aragon, Ana Patricia Rojo, Paola Rojas, Maria Patricia Castañeda, Dulce y Lupita Jones! ¡Una obra spectacular!'
-                } // Add description if available
-                thumbnailURL={'/events/Leonas.jpg'}
-                venue={event.venue?.name || event.venue_label}
-                date={event.event_date}
-                city={event.venue?.location.city} // Pass the city property from the venue object
-              />
-            </Link>
-          ))}
+                state={{
+                  sale_starts_at: event.sale_starts_at
+                }}
+              >
+                <EventCard
+                  key={index}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label]} // Add description if available
+                  thumbnailURL={images[event.event_label]}
+                  venue={event.venue?.venue_name || event.venue_label}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
+                  city={event.venue?.location.city} // Pass the city property from the venue object
+                />
+              </Link>
+            )
+          )}
         </div>
       </div>
     </section>

@@ -59,16 +59,48 @@ const DescriptionsByEvent = (tickets) => {
 export { TicketsFromInvoices, TicketsByEvent, DescriptionsByEvent }
 
 const parseDescription = (description) => {
-  const parts = description.split(';').map((part) => part.trim()) //Ticket: G19; P2; Zone: Orchestra Section 1 Aqua'
+  console.log('descripción: ', description)
 
-  // Crear un objeto con los campos específicos
-  const parsedObject = {}
-  parts.forEach((part) => {
-    const [key, value] = part.split(':').map((str) => str.trim()) //Ticket y Zone están definidos  mediante :
-    if (key && value) {
-      parsedObject[key] = value
-    }
-  })
+  if (description.includes(':')) {
+    // Estructura con ":" como separador
+    const parts = description.split(';').map((part) => part.trim())
 
-  return Object.keys(parsedObject).length > 0 ? parsedObject : null
+    // Crear un objeto con los campos específicos
+    const parsedObject = {}
+    parts.forEach((part) => {
+      const [key, value] = part.split(':').map((str) => str.trim())
+      if (key && value) {
+        parsedObject[key] = value
+      }
+    })
+
+    return Object.keys(parsedObject).length > 0 ? parsedObject : null
+  } else {
+    // Estructura sin ":" como separador
+    const parts = description.split(';').map((part) => part.trim())
+
+    // Crear un objeto con los campos específicos
+    const parsedObject = {}
+
+    parts.forEach((part, index) => {
+      if (index === 0) {
+        // Asumir que la primera parte es "Ticket {id}"
+        const [ticketLabel, ticketId] = part.split(' ')
+        if (ticketLabel && ticketId) {
+          parsedObject['Ticket'] = ticketId
+        }
+      } else if (index === 1) {
+        // Asumir que la segunda parte es "Zone {zone}"
+        const [zoneLabel, zoneName] = part.split(' ')
+        if (zoneLabel && zoneName) {
+          parsedObject['Zone'] = zoneName
+        }
+      } else if (index === 2) {
+        // La tercera parte es la sección y otras descripciones adicionales
+        parsedObject['Section'] = part
+      }
+    })
+
+    return Object.keys(parsedObject).length > 0 ? parsedObject : null
+  }
 }

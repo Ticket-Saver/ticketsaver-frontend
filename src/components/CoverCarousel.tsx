@@ -5,18 +5,18 @@ export default function CoverCarousel() {
   const slides = [
     {
       id: 1,
-      imageUrl: '/carouselImg/japan.jpeg',
+      imageUrl: '/carouselImg/festival.jpeg',
       caption: 'Welcome to Ticketsaver!'
     },
     {
       id: 2,
-      imageUrl: '/carouselImg/monterrey.jpg',
+      imageUrl: '/carouselImg/artistAlebrije.png',
       caption: 'Discover amazing events!'
     },
     {
       id: 3,
-      imageUrl: '/carouselImg/new_york.jpg',
-      caption: 'Join us for great deals!'
+      imageUrl: '/carouselImg/artistAlebrije.png',
+      caption: 'We save you the seats so you can savour the night'
     }
   ]
 
@@ -51,7 +51,10 @@ export default function CoverCarousel() {
               src={slide.imageUrl}
               alt={`Slide ${slide.id}`}
               className='w-full overflow-hidden object-cover'
-              style={{ height: '70vh' }}
+              style={{
+                height: slide.id === 2 || slide.id === 3 ? '60vh' : '50vh',
+                width: slide.id === 2 || slide.id === 3 ? '100%' : '100%'
+              }}
             />
             <div className='absolute bottom-4 left-0 w-full flex justify-center'>
               <div className='bg-black bg-opacity-50 rounded-lg py-2 px-4'>

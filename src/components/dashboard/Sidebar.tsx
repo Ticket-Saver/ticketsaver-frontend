@@ -1,10 +1,12 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link } from 'react-router-dom'
 import TicketIcon from '../../assets/icons/ticket.svg'
+/*
 import ProfileIcon from '../../assets/icons/profile.svg'
 import SettingsIcon from '../../assets/icons/settings.svg'
 import HelpIcon from '../../assets/icons/help.svg'
 import WalletIcon from '../../assets/icons/wallet.svg'
+*/
 import { useState } from 'react'
 
 export default function Sidebar() {
@@ -41,13 +43,22 @@ export default function Sidebar() {
             My Tickets
           </Link>
           <div className='border-b border-[#221551]'></div>
-          <Link
+        </nav>
+      </div>
+    </>
+  )
+}
+/*
+<Link
             to='/dashboard/profile'
             className='p-2 px-5 rounded-xl flex items-center text-white bg-[#1A0F40] hover:bg-[#221551] focus:bg-[#221551] font-semibold'
           >
             <img src={ProfileIcon} alt='Profile Icon' className='h-6 w-6 text-white mr-2' />
             My Profile
           </Link>
+*/
+
+/* 
           <div className='border-b border-[#221551]'></div>
           <Link
             to='/dashboard/settings'
@@ -72,8 +83,4 @@ export default function Sidebar() {
             <img src={HelpIcon} alt='Help Icon' className='h-6 w-6 text-white mr-2' />
             You need help?
           </Link>
-        </nav>
-      </div>
-    </>
-  )
-}
+          */
