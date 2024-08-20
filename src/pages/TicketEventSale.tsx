@@ -749,6 +749,7 @@ export default function TicketSelection() {
                     <button
                       className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
                       onClick={() => handleCheckout()}
+                      disabled={!cart || cart.length == 0}
                     >
                       Proceed to Checkout
                     </button>
