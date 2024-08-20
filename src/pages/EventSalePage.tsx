@@ -218,7 +218,15 @@ export default function EventPage() {
         <div className='prose lg:prose-xl text-black w-full'>
           <h1 className='text-black '>{name}</h1>
           <h2 className='text-black'>
-            {date} - {hour} hrs
+            {new Date(date!)
+              .toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                timeZone: 'UTC'
+              })
+              .replace(',', '')}{' '}
+            - {hour} hrs
           </h2>
           <h3 className='text-black'>Sobre el evento</h3>
           <p className='text-left'>{description}</p>

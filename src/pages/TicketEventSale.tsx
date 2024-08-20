@@ -128,6 +128,11 @@ export default function TicketSelection() {
     if (venue) fetchVenues()
   }, [githubApiUrl2, venue])
 
+  useEffect(() => {
+    // Limpia el localStorage al montar el componente
+    localStorage.removeItem('local_cart')
+  }, [])
+
   const getCookieStart = (name: string) => {
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {

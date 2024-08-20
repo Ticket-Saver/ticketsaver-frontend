@@ -161,6 +161,12 @@ export default function FeaturedEvents() {
       setSessionId(existingSessionId)
     }
   }, [])
+  const optionsDate: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }
 
   return (
     <section className='py-10 md:py-16 bg-base-300'>
@@ -186,7 +192,9 @@ export default function FeaturedEvents() {
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
                   venue={event.venue?.venue_name || event.venue_label}
-                  date={event.event_date}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </a>
@@ -206,7 +214,9 @@ export default function FeaturedEvents() {
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
                   venue={event.venue?.venue_name || event.venue_label}
-                  date={event.event_date}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </Link>
