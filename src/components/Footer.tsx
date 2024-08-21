@@ -43,10 +43,16 @@ export default function Footer() {
             <p>© 2022 Company, Inc. All rights reserved.</p>
           </div>
           <div className='grid grid-flow-col gap-4'>
-            <a className='link link-secondary' href='https://www.facebook.com/ticketsaver1?mibextid=LQQJ4d'>
+            <a
+              className='link link-secondary'
+              href='https://www.facebook.com/ticketsaver1?mibextid=LQQJ4d'
+            >
               <i className='bi bi-facebook text-xl'></i>
             </a>
-            <a className='link link-secondary' href='https://www.instagram.com/ticket.saver?igsh=MWdtdXF0b2VudGk5'>
+            <a
+              className='link link-secondary'
+              href='https://www.instagram.com/ticket.saver?igsh=MWdtdXF0b2VudGk5'
+            >
               <i className='bi bi-instagram text-xl'></i>
             </a>
             <a className='link link-secondary' href='https://x.com/ticket_saver?s=08'>
