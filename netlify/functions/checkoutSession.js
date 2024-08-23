@@ -80,7 +80,7 @@ exports.handler = async function (event, _context) {
             client_email: customer?.email,
             event_label: eventInfo.eventId,
             venue_label: eventInfo.venueId,
-            purchase_data: JSON.sintringify({ ...ticketMetadata, ...customer, ...eventInfo })
+            purchase_data: JSON.stringify({ ...ticketMetadata, ...customer, ...eventInfo })
           }
         }
       })
