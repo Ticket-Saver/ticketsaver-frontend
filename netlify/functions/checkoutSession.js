@@ -18,6 +18,7 @@ exports.handler = async function (event, _context) {
         price_type: ticket.priceType,
         ticket_id: `${ticket.seatLabel}, ${ticket.subZone}`
       }))
+
       console.log(ticketMetadata)
       const customerId = await findCustomer(customer)
 
@@ -78,7 +79,8 @@ exports.handler = async function (event, _context) {
             client_name: customer?.name,
             client_email: customer?.email,
             event_label: eventInfo.eventId,
-            venue_label: eventInfo.venueId
+            venue_label: eventInfo.venueId,
+            purchase_data: JSON.sintringify({ ...ticketMetadata, ...customer, ...eventInfo })
           }
         }
       })
