@@ -14,7 +14,11 @@ exports.handler = async function (event, _context) {
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
-
+      const ticketMetadata = cart.map((ticket) => ({
+        price_type: ticket.priceType,
+        ticket_id: `${ticket.seatLabel}, ${ticket.subZone}`
+      }))
+      console.log(ticketMetadata)
       const customerId = await findCustomer(customer)
 
       const lineItems = cart.map((ticket) => ({
