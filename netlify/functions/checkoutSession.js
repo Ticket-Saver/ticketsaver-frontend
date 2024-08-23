@@ -10,13 +10,25 @@ exports.handler = async function (event, _context) {
 
       const domainUrl = process.env.DOMAIN_URL || ''
       console.log(domainUrl)
+      console.log(eventInfo)
+      console.log('a ver que epedo', eventInfo.id)
 
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
       const ticketMetadata = cart.map((ticket) => ({
         price_type: ticket.priceType,
-        ticket_id: `${ticket.seatLabel}, ${ticket.subZone}`
+        ticket_id: `${ticket.seatLabel}, ${ticket.subZone}`,
+        seat: ticket.seatLabel,
+        zone: ticket.subZone,
+        price_base_major_units: ticket.price_base
+      }))
+
+      const EventMetadata = cart.map((ticket) => ({
+        seat: ticket.seatLabel,
+        zone: ticket.subZone,
+        price_type: ticket.priceType,
+        base_price_major_units: ticket.price_base
       }))
 
       console.log(ticketMetadata)
@@ -65,22 +77,20 @@ exports.handler = async function (event, _context) {
               numberOfTicket: cart.numberOfTicket || '',
               tickets: JSON.stringify(ticketMetadata),
 
-              client_name: customer?.name,
-              client_email: customer?.email,
-              event_label: eventInfo.eventId,
+              client_name: customer.name,
+              client_email: customer.email,
+              event_label: eventInfo.id,
               venue_label: eventInfo.venueId
             }
           }
         },
         payment_intent_data: {
           metadata: {
-            event_label: eventInfo.id,
-            tickets: JSON.stringify(ticketMetadata),
             client_name: customer?.name,
             client_email: customer?.email,
-            event_label: eventInfo.eventId,
+            event_label: eventInfo.id,
             venue_label: eventInfo.venueId,
-            purchase_data: JSON.sintringify({ ...ticketMetadata, ...customer, ...eventInfo })
+            purchase_data: JSON.stringify(EventMetadata)
           }
         }
       })
