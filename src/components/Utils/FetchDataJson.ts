@@ -13,7 +13,6 @@ const useFetchJson = (url: string, options?: RequestInit) => {
           throw new Error('response error')
         }
         const eventData = await response.json()
-        console.log(eventData)
         setData(eventData)
       } catch (error) {
         setError(error as Error)

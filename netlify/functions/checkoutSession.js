@@ -51,24 +51,30 @@ exports.handler = async function (event, _context) {
               eventName: eventInfo.name, // event_name
               venue: eventInfo.venue, //venue_name
               date: eventInfo.date, // event_date
+
               // esos primeros correpsonden a la información necesaria de los eventos pasados.
 
-              priceType: cart.priceType,
-              ticketId: cart.ticketId, //generado mediante ticket()
-              eventId: eventInfo.id, //event_label
-              venueId: eventInfo.venueId, // venue_label
               location: eventInfo.location, //location
               issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
-              numberOfTicket: cart.numberOfTicket || '',
 
-              name: customer?.name,
-              email: customer?.email
+              numberOfTicket: cart.numberOfTicket || '',
+              tickets: JSON.stringify(ticketMetadata),
+
+              client_name: customer?.name,
+              client_email: customer?.email,
+              event_label: eventInfo.eventId,
+              venue_label: eventInfo.venueId
             }
           }
         },
         payment_intent_data: {
           metadata: {
-            event_label: `${eventInfo.id}`
+            event_label: eventInfo.id,
+            tickets: JSON.stringify(ticketMetadata),
+            client_name: customer?.name,
+            client_email: customer?.email,
+            event_label: eventInfo.eventId,
+            venue_label: eventInfo.venueId
           }
         }
       })

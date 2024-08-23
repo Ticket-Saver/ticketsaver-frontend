@@ -97,6 +97,11 @@ export default function TicketSelectionNoSeat() {
     fetchVenues()
   }, [githubApiUrl, githubApiUrl2, token, venue])
 
+  useEffect(() => {
+    localStorage.removeItem('local_cart')
+    localStorage.removeItem('cart_checkout')
+  }, [])
+
   const { user } = useAuth0()
 
   const customer = {
@@ -194,7 +199,6 @@ export default function TicketSelectionNoSeat() {
                 <tbody>
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
-                      const priceBase = priceTagList[priceType]?.price_base / 100
                       const priceFinal = priceTagList[priceType]?.price_final / 100
 
                       return (
@@ -203,10 +207,7 @@ export default function TicketSelectionNoSeat() {
                             {zoneLabel}
                           </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
-                            <p>${priceBase?.toFixed(2)}</p>
-                            <p className='text-sm text-gray-600'>
-                              Price + Fees: ${priceFinal?.toFixed(2)}
-                            </p>
+                            <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
                             <button
@@ -238,11 +239,7 @@ export default function TicketSelectionNoSeat() {
                 >
                   <div>
                     <span className='font-semibold'>Ticket - {ticket.zoneName}</span>
-                    <p>Price: ${ticket.price_base.toFixed(2)}</p>
-
-                    <p className='text-sm text--600'>
-                      Price + Fees: ${ticket.price_final.toFixed(2)}
-                    </p>
+                    <p> Price: ${ticket.price_final.toFixed(2)}</p>
                   </div>
                   <div className='flex items-center'>
                     <button
