@@ -86,11 +86,11 @@ exports.handler = async function (event, _context) {
         },
         payment_intent_data: {
           metadata: {
-            client_name: customer?.name,
-            client_email: customer?.email,
+            client_name: customer.name,
+            client_email: customer.email,
             event_label: eventInfo.id,
             venue_label: eventInfo.venueId,
-            purchase_data: JSON.stringify(EventMetadata)
+            ticket_metadata: JSON.stringify(EventMetadata)
           }
         }
       })
