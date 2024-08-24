@@ -9,29 +9,20 @@ exports.handler = async function (event, _context) {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
 
       const domainUrl = process.env.DOMAIN_URL || ''
-      console.log(domainUrl)
-      console.log(eventInfo)
-      console.log('a ver que epedo', eventInfo.id)
 
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
-      const ticketMetadata = cart.map((ticket) => ({
-        price_type: ticket.priceType,
-        ticket_id: `${ticket.seatLabel}, ${ticket.subZone}`,
-        seat: ticket.seatLabel,
-        zone: ticket.subZone,
-        price_base_major_units: ticket.price_base
-      }))
 
       const EventMetadata = cart.map((ticket) => ({
         seat: ticket.seatLabel,
-        zone: ticket.subZone,
         price_type: ticket.priceType,
-        base_price_major_units: ticket.price_base
+        basePriceMajorUnits: ticket.price_base,
+        comp: false
       }))
 
-      console.log(ticketMetadata)
+      const serializedTicketMetadata = serializeTicketMetadata(EventMetadata)
+
       const customerId = await findCustomer(customer)
 
       const lineItems = cart.map((ticket) => ({
@@ -74,9 +65,6 @@ exports.handler = async function (event, _context) {
               location: eventInfo.location, //location
               issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
 
-              numberOfTicket: cart.numberOfTicket || '',
-              tickets: JSON.stringify(ticketMetadata),
-
               client_name: customer.name,
               client_email: customer.email,
               event_label: eventInfo.id,
@@ -86,11 +74,8 @@ exports.handler = async function (event, _context) {
         },
         payment_intent_data: {
           metadata: {
-            client_name: customer.name,
-            client_email: customer.email,
             event_label: eventInfo.id,
-            venue_label: eventInfo.venueId,
-            ticket_metadata: JSON.stringify(EventMetadata)
+            tm: serializedTicketMetadata
           }
         }
       })
@@ -107,4 +92,14 @@ exports.handler = async function (event, _context) {
       }
     }
   }
+}
+
+//función para normalizar los reportes en metadata
+function serializeTicketMetadata(ticketMetadataList) {
+  return ticketMetadataList
+    .map(
+      (ticketMetadata) =>
+        `${ticketMetadata.seat},${ticketMetadata.price_type},${ticketMetadata.basePriceMajorUnits},${ticketMetadata.comp ? 1 : 0}`
+    )
+    .join(';')
 }
