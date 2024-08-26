@@ -933,7 +933,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '18',
-      title: 'Pink Bottom Right', //Pink Bottom Right
+      title: 'Pink Bottom Right', // Green Bottom Right
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
@@ -1330,15 +1330,15 @@ const getDefaultMap = () => ({
           },
           seatTypes: {
             default: {
-              label: 'Pink',
-              cssClass: 'Pink'
+              label: 'Yellow',
+              cssClass: 'Yellow'
             }
           },
           disabledSeats: []
         }
       },
       id: '27',
-      title: 'Pink Down Center',
+      title: 'Yellow Down Center', //Pink Down Center
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
