@@ -19,6 +19,7 @@ export default function Footer() {
             </a>
             <a onClick={handleRedirect} className='link link-hover'>
               Contact us
+
             </a>
           </div>
           <div>

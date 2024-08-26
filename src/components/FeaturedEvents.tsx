@@ -56,12 +56,15 @@ export default function FeaturedEvents() {
 
   const { data } = useFetchJson(githubApiUrl, options)
 
+  console.log('data', data)
+
   useEffect(() => {
     let filteredEvents: Event[] = []
 
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
+
 
       filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
@@ -191,6 +194,7 @@ export default function FeaturedEvents() {
                   date={new Date(event.event_date)
                     .toLocaleDateString('en-GB', optionsDate)
                     .replace(',', '')}
+
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </a>
@@ -213,6 +217,7 @@ export default function FeaturedEvents() {
                   date={new Date(event.event_date)
                     .toLocaleDateString('en-GB', optionsDate)
                     .replace(',', '')}
+
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </Link>

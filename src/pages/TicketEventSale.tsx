@@ -5,6 +5,7 @@ import Seatchart from '../components/Seatchart'
 import InteractiveMap from '../components/InteractiveMap'
 
 import { eventData, mapConfig } from '../components/maps/DataMap'
+
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import { extractZonePrices } from '../components/Utils/priceUtils'
@@ -24,7 +25,28 @@ interface Cart {
   priceType: string
   ticketId: string
 }
+type EventZoneData = {
+  zones: string[]
+  priceTag: string[]
+}
 
+type EventData = {
+  [eventName: string]: {
+    [zoneName: string]: EventZoneData
+  }
+}
+interface MapConfig {
+  [label: string]: {
+    defaultMap?: any // O el tipo adecuado para tu mapa por defecto
+    src?: string
+    zones?: {
+      [zone: string]: {
+        defaultMap: any // O el tipo adecuado para tu mapa por defecto
+        src: string
+      }
+    }
+  }
+}
 export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
@@ -144,6 +166,7 @@ export default function TicketSelection() {
   }, [label])
 
   const [eventZoneSelected, setEventZoneSelected] = useState<string>('')
+
 
   const { user } = useAuth0()
 
@@ -285,6 +308,7 @@ export default function TicketSelection() {
                   issuedAt: issuedAt
                 }
               ]
+
               return newCart
             })
           }
@@ -466,7 +490,9 @@ export default function TicketSelection() {
                           $
                           {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
+Reso
                           USD
+
                         </a>
                       </th>
                     </tr>
@@ -520,6 +546,7 @@ export default function TicketSelection() {
                         handleClickImageZone={async (area) => {
                           try {
                             const parsedSeats = await handleGetAreaSeats(area.title, label)
+
                             let selectedOptions = area.Options
                             selectedOptions.map.reservedSeats = parsedSeats
                             setSeatchartCurrentOptions(selectedOptions)
@@ -538,6 +565,7 @@ export default function TicketSelection() {
                           mapConfig[label!]?.zones?.[eventZoneSelected]?.src ||
                           mapConfig[label!]?.src ||
                           ''
+
                         }
                       />
                     </>
@@ -604,6 +632,7 @@ export default function TicketSelection() {
 
                           <p className='font-bold'>Ticket Total</p>
                         </div>
+
 
                         <div>
                           <br />

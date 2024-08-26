@@ -7,6 +7,7 @@ export default function EventPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { venue, name, date, label, delete: deleteParam } = useParams()
+
   const { sale_starts_at } = location.state || {}
   const [venues, setVenue] = useState<any>(null)
   const [description, setDescription] = useState<string>('')
@@ -103,6 +104,7 @@ export default function EventPage() {
         }
         const zonePrices = await response.json()
         const zonePriceListData = extractZonePrices(zonePrices)
+
         setZonePriceList(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone prices', error)
@@ -177,6 +179,7 @@ export default function EventPage() {
                   <tr>
                     <th className='text-left'>Type</th>
                     <th className='text-center'></th>
+
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
@@ -193,6 +196,7 @@ export default function EventPage() {
                           {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
                           USD
+
                         </a>
                       </th>
                     </tr>
@@ -226,6 +230,7 @@ export default function EventPage() {
               })
               .replace(',', '')}{' '}
             - {hour} hrs
+
           </h2>
           <h3 className='text-black'>Sobre el evento</h3>
           <p className='text-left'>{description}</p>
