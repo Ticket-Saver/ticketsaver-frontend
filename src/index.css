@@ -36,7 +36,7 @@
 }
 
 .Purple {
-  background-color: #8e20e5;
+  background-color: #a858e6;
   color: white;
   font-size: 0.85em;
   overflow: visible;
@@ -99,6 +99,12 @@
 
 .Coral {
   background-color: rgb(231, 125, 86);
+  font-size: 0.9em;
+  color: white;
+  white-space: nowrap;
+}
+.Celeste {
+  background-color: rgb(104, 177, 243);
   font-size: 0.9em;
   color: white;
   white-space: nowrap;

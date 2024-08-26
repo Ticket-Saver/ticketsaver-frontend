@@ -4,21 +4,7 @@ import SeatchartJS, { CartChangeEvent } from 'seatchart'
 import Seatchart from '../components/Seatchart'
 import InteractiveMap from '../components/InteractiveMap'
 
-import californiaTheatreSvg from '../assets/maps/Leonas/californiaTheatre.svg'
-import unionCountySvg from '../assets/maps/Leonas/union_county.svg'
-import SanJoseMapPng from '../assets/maps/IndiaYuridia/sanjose_ca.png'
-import OrchestraMapPng from '../assets/maps/IndiaYuridia/Orchestra.png'
-import LogeMapPng from '../assets/maps/IndiaYuridia/Loge.png'
-import ManuelArtTimePng from '../assets/maps/Leonas/manuelartime_fl.svg'
-
-import LogeMap from '../components/maps/IndiaYuridia/LogeMap'
-import OrchestraMap from '../components/maps/IndiaYuridia/OrchestraMap'
-import SanJoseMap from '../components/maps//IndiaYuridia/sanjose_ca'
-
-import CalifoniaTheatreMap from '../components/maps/Leonas/californiatheatre_ca'
-import Unioncountry from '../components/maps/Leonas/unioncounty_nj'
-import ManuelArtTime from '../components/maps/Leonas/ManuelArtTimeMap'
-
+import { eventData, mapConfig } from '../components/maps/DataMap'
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import { extractZonePrices } from '../components/Utils/priceUtils'
@@ -38,28 +24,7 @@ interface Cart {
   priceType: string
   ticketId: string
 }
-type EventZoneData = {
-  zones: string[]
-  priceTag: string[]
-}
 
-type EventData = {
-  [eventName: string]: {
-    [zoneName: string]: EventZoneData
-  }
-}
-interface MapConfig {
-  [label: string]: {
-    defaultMap?: any // O el tipo adecuado para tu mapa por defecto
-    src?: string
-    zones?: {
-      [zone: string]: {
-        defaultMap: any // O el tipo adecuado para tu mapa por defecto
-        src: string
-      }
-    }
-  }
-}
 export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
@@ -152,6 +117,7 @@ export default function TicketSelection() {
 
     const currentDate = new Date()
     const endDate = date ? new Date(date) : new Date()
+
     endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
@@ -179,100 +145,6 @@ export default function TicketSelection() {
 
   const [eventZoneSelected, setEventZoneSelected] = useState<string>('')
 
-  // esto debería ir en alguna db
-  const eventData: EventData = {
-    las_leonas03: {
-      Map: {
-        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      }
-    },
-    las_leonas02: {
-      Map: {
-        zones: ['Pink', 'Aqua', 'Blue', 'Gray', 'Coral'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      }
-    },
-    las_leonas01: {
-      Map: {
-        zones: ['Yellow', 'Blue', 'Orange', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4']
-      }
-    },
-    india_yuridia01: {
-      orchestra: {
-        zones: ['Orange', 'Green', 'Pink', 'Yellow', 'Purple'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      },
-      loge: {
-        zones: [
-          'Yellow',
-          'Purple',
-          'Gray',
-          'Section 1',
-          'Section 2',
-          'Section 3',
-          'Section 4',
-          'Section 5',
-          'Section 6'
-        ],
-        priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
-      }
-    },
-    india_yuridia02: {
-      Map: {
-        zones: ['Purple', 'Green', 'Blue', 'Red', 'Orange', 'Brown'],
-        priceTag: ['P1', 'P2', 'P5', 'P3', 'P4', 'P6']
-      }
-    }
-  }
-  const mapConfig: MapConfig = {
-    'las_leonas.03': {
-      zones: {
-        Map: {
-          defaultMap: CalifoniaTheatreMap,
-          src: californiaTheatreSvg
-        }
-      }
-    },
-    'las_leonas.02': {
-      zones: {
-        Map: {
-          defaultMap: Unioncountry,
-          src: unionCountySvg
-        }
-      }
-    },
-    'las_leonas.01': {
-      zones: {
-        Map: {
-          defaultMap: ManuelArtTime,
-          src: ManuelArtTimePng
-        }
-      }
-    },
-    'india_yuridia.01': {
-      zones: {
-        orchestra: {
-          defaultMap: OrchestraMap,
-          src: OrchestraMapPng
-        },
-        loge: {
-          defaultMap: LogeMap,
-          src: LogeMapPng
-        }
-      }
-    },
-    'india_yuridia.02': {
-      zones: {
-        Map: {
-          defaultMap: SanJoseMap,
-          src: SanJoseMapPng
-        }
-      }
-    }
-  }
-
   const { user } = useAuth0()
 
   const customer = {
@@ -287,6 +159,13 @@ export default function TicketSelection() {
   const totalCost = cart?.reduce((acc, crr) => (acc = acc + crr.price_final), 0) || 0
 
   const handleCheckout = async () => {
+    const cartLength = (cart || []).length
+    if (cartLength > 10) {
+      alert(
+        'You cannot proceed with more than 10 tickets. / No puedes continuar con más de 10 boletos.'
+      )
+      return
+    }
     localStorage.setItem(
       'cart_checkout',
       JSON.stringify({
@@ -338,6 +217,9 @@ export default function TicketSelection() {
 
   const handleOnSeatClick = async (e: CartChangeEvent) => {
     const sessionId = getCookie('sessionId')
+
+    // Check if the cart already has 10 tickets
+
     if (e.action === 'add') {
       const globalSeat = ArraysplitSeatLabel(e.seat.label)
       const lockingSeat = {
@@ -345,7 +227,8 @@ export default function TicketSelection() {
         row: e.seat.index.row,
         col: e.seat.index.col,
         subZone: seatchartCurrentArea.title,
-        sessionId: sessionId
+        sessionId: sessionId,
+        Event: label
       }
 
       try {
@@ -418,7 +301,8 @@ export default function TicketSelection() {
         row: e.seat.index.row,
         col: e.seat.index.col,
         subZone: seatchartCurrentArea.title,
-        sessionId: sessionId
+        sessionId: sessionId,
+        Event: label
       }
 
       try {
@@ -445,14 +329,14 @@ export default function TicketSelection() {
     }
   }, [])
 
-  const handleGetAreaSeats = async (areaTitle: any) => {
+  const handleGetAreaSeats = async (areaTitle: any, label: any) => {
     try {
       const response = await fetch('/api/fetchTakenSeats', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ subZone: areaTitle })
+        body: JSON.stringify({ subZone: areaTitle, Event: label })
       })
 
       if (!response.ok) {
@@ -635,7 +519,7 @@ export default function TicketSelection() {
                         key={eventZoneSelected}
                         handleClickImageZone={async (area) => {
                           try {
-                            const parsedSeats = await handleGetAreaSeats(area.title)
+                            const parsedSeats = await handleGetAreaSeats(area.title, label)
                             let selectedOptions = area.Options
                             selectedOptions.map.reservedSeats = parsedSeats
                             setSeatchartCurrentOptions(selectedOptions)
@@ -653,7 +537,7 @@ export default function TicketSelection() {
                         src={
                           mapConfig[label!]?.zones?.[eventZoneSelected]?.src ||
                           mapConfig[label!]?.src ||
-                          '' // Default empty string
+                          ''
                         }
                       />
                     </>
