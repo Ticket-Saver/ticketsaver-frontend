@@ -10,6 +10,11 @@ from = "/api/*"
 to = "/.netlify/functions/:splat"
 status = 200
 
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
 [context.development.environment]
 SUPABASE_URL = 'https://alvewheipoqcathxuqah.supabase.co'
-SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmV3aGVpcG9xY2F0aHh1cWFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTIyOTg1MzcsImV4cCI6MjAyNzg3NDUzN30.yktBbpPcPe9Sy_k43pz9PYz2WIHvRzcJAUbxtaS27Ms'
+SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmV3aGVpcG9xY2F0aHh1cWFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTIyOTg1MzcsImV4cCI6MjAyNzg3NDUzN30.yktBbpPcPe9Sy'
