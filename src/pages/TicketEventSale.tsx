@@ -25,28 +25,7 @@ interface Cart {
   priceType: string
   ticketId: string
 }
-type EventZoneData = {
-  zones: string[]
-  priceTag: string[]
-}
 
-type EventData = {
-  [eventName: string]: {
-    [zoneName: string]: EventZoneData
-  }
-}
-interface MapConfig {
-  [label: string]: {
-    defaultMap?: any // O el tipo adecuado para tu mapa por defecto
-    src?: string
-    zones?: {
-      [zone: string]: {
-        defaultMap: any // O el tipo adecuado para tu mapa por defecto
-        src: string
-      }
-    }
-  }
-}
 export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
@@ -166,7 +145,6 @@ export default function TicketSelection() {
   }, [label])
 
   const [eventZoneSelected, setEventZoneSelected] = useState<string>('')
-
 
   const { user } = useAuth0()
 
@@ -490,9 +468,7 @@ export default function TicketSelection() {
                           $
                           {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
-Reso
-                          USD
-
+                          Reso USD
                         </a>
                       </th>
                     </tr>
@@ -565,7 +541,6 @@ Reso
                           mapConfig[label!]?.zones?.[eventZoneSelected]?.src ||
                           mapConfig[label!]?.src ||
                           ''
-
                         }
                       />
                     </>
@@ -632,7 +607,6 @@ Reso
 
                           <p className='font-bold'>Ticket Total</p>
                         </div>
-
 
                         <div>
                           <br />

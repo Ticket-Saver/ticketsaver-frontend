@@ -14,7 +14,6 @@ interface Event {
   event_deleted_at: string | null
   sale_starts_at: string
   tricket_url: string
-
 }
 
 interface Location {
@@ -57,8 +56,6 @@ export default function EventPage() {
   }
 
   const { data } = useFetchJson(githubApiUrl, options)
-
-
   useEffect(() => {
     let filteredEvents: Event[] = []
 
@@ -98,7 +95,6 @@ export default function EventPage() {
   useEffect(() => {
     const combinedData = events.map((event) => {
       const venue = venues.find((v) => v.venue_label === event.venue_label)
-
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
@@ -128,16 +124,10 @@ export default function EventPage() {
       for (const event of events) {
         const image = await fetchGitHubImage(event.event_label)
         imagesDict[event.event_label] = image
-
       }
 
       setImages(imagesDict)
     }
-    return null
-  }
-  useEffect(() => {
-    // Check if sessionId already exists in cookies
-    const existingSessionId = getCookie('sessionId')
 
     if (events.length > 0) {
       fetchAllImages()
@@ -159,7 +149,6 @@ export default function EventPage() {
   useEffect(() => {
     // Check if sessionId already exists in cookies
     const existingSessionId = getCookie('sessionId')
-
 
     // If sessionId doesn't exist, generate a new one and store it as a cookie
     if (!existingSessionId) {
@@ -186,7 +175,6 @@ export default function EventPage() {
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
             Don’t miss out! Buy now before tickets sell out!.
           </p>
-
         </div>
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
@@ -232,7 +220,6 @@ export default function EventPage() {
               </Link>
             )
           )}
-
         </div>
       </div>
     </section>
