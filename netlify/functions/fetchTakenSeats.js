@@ -8,9 +8,9 @@ exports.handler = async function (event, _context) {
     }
   }
   console.log(event.body)
-  const { subZone } = JSON.parse(event.body)
+  const { subZone, Event } = JSON.parse(event.body)
   console.log(subZone)
-
+  console.log(Event)
   // Validate subZone is provided and is a string
   if (typeof subZone !== 'string') {
     return {
@@ -26,6 +26,7 @@ exports.handler = async function (event, _context) {
       .from('YuridiaSeatMap')
       .select('row, col')
       .eq('subZone', subZone)
+      .eq('Event', Event)
       .or('isTaken.eq.true,LockedStatus.eq.true')
     console.log(JSON.stringify({ data }))
     console.log(JSON.parse(JSON.stringify({ data })))
