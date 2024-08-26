@@ -64,12 +64,6 @@ export const handler: Handler = async (event, _context) => {
               body: JSON.stringify({ error: 'Error en la actualización de Supabase' })
             }
           }
-
-          if (data) {
-            console.log('Asiento actualizado:', data[0])
-          } else {
-            console.log('No se encontró un asiento que coincida para actualizar.')
-          }
         }
       }
 
