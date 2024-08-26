@@ -32,15 +32,17 @@ export const handler: Handler = async (event, _context) => {
       const event_label = metadata!.event_label
       const customer_email = metadata!.client_email
       const purchaseDate = new Date(eventObject.created * 1000).toISOString() // Convierte la fecha a ISO formato
+      console.log(`event label: ${event_label}`)
 
       for (const item of items) {
         const description = item.description
+        console.log('ticket: ', description)
         const [seatPart, zonePart, subZone] = description!.split(';').map((part) => part.trim())
 
         const seatMatch = seatPart.match(/Ticket (\w+)/)
         const seat = seatMatch ? seatMatch[1].trim() : null
 
-        const updatedSeats = []
+        console.log(`seat: ${seat} and subZone:${subZone}`)
 
         if (seat && subZone) {
           const { data, error } = await supabase
@@ -54,7 +56,7 @@ export const handler: Handler = async (event, _context) => {
             .eq('Seat', seat)
             .eq('subZone', subZone)
             .eq('Event', event_label)
-
+          console.log(data)
           if (error) {
             console.error('Error en la actualización de Supabase:', error)
             return {
