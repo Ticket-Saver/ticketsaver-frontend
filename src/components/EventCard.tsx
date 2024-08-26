@@ -21,7 +21,7 @@ export function EventCard({
   fontColor = 'text-neutral-content',
   venue = ''
 }: EventCardConfig) {
-  const isSmallScreen = useIsSmallScreen();
+  const isSmallScreen = useIsSmallScreen()
 
   return (
     <div
@@ -48,7 +48,10 @@ export function EventCard({
         </div>
         <h1 className='inline-block text-sm sm:text-base'>{city}</h1>
         <div className='inline-block space-y-2 space-x-2'>
-          <h2 className='badge badge-outline '> {isSmallScreen ? truncateText(venue, 27) : venue}</h2>
+          <h2 className='badge badge-outline '>
+            {' '}
+            {isSmallScreen ? truncateText(venue, 27) : venue}
+          </h2>
           <h2 className='badge badge-outline'>{date}</h2>
         </div>
         <p className='text-sm sm:text-base'>{description}</p>
@@ -59,29 +62,29 @@ export function EventCard({
 
 function truncateText(text: string, maxLength: number): string {
   if (text.length > maxLength) {
-    return text.slice(0, maxLength - 3) + '...';
+    return text.slice(0, maxLength - 3) + '...'
   }
-  return text;
+  return text
 }
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
 function useIsSmallScreen() {
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false)
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const mediaQuery = window.matchMedia('(max-width: 640px)')
     const handleMediaQueryChange = (e: MediaQueryListEvent) => {
-      setIsSmallScreen(e.matches);
-    };
+      setIsSmallScreen(e.matches)
+    }
 
-    setIsSmallScreen(mediaQuery.matches);
-    mediaQuery.addEventListener('change', handleMediaQueryChange);
+    setIsSmallScreen(mediaQuery.matches)
+    mediaQuery.addEventListener('change', handleMediaQueryChange)
 
     return () => {
-      mediaQuery.removeEventListener('change', handleMediaQueryChange);
-    };
-  }, []);
+      mediaQuery.removeEventListener('change', handleMediaQueryChange)
+    }
+  }, [])
 
-  return isSmallScreen;
+  return isSmallScreen
 }
