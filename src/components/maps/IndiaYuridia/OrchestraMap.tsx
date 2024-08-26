@@ -687,7 +687,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '14',
-      title: 'Pink Bottom Center Left', //Green Bottom Center Left
+      title: 'Pink Center Left', //Green Bottom Center Left
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
@@ -729,7 +729,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '15',
-      title: 'Pink Bottom Center', //Green Bottom Center
+      title: 'Pink Center', //Green Bottom Center
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
@@ -772,7 +772,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '16',
-      title: 'Pink Bottom Special', //Green Bottom Special
+      title: 'Pink Center Special', //Green Bottom Special
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
@@ -933,7 +933,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '18',
-      title: 'Pink Bottom Right', // Green Bottom Right
+      title: 'Pink Center Right', // Green Bottom Right
       shape: 'poly',
       name: 'Pink',
       fillColor: '#eab54d4d',
@@ -981,7 +981,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '20',
-      title: 'Blue Bottom Left', //Yellow Bottom Left,
+      title: 'Blue Left', //Yellow Bottom Left,
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1027,7 +1027,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '21',
-      title: 'Blue Top Left', //Pink Top Left
+      title: 'Blue Left Center', //Pink Top Left
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1068,7 +1068,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '22',
-      title: 'Blue Top Center', //Pink Top Center
+      title: 'Blue Center', //Pink Top Center
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1117,7 +1117,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '23',
-      title: 'Blue Top Right', //Pink top Right
+      title: 'Blue Right Center', //Pink top Right
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1165,7 +1165,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '24',
-      title: 'Blue Top Right', //Yellow Top Right
+      title: 'Blue Right', //Yellow Top Right
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1226,7 +1226,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '25',
-      title: 'Purple Bottom Right', //Yellow Bottom Right
+      title: 'Purple Right', //Yellow Bottom Right
       shape: 'poly',
       name: 'Purple',
       fillColor: '',
@@ -1292,7 +1292,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '26',
-      title: 'Yellow Bottom Right', //Pink Bottom Right
+      title: 'Yellow Right', //Pink Bottom Right
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1338,9 +1338,9 @@ const getDefaultMap = () => ({
         }
       },
       id: '27',
-      title: 'Yellow Down Center', //Pink Down Center
+      title: 'Yellow Center', //Pink Down Center
       shape: 'poly',
-      name: 'Pink',
+      name: 'Yellow',
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [596, 896, 594, 1051, 765, 1051, 765, 895],
@@ -1396,7 +1396,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '28',
-      title: 'Yellow Bottom Left', //Pink Bottom Left
+      title: 'Yellow Left', //Pink Bottom Left
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1456,7 +1456,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '29',
-      title: 'Purple Bottom Left', //Yellow Bottom Left 2
+      title: 'Purple Left', //Yellow Bottom Left 2
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
