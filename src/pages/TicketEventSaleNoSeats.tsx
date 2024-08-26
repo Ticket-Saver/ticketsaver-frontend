@@ -199,7 +199,6 @@ export default function TicketSelectionNoSeat() {
                 <tbody>
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
-
                       const priceFinal = priceTagList[priceType]?.price_final / 100
 
                       return (
@@ -209,7 +208,6 @@ export default function TicketSelectionNoSeat() {
                           </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
                             <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
-
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
                             <button
@@ -242,7 +240,6 @@ export default function TicketSelectionNoSeat() {
                   <div>
                     <span className='font-semibold'>Ticket - {ticket.zoneName}</span>
                     <p> Price: ${ticket.price_final.toFixed(2)}</p>
-
                   </div>
                   <div className='flex items-center'>
                     <button

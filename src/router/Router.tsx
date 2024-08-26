@@ -26,7 +26,6 @@ import PrivayPolicyPage from '../pages/PrivayPolicyPage'
 import PCICompliancePage from '../pages/PciCompliancePage'
 import FaqsPage from '../pages/FaqsPage'
 
-
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
   if (!isAuthenticated) {
@@ -109,7 +108,6 @@ export const AppRouter = () => (
       />
 
       <Route
-
         path='/events'
         element={
           <LayoutHeaderFooter>

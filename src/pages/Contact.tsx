@@ -84,7 +84,6 @@ export default function Contact() {
         <p className='text-lg mb-4'>
           We look forward to hearing from you and assisting you with your ticketing needs!
         </p>
-
       </div>
     </>
   )

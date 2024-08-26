@@ -69,7 +69,6 @@ exports.handler = async function (event, _context) {
               client_email: customer.email,
               event_label: eventInfo.id,
               venue_label: eventInfo.venueId
-
             }
           }
         },

@@ -681,7 +681,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Pink',
               cssClass: 'Pink'
-
             }
           },
           disabledSeats: []
@@ -725,7 +724,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Pink',
               cssClass: 'Pink'
-
             }
           },
           disabledSeats: []
@@ -770,7 +768,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Pink',
               cssClass: 'Pink'
-
             }
           },
           disabledSeats: []
@@ -819,7 +816,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Pink',
               cssClass: 'Pink'
-
             }
           },
           disabledSeats: [
@@ -837,7 +833,6 @@ const getDefaultMap = () => ({
       title: 'Pink Right', //Purple Right
       shape: 'poly',
       name: 'Pink',
-
 
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
@@ -937,7 +932,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Pink',
               cssClass: 'Pink'
-
             }
           },
           disabledSeats: []
@@ -987,7 +981,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Celeste',
               cssClass: 'Celeste'
-
             }
           },
           disabledSeats: []
@@ -1008,7 +1001,6 @@ const getDefaultMap = () => ({
         [378, 740]
       ]
     },
-
 
     {
       Options: {
@@ -1036,7 +1028,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Celeste',
               cssClass: 'Celeste'
-
             }
           },
           disabledSeats: []
@@ -1079,7 +1070,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Celeste',
               cssClass: 'Celeste'
-
             }
           },
           disabledSeats: []
@@ -1130,7 +1120,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Celeste',
               cssClass: 'Celeste'
-
             }
           },
           disabledSeats: []
@@ -1180,7 +1169,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Celeste',
               cssClass: 'Celeste'
-
             }
           },
           disabledSeats: []
@@ -1237,7 +1225,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Purple',
               cssClass: 'Purple'
-
             }
           },
           disabledSeats: [
@@ -1311,7 +1298,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Yellow',
               cssClass: 'Yellow'
-
             }
           },
           disabledSeats: []
@@ -1359,7 +1345,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Yellow',
               cssClass: 'Yellow'
-
             }
           },
           disabledSeats: []
@@ -1419,7 +1404,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Yellow',
               cssClass: 'Yellow'
-
             }
           },
           disabledSeats: []
@@ -1475,7 +1459,6 @@ const getDefaultMap = () => ({
             default: {
               label: 'Purple',
               cssClass: 'Purple'
-
             }
           },
           disabledSeats: [
