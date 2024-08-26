@@ -26,7 +26,8 @@ exports.handler = async function (event, _context) {
     typeof seat.subZone !== 'string' ||
     typeof seat.row !== 'number' ||
     typeof seat.col !== 'number' ||
-    typeof seat.sessionId !== 'string'
+    typeof seat.sessionId !== 'string' ||
+    typeof seat.Event !== 'string'
   ) {
     return {
       statusCode: 400,
@@ -41,6 +42,7 @@ exports.handler = async function (event, _context) {
     .eq('subZone', seat.subZone)
     .eq('row', seat.row)
     .eq('col', seat.col)
+    .eq('Event', seat.Event)
     .single()
 
   if (seatError) {
@@ -69,6 +71,7 @@ exports.handler = async function (event, _context) {
       .eq('subZone', seat.subZone)
       .eq('row', seat.row)
       .eq('col', seat.col)
+      .eq('Event', seat.Event)
     if (error) {
       return {
         statusCode: 500,

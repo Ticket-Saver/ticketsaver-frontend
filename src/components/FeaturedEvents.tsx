@@ -26,9 +26,9 @@ interface Location {
 
 interface Venue {
   capacity: number
-  label: string
+  venue_label: string
   location: Location
-  name: string
+  venue_name: string
   seatmap: boolean
 }
 
@@ -65,8 +65,6 @@ export default function FeaturedEvents() {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
 
-      console.log('currentDate', currentDate)
-
       filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
           return false
@@ -93,10 +91,9 @@ export default function FeaturedEvents() {
 
     setVenues(filteredVenue)
   }, [data2])
-
   useEffect(() => {
     const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.label === event.venue_label)
+      const venue = venues.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
@@ -162,13 +159,22 @@ export default function FeaturedEvents() {
       setSessionId(existingSessionId)
     }
   }, [])
+  const optionsDate: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }
 
   return (
     <section className='py-10 md:py-16 bg-base-300'>
       <div className='container'>
         <div className='text-center'>
-          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Featured Events</h2>
-          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>Available for sale at TicketSaver.</p>
+          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
+          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
+            {' '}
+            Don’t miss out! Buy now before tickets sell out!.
+          </p>
         </div>
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
@@ -183,8 +189,10 @@ export default function FeaturedEvents() {
                   title={event.event_name}
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.name || event.venue_label}
-                  date={event.event_date}
+                  venue={event.venue?.venue_name || event.venue_label}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </a>
@@ -203,8 +211,10 @@ export default function FeaturedEvents() {
                   title={event.event_name}
                   description={descriptions[event.event_label]} // Add description if available
                   thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.name || event.venue_label}
-                  date={event.event_date}
+                  venue={event.venue?.venue_name || event.venue_label}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
                   city={event.venue?.location.city} // Pass the city property from the venue object
                 />
               </Link>

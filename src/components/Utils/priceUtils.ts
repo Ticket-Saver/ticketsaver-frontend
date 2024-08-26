@@ -79,16 +79,13 @@ const extractLatestPrices = (result: any) => {
   for (const [priceTag, datePrices] of Object.entries(result.prices)) {
     console.log(`Processing price tag: ${priceTag}`)
     const availableDates = Object.keys(datePrices as Record<string, any>)
-    console.log(`Available dates for ${priceTag}:`, availableDates)
 
     if (availableDates.length > 0) {
       const mostRecentDate = availableDates.sort(
         (a, b) => new Date(b).getTime() - new Date(a).getTime()
       )[0]
-      console.log(`Most recent date for ${priceTag}: ${mostRecentDate}`)
 
       const priceInfo = (datePrices as Record<string, any>)[mostRecentDate]
-      console.log(`Price info for ${priceTag} on ${mostRecentDate}:`, priceInfo)
 
       latestPricesList[priceTag] = priceInfo
     } else {

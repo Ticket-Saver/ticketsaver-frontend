@@ -9,11 +9,19 @@ exports.handler = async function (event, _context) {
       const { cart, eventInfo, customer } = JSON.parse(event.body)
 
       const domainUrl = process.env.DOMAIN_URL || ''
-      console.log(domainUrl)
 
       if (!cart || !eventInfo) {
         throw new Error('Missing cart or event details')
       }
+
+      const EventMetadata = cart.map((ticket) => ({
+        seat: ticket.seatLabel,
+        price_type: ticket.priceType,
+        basePriceMajorUnits: ticket.price_base,
+        comp: false
+      }))
+
+      const serializedTicketMetadata = serializeTicketMetadata(EventMetadata)
 
       const customerId = await findCustomer(customer)
 
@@ -51,24 +59,23 @@ exports.handler = async function (event, _context) {
               eventName: eventInfo.name, // event_name
               venue: eventInfo.venue, //venue_name
               date: eventInfo.date, // event_date
+
               // esos primeros correpsonden a la información necesaria de los eventos pasados.
 
-              priceType: cart.priceType,
-              ticketId: cart.ticketId, //generado mediante ticket()
-              eventId: eventInfo.id, //event_label
-              venueId: eventInfo.venueId, // venue_label
               location: eventInfo.location, //location
               issuedAt: cart.issuedAt, //issuedAt que está relacionada con la función ticket
-              numberOfTicket: cart.numberOfTicket || '',
 
-              name: customer?.name,
-              email: customer?.email
+              client_name: customer.name,
+              client_email: customer.email,
+              event_label: eventInfo.id,
+              venue_label: eventInfo.venueId
             }
           }
         },
         payment_intent_data: {
           metadata: {
-            event_label: `${eventInfo.id}`
+            event_label: eventInfo.id,
+            tm: serializedTicketMetadata
           }
         }
       })
@@ -85,4 +92,14 @@ exports.handler = async function (event, _context) {
       }
     }
   }
+}
+
+//función para normalizar los reportes en metadata
+function serializeTicketMetadata(ticketMetadataList) {
+  return ticketMetadataList
+    .map(
+      (ticketMetadata) =>
+        `${ticketMetadata.seat},${ticketMetadata.price_type},${ticketMetadata.basePriceMajorUnits},${ticketMetadata.comp ? 1 : 0}`
+    )
+    .join(';')
 }

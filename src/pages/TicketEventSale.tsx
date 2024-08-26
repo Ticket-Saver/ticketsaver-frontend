@@ -4,20 +4,7 @@ import SeatchartJS, { CartChangeEvent } from 'seatchart'
 import Seatchart from '../components/Seatchart'
 import InteractiveMap from '../components/InteractiveMap'
 
-import californiaTheatreSvg from '../assets/maps/Leonas/californiaTheatre.svg'
-import unionCountySvg from '../assets/maps/Leonas/union_county.svg'
-import SanJoseMapPng from '../assets/maps/IndiaYuridia/sanjose_ca.png'
-import OrchestraMapPng from '../assets/maps/IndiaYuridia/Orchestra.png'
-import LogeMapPng from '../assets/maps/IndiaYuridia/Loge.png'
-import ManuelArtTimePng from '../assets/maps/Leonas/manuelartime_fl.svg'
-
-import LogeMap from '../components/maps/IndiaYuridia/LogeMap'
-import OrchestraMap from '../components/maps/IndiaYuridia/OrchestraMap'
-import SanJoseMap from '../components/maps//IndiaYuridia/sanjose_ca'
-
-import CalifoniaTheatreMap from '../components/maps/Leonas/californiatheatre_ca'
-import Unioncountry from '../components/maps/Leonas/unioncounty_nj'
-import ManuelArtTime from '../components/maps/Leonas/ManuelArtTimeMap'
+import { eventData, mapConfig } from '../components/maps/DataMap'
 
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
@@ -38,28 +25,7 @@ interface Cart {
   priceType: string
   ticketId: string
 }
-type EventZoneData = {
-  zones: string[]
-  priceTag: string[]
-}
 
-type EventData = {
-  [eventName: string]: {
-    [zoneName: string]: EventZoneData
-  }
-}
-interface MapConfig {
-  [label: string]: {
-    defaultMap?: any // O el tipo adecuado para tu mapa por defecto
-    src?: string
-    zones?: {
-      [zone: string]: {
-        defaultMap: any // O el tipo adecuado para tu mapa por defecto
-        src: string
-      }
-    }
-  }
-}
 export default function TicketSelection() {
   const { name, venue, date, location, label, delete: deleteParam } = useParams()
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
@@ -128,6 +94,12 @@ export default function TicketSelection() {
     if (venue) fetchVenues()
   }, [githubApiUrl2, venue])
 
+  useEffect(() => {
+    // Limpia el localStorage al montar el componente
+    localStorage.removeItem('local_cart')
+    localStorage.removeItem('cart_checkout')
+  }, [])
+
   const getCookieStart = (name: string) => {
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
@@ -146,6 +118,7 @@ export default function TicketSelection() {
 
     const currentDate = new Date()
     const endDate = date ? new Date(date) : new Date()
+
     endDate.setDate(endDate.getDate() + 2)
 
     if (currentDate.getTime() > endDate.getTime()) {
@@ -173,100 +146,6 @@ export default function TicketSelection() {
 
   const [eventZoneSelected, setEventZoneSelected] = useState<string>('')
 
-  // esto debería ir en alguna db
-  const eventData: EventData = {
-    las_leonas03: {
-      Map: {
-        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      }
-    },
-    las_leonas02: {
-      Map: {
-        zones: ['Pink', 'Aqua', 'Blue', 'Gray', 'Coral'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      }
-    },
-    las_leonas01: {
-      Map: {
-        zones: ['Yellow', 'Blue', 'Orange', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4']
-      }
-    },
-    india_yuridia01: {
-      orchestra: {
-        zones: ['Orange', 'Green', 'Pink', 'Yellow', 'Purple'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      },
-      loge: {
-        zones: [
-          'Yellow',
-          'Purple',
-          'Gray',
-          'Section 1',
-          'Section 2',
-          'Section 3',
-          'Section 4',
-          'Section 5',
-          'Section 6'
-        ],
-        priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
-      }
-    },
-    india_yuridia02: {
-      Map: {
-        zones: ['Yellow', 'Orange', 'Purple', 'Coral', 'Green'],
-        priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
-      }
-    }
-  }
-  const mapConfig: MapConfig = {
-    'las_leonas.03': {
-      zones: {
-        Map: {
-          defaultMap: CalifoniaTheatreMap,
-          src: californiaTheatreSvg
-        }
-      }
-    },
-    'las_leonas.02': {
-      zones: {
-        Map: {
-          defaultMap: Unioncountry,
-          src: unionCountySvg
-        }
-      }
-    },
-    'las_leonas.01': {
-      zones: {
-        Map: {
-          defaultMap: ManuelArtTime,
-          src: ManuelArtTimePng
-        }
-      }
-    },
-    'india_yuridia.01': {
-      zones: {
-        orchestra: {
-          defaultMap: OrchestraMap,
-          src: OrchestraMapPng
-        },
-        loge: {
-          defaultMap: LogeMap,
-          src: LogeMapPng
-        }
-      }
-    },
-    'india_yuridia.02': {
-      zones: {
-        Map: {
-          defaultMap: SanJoseMap,
-          src: SanJoseMapPng
-        }
-      }
-    }
-  }
-
   const { user } = useAuth0()
 
   const customer = {
@@ -281,6 +160,13 @@ export default function TicketSelection() {
   const totalCost = cart?.reduce((acc, crr) => (acc = acc + crr.price_final), 0) || 0
 
   const handleCheckout = async () => {
+    const cartLength = (cart || []).length
+    if (cartLength > 10) {
+      alert(
+        'You cannot proceed with more than 10 tickets. / No puedes continuar con más de 10 boletos.'
+      )
+      return
+    }
     localStorage.setItem(
       'cart_checkout',
       JSON.stringify({
@@ -332,6 +218,9 @@ export default function TicketSelection() {
 
   const handleOnSeatClick = async (e: CartChangeEvent) => {
     const sessionId = getCookie('sessionId')
+
+    // Check if the cart already has 10 tickets
+
     if (e.action === 'add') {
       const globalSeat = ArraysplitSeatLabel(e.seat.label)
       const lockingSeat = {
@@ -339,12 +228,12 @@ export default function TicketSelection() {
         row: e.seat.index.row,
         col: e.seat.index.col,
         subZone: seatchartCurrentArea.title,
-        sessionId: sessionId
+        sessionId: sessionId,
+        Event: label
       }
 
       try {
         // Wait for the lockSeats to complete
-        console.log(lockingSeat)
         await lockSeats(lockingSeat)
 
         // Proceed only if lockSeats was successful
@@ -397,7 +286,7 @@ export default function TicketSelection() {
                   issuedAt: issuedAt
                 }
               ]
-              console.log(newCart)
+
               return newCart
             })
           }
@@ -414,7 +303,8 @@ export default function TicketSelection() {
         row: e.seat.index.row,
         col: e.seat.index.col,
         subZone: seatchartCurrentArea.title,
-        sessionId: sessionId
+        sessionId: sessionId,
+        Event: label
       }
 
       try {
@@ -441,14 +331,14 @@ export default function TicketSelection() {
     }
   }, [])
 
-  const handleGetAreaSeats = async (areaTitle: any) => {
+  const handleGetAreaSeats = async (areaTitle: any, label: any) => {
     try {
       const response = await fetch('/api/fetchTakenSeats', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ subZone: areaTitle })
+        body: JSON.stringify({ subZone: areaTitle, Event: label })
       })
 
       if (!response.ok) {
@@ -501,7 +391,6 @@ export default function TicketSelection() {
         (cart) => cart.seatLabel !== ticket.seatLabel && cart.seatType === ticket.seatType
       )
     )
-
     const newSelectedSeats = selectedSeats.filter(
       (seat) => seat.seatLabel !== ticket.seatLabel || seat.seatType !== ticket.seatType
     )
@@ -562,6 +451,8 @@ export default function TicketSelection() {
                 <thead>
                   <tr>
                     <th className='text-left'>Type</th>
+                    <th className='text-center'></th>
+
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
@@ -570,11 +461,14 @@ export default function TicketSelection() {
                   {zonePriceList.map((zoneItem) => (
                     <tr key={zoneItem.zone}>
                       <th className='text-left font-normal'>{zoneItem.zone}</th>
-                      <th className='text-right font-normal'>
-                        Starting prices from
-                        <a className='font-bold'>
+                      <th className='text-center font-normal'>Starting prices from</th>
+                      <th>
+                        <a className='font-bold' style={{ fontSize: '14px' }}>
                           {' '}
-                          ${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100}
+                          $
+                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
+                            100}{' '}
+                          Reso USD
                         </a>
                       </th>
                     </tr>
@@ -626,9 +520,9 @@ export default function TicketSelection() {
                       <InteractiveMap
                         key={eventZoneSelected}
                         handleClickImageZone={async (area) => {
-                          console.log('Area: ', area.title)
                           try {
-                            const parsedSeats = await handleGetAreaSeats(area.title)
+                            const parsedSeats = await handleGetAreaSeats(area.title, label)
+
                             let selectedOptions = area.Options
                             selectedOptions.map.reservedSeats = parsedSeats
                             setSeatchartCurrentOptions(selectedOptions)
@@ -646,7 +540,7 @@ export default function TicketSelection() {
                         src={
                           mapConfig[label!]?.zones?.[eventZoneSelected]?.src ||
                           mapConfig[label!]?.src ||
-                          '' // Default empty string
+                          ''
                         }
                       />
                     </>
@@ -673,7 +567,7 @@ export default function TicketSelection() {
           <div className='w-full p-4'>
             <div className='bg-white rounded-lg shadow-md p-6'>
               <h2 className='text-2xl font-bold mb-4'>Summary</h2>
-              {cart?.length !== 0 ? (
+              {cart?.length > 0 ? (
                 <>
                   {cart?.map((ticket, index) => {
                     return (
@@ -710,18 +604,14 @@ export default function TicketSelection() {
                             {' '}
                             X
                           </button>
-                          <p> Facility Fee + Service Charge + Credit Card Fee</p>
+
                           <p className='font-bold'>Ticket Total</p>
                         </div>
 
                         <div>
-                          <p>
-                            ${ticket.price_base.toFixed(2)}
-                            <br /> <br />
-                          </p>
-                          <p>${(ticket.price_final - ticket.price_base).toFixed(2)}</p>
-
-                          <p className='font-bold'>${ticket.price_final.toFixed(2)}</p>
+                          <br />
+                          <br />
+                          <p className='font-bold'>${ticket.price_final.toFixed(2)} USD</p>
                         </div>
                       </div>
                     )
@@ -733,7 +623,7 @@ export default function TicketSelection() {
                       <p className='text-xl font-bold'>Total</p>
                     </div>
                     <div>
-                      <p className='text-xl font-bold'>${totalCost.toFixed(2)}</p>
+                      <p className='text-xl font-bold'>${totalCost.toFixed(2)} USD</p>
                     </div>
                   </div>
                   {/* Proceed to Checkout Button */}
@@ -741,6 +631,7 @@ export default function TicketSelection() {
                     <button
                       className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
                       onClick={() => handleCheckout()}
+                      disabled={!cart || cart.length == 0}
                     >
                       Proceed to Checkout
                     </button>
