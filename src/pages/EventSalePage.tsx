@@ -1,11 +1,10 @@
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 export default function EventPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { venue, name, date, label, delete: deleteParam } = useParams()
 
   const [venues, setVenue] = useState<any>(null)
