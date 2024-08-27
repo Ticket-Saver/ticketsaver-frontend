@@ -13,10 +13,10 @@ export default function Header() {
   const handleLogin = async () => {
     //@ts-ignore
     const options: RedirectLoginOptions = {
-      screen_hint: 'signup',
-    };
-    await loginWithRedirect(options);
-  };
+      screen_hint: 'signup'
+    }
+    await loginWithRedirect(options)
+  }
 
   return (
     <header className='bg-neutral py-0 sticky top-0 z-50 '>
