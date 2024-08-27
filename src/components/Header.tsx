@@ -11,11 +11,9 @@ export default function Header() {
   }
 
   const handleLogin = async () => {
-    //@ts-ignore
-    const options: RedirectLoginOptions = {
-      screen_hint: 'signup'
-    }
-    await loginWithRedirect(options)
+    await loginWithRedirect({authorizationParams: {
+      screen_hint: "signup",
+    }})
   }
 
   return (
