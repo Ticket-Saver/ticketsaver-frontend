@@ -491,7 +491,7 @@ export default function TicketSelection() {
                           $
                           {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
                             100}{' '}
-                          Reso USD
+                          USD
                         </a>
                       </th>
                     </tr>
