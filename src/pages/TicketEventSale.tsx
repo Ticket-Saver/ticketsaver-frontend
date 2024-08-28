@@ -162,7 +162,7 @@ export default function TicketSelection() {
 
   const handleCheckout = async () => {
     const cartLength = (cart || []).length
-    if (cartLength > 3) {
+    if (cartLength > 10) {
       alert(
         'You cannot proceed with more than 10 tickets. / No puedes continuar con más de 10 boletos.'
       )
@@ -280,7 +280,7 @@ export default function TicketSelection() {
 
             // Actualizar el carrito
             setCart((prev: Cart[] | []) => {
-              if ((prev?.length || 0) >= 3) {
+              if ((prev?.length || 0) >= 10) {
                 confirm(
                   'Maximum of 10 tickets allowed per order.\n' +
                     'Please remove some tickets from your cart to add more.\n \n' +
