@@ -46,7 +46,6 @@ export default function TicketSelection() {
   const [venueInfo, setVenue] = useState<any>(null)
   const [eventSelected, setEventSelected] = useState<string | ''>('las_leonas.02')
   const [, setSessionId] = useState<string>('')
-  const [seatClickCount, setSeatClickCount] = useState(0)
 
   // Load image when label changes
   useEffect(() => {
@@ -282,10 +281,8 @@ export default function TicketSelection() {
             setCart((prev: Cart[] | []) => {
               if ((prev?.length || 0) >= 10) {
                 confirm(
-                  'Maximum of 10 tickets allowed per order.\n' +
-                    'Please remove some tickets from your cart to add more.\n \n' +
-                    'Máximo de 10 boletos permitidos por pedido \n' +
-                    'Por favor, elimina algunos boletos del carrito para añadir más.'
+                  'Maximum of 10 tickets allowed per order.\n \n' +
+                    'Máximo de 10 boletos permitidos por pedido.'
                 )
                 return prev
               }
@@ -396,7 +393,6 @@ export default function TicketSelection() {
 
       const data = await response.json()
       console.log('Data', data)
-      setSeatClickCount((prev) => prev + 1)
     } catch (error) {
       throw new Error('error locking seats')
     }
@@ -404,7 +400,6 @@ export default function TicketSelection() {
 
   useEffect(() => {
     setCart(JSON.parse(localStorage.getItem('local_cart') as string))
-    console.log('acá: ', cart)
   }, [])
   useEffect(() => {
     localStorage.setItem('local_cart', JSON.stringify(cart))
@@ -598,8 +593,6 @@ export default function TicketSelection() {
               {cart?.length > 0 ? (
                 <>
                   {cart?.map((ticket, index) => {
-                    console.log('veamos ahora dentro del summary', seatClickCount)
-                    console.log('veamos la cart', cart)
                     return (
                       <div
                         key={index}
@@ -661,7 +654,7 @@ export default function TicketSelection() {
                     <button
                       className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
                       onClick={() => handleCheckout()}
-                      disabled={!cart || cart.length == 0}
+                      disabled={!cart || cart.length == 0 || cart.length > 10}
                     >
                       Proceed to Checkout
                     </button>
