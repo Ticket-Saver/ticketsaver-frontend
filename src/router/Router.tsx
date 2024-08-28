@@ -29,7 +29,11 @@ import FaqsPage from '../pages/FaqsPage'
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
   if (!isAuthenticated) {
-    loginWithRedirect()
+    loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup'
+      }
+    })
     return null
   }
   return isAuthenticated ? element : <Navigate to='/' />

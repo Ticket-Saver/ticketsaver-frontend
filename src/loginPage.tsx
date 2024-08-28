@@ -7,7 +7,11 @@ const LoginPage = () => {
   const navigate = useNavigate()
 
   const handleLogin = async () => {
-    await loginWithRedirect()
+    await loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup'
+      }
+    })
   }
 
   useEffect(() => {
