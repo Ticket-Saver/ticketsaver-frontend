@@ -65,7 +65,7 @@ exports.handler = async function (event, _context) {
                 Zone: ticket.Zone,
                 Section: ticket.Section,
                 price: ticket.price,
-                eventName: ticket.eventName && ticket.eventName.length > 0 && ticket.eventName ?? ticket.venue,
+                eventName: (ticket.eventName && ticket.eventName.length > 0 && ticket.eventName) ?? ticket.venue,
                 venue: ticket.venue,
                 venueId: ticket.venueId ?? ticket.venue.replace(/\s/g, '_').toLowerCase(),
                 date: ticket.date,
