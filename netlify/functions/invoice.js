@@ -60,7 +60,7 @@ exports.handler = async function (event, _context) {
             if(!acc[eventId]) {
                   acc[eventId] = []
             };
-            acc[eventId].push(ticketInfo.map((ticket:any) => ({
+            acc[eventId].push(ticketInfo.map((ticket) => ({
                   ...ticket,
                   Ticket: ticket.Ticket,
                   Zone: ticket.Zone,
