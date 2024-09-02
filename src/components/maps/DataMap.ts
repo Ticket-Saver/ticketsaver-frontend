@@ -1,7 +1,7 @@
 import californiaTheatreSvg from '../../assets/maps/Leonas/californiaTheatre.svg'
 import unionCountySvg from '../../assets/maps/Leonas/union_county.svg'
 import SanJoseMapPng from '../../assets/maps/IndiaYuridia/sanjose_ca.png'
-import OrchestraMapPng from '../../assets/maps/IndiaYuridia/Orchestra.png'
+import OrchestraMap2 from '../../assets/maps/IndiaYuridia/ticketeraMapa3.png'
 import LogeMapPng from '../../assets/maps/IndiaYuridia/Loge.png'
 import ManuelArtTimePng from '../../assets/maps/Leonas/manuelartime_fl.svg'
 
@@ -110,7 +110,7 @@ export const mapConfig: MapConfig = {
     zones: {
       orchestra: {
         defaultMap: OrchestraMap,
-        src: OrchestraMapPng
+        src: OrchestraMap2
       },
       loge: {
         defaultMap: LogeMap,

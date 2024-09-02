@@ -33,6 +33,10 @@ const getDefaultMap = () => ({
           },
           disabledSeats: [
             { row: 1, col: 0 },
+            { row: 1, col: 1 },
+            { row: 2, col: 1 },
+            { row: 3, col: 1 },
+            { row: 4, col: 1 },
             { row: 2, col: 0 },
             { row: 3, col: 0 },
             { row: 4, col: 0 },

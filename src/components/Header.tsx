@@ -11,7 +11,11 @@ export default function Header() {
   }
 
   const handleLogin = async () => {
-    await loginWithRedirect()
+    await loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup'
+      }
+    })
   }
 
   return (

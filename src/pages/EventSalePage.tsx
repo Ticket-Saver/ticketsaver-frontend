@@ -1,17 +1,17 @@
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
 
 export default function EventPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { venue, name, date, label, delete: deleteParam } = useParams()
-  const { sale_starts_at } = location.state || {}
+
   const [venues, setVenue] = useState<any>(null)
   const [description, setDescription] = useState<string>('')
   const [image, setImage] = useState<string>('')
   const [hour, setHour] = useState<string>('')
+  const [saleStartsAt, setSaleStartsAt] = useState<string>('')
 
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
@@ -22,6 +22,7 @@ export default function EventPage() {
       Accept: 'application/vnd.github.v3.raw'
     }
   }
+
   useEffect(() => {
     const fetchHour = async () => {
       try {
@@ -31,8 +32,10 @@ export default function EventPage() {
         }
         const events = await response.json()
         const event = events[label!]
+
         if (event) {
           setHour(event.event_hour)
+          setSaleStartsAt(event.sale_starts_at)
         }
       } catch (error) {
         console.error('Failed to fetch event hour:', error)
@@ -103,6 +106,7 @@ export default function EventPage() {
         }
         const zonePrices = await response.json()
         const zonePriceListData = extractZonePrices(zonePrices)
+
         setZonePriceList(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone prices', error)
@@ -135,7 +139,7 @@ export default function EventPage() {
   }, [label])
 
   const currentDate = new Date()
-  const saleStartsAtDate = sale_starts_at ? new Date(sale_starts_at) : null
+  const saleStartsAtDate = saleStartsAt ? new Date(saleStartsAt) : null
   const isSaleActive = saleStartsAtDate ? currentDate >= saleStartsAtDate : false
 
   return (
@@ -177,6 +181,7 @@ export default function EventPage() {
                   <tr>
                     <th className='text-left'>Type</th>
                     <th className='text-center'></th>
+
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
@@ -205,7 +210,7 @@ export default function EventPage() {
                   to={`/sale/${name}/${venues?.venue_label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
                   className={`btn ${isSaleActive ? 'btn-active bg-blue-500 hover:bg-blue-600' : 'btn-disabled bg-gray-400'} text-white py-2 px-4 rounded w-full`}
                 >
-                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${sale_starts_at}`}
+                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${saleStartsAt}`}
                 </Link>
               </div>
             </div>

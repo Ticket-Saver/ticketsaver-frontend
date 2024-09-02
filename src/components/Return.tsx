@@ -48,7 +48,7 @@ const Return = () => {
           </div>
         </div>
         <div className='mt-8'>
-          <img src='public/logos/ticketsaver-logo.svg' alt='Your Logo' className='max-w-xs' />
+          <img src='/logos/ticketsaver-logo.svg' alt='Your Logo' className='max-w-xs' />
         </div>
       </section>
     )

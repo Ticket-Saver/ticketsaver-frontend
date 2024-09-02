@@ -53,7 +53,30 @@ exports.handler = async function (event, _context) {
 
       return {
         statusCode: 200,
-        body: JSON.stringify(tickets) // Aqui se puede cambiar.
+        body: JSON.stringify(
+          Object.entries(tickets).reduce((acc, [eventId, ticketInfo]) => {
+            if (!acc[eventId]) {
+              acc[eventId] = []
+            }
+            acc[eventId].push(
+              ticketInfo.map((ticket) => ({
+                ...ticket,
+                Ticket: ticket.Ticket,
+                Zone: ticket.Zone,
+                Section: ticket.Section,
+                price: ticket.price,
+                eventName:
+                  (ticket.eventName && ticket.eventName.length > 0 && ticket.eventName) ??
+                  ticket.venue,
+                venue: ticket.venue,
+                venueId: ticket.venueId ?? ticket.venue.replace(/\s/g, '_').toLowerCase(),
+                date: ticket.date,
+                location: ticket.location ?? ticket.venue
+              }))
+            )
+            return acc
+          }, {})
+        ) // Aqui se puede cambiar.
       }
     } catch (error) {
       console.error('Error al buscar facturas:', error)

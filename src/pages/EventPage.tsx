@@ -29,6 +29,7 @@ interface Venue {
   venue_label: string
   location: Location
   venue_name: string
+
   seatmap: boolean
 }
 
@@ -55,7 +56,6 @@ export default function EventPage() {
   }
 
   const { data } = useFetchJson(githubApiUrl, options)
-
   useEffect(() => {
     let filteredEvents: Event[] = []
 

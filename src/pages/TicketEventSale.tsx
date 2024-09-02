@@ -5,6 +5,7 @@ import Seatchart from '../components/Seatchart'
 import InteractiveMap from '../components/InteractiveMap'
 
 import { eventData, mapConfig } from '../components/maps/DataMap'
+
 import { v4 as uuidv4 } from 'uuid'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import { extractZonePrices } from '../components/Utils/priceUtils'
@@ -217,10 +218,19 @@ export default function TicketSelection() {
 
   const handleOnSeatClick = async (e: CartChangeEvent) => {
     const sessionId = getCookie('sessionId')
-
-    // Check if the cart already has 10 tickets
+    const currentCart = cart || []
 
     if (e.action === 'add') {
+      if (currentCart.length >= 10) {
+        // Intentar desbloquear el asiento si el carrito ya tiene 10 elementos
+
+        confirm(
+          'Maximum of 10 tickets allowed per order. The seat you attempted to add has been unlocked.'
+        )
+
+        return
+      }
+
       const globalSeat = ArraysplitSeatLabel(e.seat.label)
       const lockingSeat = {
         Seat: e.seat.label,
@@ -232,26 +242,24 @@ export default function TicketSelection() {
       }
 
       try {
-        // Wait for the lockSeats to complete
+        // Esperar a que lockSeats se complete
         await lockSeats(lockingSeat)
 
-        // Proceed only if lockSeats was successful
+        // Proceder solo si lockSeats fue exitoso
         if (eventSelected !== '') {
-          const cartLength = (cart || []).length
-
           const issuedAt = Date.now()
-          const newTicketId = ticketId(label || '', eventSelected, cartLength + 1, issuedAt)
+          const newTicketId = ticketId(label || '', eventSelected, currentCart.length + 1, issuedAt)
 
-          const zoneColorType_ = seatchartCurrentArea?.name as string // referente a los nombres de cada zona del mapa
+          const zoneColorType_ = seatchartCurrentArea?.name as string // Referente a los nombres de cada zona del mapa
           const eventInfo = eventData[eventSelected]
 
-          // Determine the type of zone (orchestra or loge)
+          // Determinar el tipo de zona (orquesta o loge)
           const zoneType =
             Object.keys(eventData[eventSelected] || {}).find((zone) =>
               eventData[eventSelected][zone]?.zones.includes(zoneColorType_)
             ) || ''
 
-          // Get the information for the selected zone type
+          // Obtener la información para el tipo de zona seleccionado
           const zoneInfo = eventInfo[zoneType]
 
           if (zoneInfo) {
@@ -269,7 +277,23 @@ export default function TicketSelection() {
               price_base = find_price(zoneData, seatchartCurrentArea.title, globalSeat)
             }
 
-            setCart((prev: Cart[] | undefined) => {
+            // Actualizar el carrito
+            setCart((prev: Cart[] | []) => {
+              if ((prev?.length || 0) >= 10) {
+                confirm(
+                  'Maximum of 10 tickets allowed per order.\n \n' +
+                    'Máximo de 10 boletos permitidos por pedido.'
+                )
+                return prev
+              }
+              const existingSeatIndex = (prev || []).findIndex(
+                (item) => item.seatLabel === e.seat.label
+              )
+              if (existingSeatIndex !== -1) {
+                // Si el asiento ya existe, devolver el carrito actual sin cambios
+                return prev
+              }
+
               const newCart = [
                 ...(prev || []),
                 {
@@ -285,6 +309,7 @@ export default function TicketSelection() {
                   issuedAt: issuedAt
                 }
               ]
+
               return newCart
             })
           }
@@ -293,7 +318,6 @@ export default function TicketSelection() {
         console.error('Failed to lock seat:', error)
         setErrorMessage('Failed to lock the seat. Please reload map by clicking it.')
         setIsError(true)
-        return
       }
     } else if (e.action === 'remove') {
       const lockingSeat = {
@@ -408,6 +432,7 @@ export default function TicketSelection() {
       setEventZoneSelected('')
     }
   }, [eventData, eventSelected])
+
   return (
     <div className='bg-gray-100'>
       <div className='bg-gray-100 relative'>
@@ -520,6 +545,7 @@ export default function TicketSelection() {
                         handleClickImageZone={async (area) => {
                           try {
                             const parsedSeats = await handleGetAreaSeats(area.title, label)
+
                             let selectedOptions = area.Options
                             selectedOptions.map.reservedSeats = parsedSeats
                             setSeatchartCurrentOptions(selectedOptions)
@@ -628,7 +654,7 @@ export default function TicketSelection() {
                     <button
                       className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
                       onClick={() => handleCheckout()}
-                      disabled={!cart || cart.length == 0}
+                      disabled={!cart || cart.length == 0 || cart.length > 10}
                     >
                       Proceed to Checkout
                     </button>

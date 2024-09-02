@@ -690,6 +690,7 @@ const getDefaultMap = () => ({
       title: 'Pink Center Left', //Green Bottom Center Left
       shape: 'poly',
       name: 'Pink',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [402, 563, 411, 748, 564, 770, 565, 584, 488, 578],
@@ -732,6 +733,7 @@ const getDefaultMap = () => ({
       title: 'Pink Center', //Green Bottom Center
       shape: 'poly',
       name: 'Pink',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [594, 589, 596, 678, 680, 683, 763, 676, 763, 587, 677, 592],
@@ -775,6 +777,7 @@ const getDefaultMap = () => ({
       title: 'Pink Center Special', //Green Bottom Special
       shape: 'poly',
       name: 'Pink',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [595, 678, 595, 770, 665, 770, 664, 683],
@@ -830,6 +833,7 @@ const getDefaultMap = () => ({
       title: 'Pink Right', //Purple Right
       shape: 'poly',
       name: 'Pink',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [958, 461, 963, 740, 1089, 705, 1086, 524, 1071, 421],
@@ -888,6 +892,7 @@ const getDefaultMap = () => ({
       name: 'Pink',
       fillColor: '#ea92bab',
       strokeColor: '#ea92bab ',
+
       coords: [272, 416, 255, 483, 252, 707, 381, 740, 378, 519, 379, 461],
       polygon: [
         [272, 416],
@@ -936,6 +941,7 @@ const getDefaultMap = () => ({
       title: 'Pink Center Right', // Green Bottom Right
       shape: 'poly',
       name: 'Pink',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [787, 584, 787, 770, 943, 744, 947, 560, 869, 578],
@@ -984,6 +990,7 @@ const getDefaultMap = () => ({
       title: 'Blue Left', //Yellow Bottom Left,
       shape: 'poly',
       name: 'Blue',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [250, 703, 249, 828, 379, 866, 378, 740],
@@ -1030,6 +1037,7 @@ const getDefaultMap = () => ({
       title: 'Blue Left Center', //Pink Top Left
       shape: 'poly',
       name: 'Blue',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [408, 744, 411, 874, 562, 895, 564, 770],
@@ -1071,6 +1079,7 @@ const getDefaultMap = () => ({
       title: 'Blue Center', //Pink Top Center
       shape: 'poly',
       name: 'Blue',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [593, 773, 594, 895, 688, 901, 765, 896, 763, 771],
@@ -1120,6 +1129,7 @@ const getDefaultMap = () => ({
       title: 'Blue Right Center', //Pink top Right
       shape: 'poly',
       name: 'Blue',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [788, 771, 786, 895, 940, 869, 940, 746],
@@ -1168,6 +1178,7 @@ const getDefaultMap = () => ({
       title: 'Blue Right', //Yellow Top Right
       shape: 'poly',
       name: 'Blue',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [961, 740, 961, 866, 1090, 829, 1088, 704],
@@ -1229,6 +1240,7 @@ const getDefaultMap = () => ({
       title: 'Purple Right', //Yellow Bottom Right
       shape: 'poly',
       name: 'Purple',
+
       fillColor: '',
       stayHighlighted: true,
       strokeColor: '#f54242',
@@ -1295,6 +1307,7 @@ const getDefaultMap = () => ({
       title: 'Yellow Right', //Pink Bottom Right
       shape: 'poly',
       name: 'Yellow',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [787, 896, 785, 1050, 943, 1027, 940, 872],
@@ -1341,6 +1354,7 @@ const getDefaultMap = () => ({
       title: 'Yellow Center', //Pink Down Center
       shape: 'poly',
       name: 'Yellow',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [596, 896, 594, 1051, 765, 1051, 765, 895],
@@ -1399,6 +1413,7 @@ const getDefaultMap = () => ({
       title: 'Yellow Left', //Pink Bottom Left
       shape: 'poly',
       name: 'Yellow',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [411, 873, 406, 1025, 565, 1050, 565, 895],
@@ -1459,6 +1474,7 @@ const getDefaultMap = () => ({
       title: 'Purple Left', //Yellow Bottom Left 2
       shape: 'poly',
       name: 'Purple',
+
       fillColor: '#eab54d4d',
       strokeColor: '#eab54d4d',
       coords: [

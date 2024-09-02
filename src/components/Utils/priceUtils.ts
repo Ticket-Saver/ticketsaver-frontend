@@ -49,9 +49,12 @@ const extractZonePrices = (result: any) => {
   const zonePriceList = []
 
   for (const [zoneName, priceTiers] of Object.entries(zones)) {
+    console.log(zones)
     const priceTierKeys = Object.keys(priceTiers as Record<string, any>)
+    console.log('prices', priceTierKeys)
     const pricesForZone = priceTierKeys.map((priceTierKey) => {
       const availableDates = Object.keys(prices[priceTierKey])
+      console.log('available', availableDates)
       const firstAvailableDate = availableDates[0]
       const priceInfo = prices[priceTierKey][firstAvailableDate]
       return {
@@ -71,7 +74,10 @@ export { extractZonePrices }
 const extractLatestPrices = (result: any) => {
   const latestPricesList: any = {}
 
+  console.log('Starting extraction process...')
+
   for (const [priceTag, datePrices] of Object.entries(result.prices)) {
+    console.log(`Processing price tag: ${priceTag}`)
     const availableDates = Object.keys(datePrices as Record<string, any>)
 
     if (availableDates.length > 0) {
@@ -87,6 +93,7 @@ const extractLatestPrices = (result: any) => {
     }
   }
 
+  console.log('Final latestPricesList:', latestPricesList)
   return latestPricesList
 }
 
