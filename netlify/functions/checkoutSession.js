@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
  * @param {Array} cart - The cart containing the seats to be checked.
  * @returns {Object|undefined} - Returns an object with the status code and error message if the seat is already taken, or undefined if all seats are available.
  */
-async function checkForTakenSeats(cart) {
+async function checkForTakenSeats(cart, eventInfo) {
   for (const cartItem of cart) {
     const seat = cartItem.seatLabel
     const subZone = cartItem.subZone
@@ -48,7 +48,7 @@ exports.handler = async function (event, _context) {
         throw new Error('Missing cart or event details')
       }
 
-      const check = await checkForTakenSeats(cart)
+      const check = await checkForTakenSeats(cart, eventInfo)
       if (check) return check
 
       const EventMetadata = cart.map((ticket) => ({
