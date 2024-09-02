@@ -6,24 +6,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 /**
  * Checks if the seats in the cart are already taken for a given event.
- * 
+ *
  * @param {Array} cart - The cart containing the seats to be checked.
  * @returns {Object|undefined} - Returns an object with the status code and error message if the seat is already taken, or undefined if all seats are available.
  */
-async function checkForTakenSeats(cart){
+async function checkForTakenSeats(cart) {
   for (const cartItem of cart) {
     const seat = cartItem.seatLabel
     const subZone = cartItem.subZone
     const event_label = eventInfo.id
-    const r = await supabase.from('YuridiaEvents')
-      .select("id, seat, subZone")
+    const r = await supabase
+      .from('YuridiaEvents')
+      .select('id, seat, subZone')
       .eq('Seat', seat)
       .eq('subZone', subZone)
       .eq('Event', event_label)
 
     if (r.data && r.data.length > 0) {
       if (r.data.length > 1) {
-        console.warn(`Multiple seats found for seat ${seat} and subZone ${subZone} in event ${event_label}`)
+        console.warn(
+          `Multiple seats found for seat ${seat} and subZone ${subZone} in event ${event_label}`
+        )
       }
       return {
         statusCode: 400,
@@ -31,7 +34,7 @@ async function checkForTakenSeats(cart){
       }
     }
   }
-  return null;
+  return null
 }
 
 exports.handler = async function (event, _context) {
@@ -45,8 +48,8 @@ exports.handler = async function (event, _context) {
         throw new Error('Missing cart or event details')
       }
 
-      const check = await checkForTakenSeats(cart);
-      if (check) return check;
+      const check = await checkForTakenSeats(cart)
+      if (check) return check
 
       const EventMetadata = cart.map((ticket) => ({
         seat: ticket.seatLabel,
