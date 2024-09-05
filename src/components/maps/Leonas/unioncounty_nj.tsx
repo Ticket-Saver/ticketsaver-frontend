@@ -89,13 +89,17 @@ const getDefaultMap = () => ({
               '6,1': '♿'
             }
             const specialCases = new Map(Object.entries(specialCasesObj))
-            const baseString = `${String.fromCharCode(70 + index.row)}${26 - (index.col * 2 + 1)}`
+            let charRow = index.row + 70
+            if (charRow >= 73) {
+              charRow += 1
+            }
+            const baseString = `${String.fromCharCode(charRow)}${26 - (index.col * 2 + 1)}`
             const key = `${index.row},${index.col}`
             const prefix = specialCases.get(key) || ''
 
             return prefix + baseString
           },
-          rows: 11,
+          rows: 10,
           columns: 13,
           indexerColumns: {
             visible: true,
@@ -103,7 +107,13 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => `${String.fromCharCode(70 + row)}`
+            label: (row: number) => {
+              let charRow = row + 70
+              if (charRow >= 73) {
+                charRow += 1
+              }
+              return String.fromCharCode(charRow)
+            }
           },
           seatTypes: {
             default: {
@@ -186,9 +196,14 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(70 + index.row)}${101 + index.col}`
+            let charRow = index.row + 70
+            if (charRow >= 73) {
+              charRow += 1
+            }
+
+            return `${String.fromCharCode(charRow)}${101 + index.col}`
           },
-          rows: 11,
+          rows: 10,
           columns: 14,
           indexerColumns: {
             visible: true,
@@ -196,7 +211,13 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => `${String.fromCharCode(70 + row)}`
+            label: (row: number) => {
+              let charRow = row + 70
+              if (charRow >= 73) {
+                charRow += 1
+              }
+              return String.fromCharCode(charRow)
+            }
           },
           seatTypes: {
             default: {
@@ -315,13 +336,17 @@ const getDefaultMap = () => ({
               '4,12': '♿'
             }
             const specialCases = new Map(Object.entries(specialCasesObj))
-            const baseString = `${String.fromCharCode(70 + index.row)}${2 + index.col * 2}`
+            let charRow = index.row + 70
+            if (charRow >= 73) {
+              charRow += 1
+            }
+            const baseString = `${String.fromCharCode(charRow)}${2 + index.col * 2}`
             const key = `${index.row},${index.col}`
             const prefix = specialCases.get(key) || ''
 
             return prefix + baseString
           },
-          rows: 11,
+          rows: 10,
           columns: 13,
           indexerColumns: {
             visible: true,
@@ -329,7 +354,14 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => `${String.fromCharCode(70 + row)}`
+            label: (row: number) => {
+              let charRow = row + 70
+              if (charRow >= 73) {
+                charRow += 1
+              }
+
+              return String.fromCharCode(charRow)
+            }
           },
           seatTypes: {
             default: {
