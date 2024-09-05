@@ -191,10 +191,10 @@ const getDefaultMap = () => ({
         legendVisible: false,
         map: {
           seatLabel: (index: SeatIndex) => {
-            if (index.col + 1 < 10) {
-              return `${String.fromCharCode(65 + index.row)}${index.col + 1}`
+            if (14 - index.col > 10) {
+              return `${String.fromCharCode(65 + index.row)}${14 - index.col}`
             } else {
-              return `${String.fromCharCode(65 + index.row)}${index.col + 1}`
+              return `${String.fromCharCode(65 + index.row)}${14 - index.col}`
             }
           },
           rows: 8,
@@ -202,10 +202,10 @@ const getDefaultMap = () => ({
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              if (col + 1 < 10) {
-                return `${col + 1}`
+              if (14 - col > 10) {
+                return `${14 - col}`
               } else {
-                return `${col + 1}`
+                return `${14 - col}`
               }
             }
           },
