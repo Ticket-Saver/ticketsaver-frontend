@@ -10,12 +10,12 @@ export default function CoverCarousel() {
     },
     {
       id: 2,
-      imageUrl: '/carouselImg/artistAlebrije.png',
+      imageUrl: '/public/events/IndiaYuridia.png',
       caption: 'Discover amazing events!'
     },
     {
       id: 3,
-      imageUrl: '/carouselImg/artistAlebrije.png',
+      imageUrl: '/public/events/Leonas.png',
       caption: 'We save you the seats so you can savour the night'
     }
   ]
@@ -41,9 +41,8 @@ export default function CoverCarousel() {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`carousel-item ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
-          } flex justify-center items-center transition-opacity duration-500`}
+          className={`carousel-item ${index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
+            } flex justify-center items-center transition-opacity duration-500`}
           onClick={() => console.log('click a', slide.id)}
         >
           <div className='w-full relative'>
