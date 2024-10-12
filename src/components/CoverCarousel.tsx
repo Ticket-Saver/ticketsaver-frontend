@@ -5,7 +5,7 @@ export default function CoverCarousel() {
   const slides = [
     {
       id: 1,
-      imageUrl: '/carouselImg/festival.jpeg',
+      imageUrl: '/events/turbulence-sf.jpg',
       caption: 'Welcome to Ticketsaver!'
     },
     {
@@ -15,15 +15,25 @@ export default function CoverCarousel() {
     },
     {
       id: 3,
-      imageUrl: '/public/events/Leonas.png',
+      imageUrl: '/events/Leonas.jpg',
       caption: 'We save you the seats so you can savour the night'
+    },
+    {
+      id: 4,
+      imageUrl: '/events/turbulence-sf.jpg',
+      caption: ''
+    },
+    {
+      id: 5,
+      imageUrl: '/events/turbulence-sj.jpg',
+      caption: ''
     }
   ]
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide === slides.length - 1 ? 0 : prevSlide + 1))
-    }, 10000) // 10 seconds interval
+    }, 6000) // 6 seconds interval
 
     return () => clearInterval(intervalId)
   }, [slides.length])
