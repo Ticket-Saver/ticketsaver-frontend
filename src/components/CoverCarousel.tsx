@@ -10,7 +10,7 @@ export default function CoverCarousel() {
     },
     {
       id: 2,
-      imageUrl: '/public/events/IndiaYuridia.png',
+      imageUrl: '/public/events/IndiaYuridia.jpg',
       caption: 'Discover amazing events!'
     },
     {
