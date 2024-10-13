@@ -245,17 +245,7 @@ export default function TicketSelectionNoSeat() {
                             <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
-                            <input
-                              type='number'
-                              min='0'
-                              max={
-                                10 -
-                                totalTicketsInCart +
-                                cart.filter(
-                                  (ticket) =>
-                                    ticket.zoneName === zoneLabel && ticket.priceType === priceType
-                                ).length
-                              }
+                            <select
                               value={ticketQuantities[`${zoneLabel}-${priceType}`] || 0}
                               onChange={(e) => {
                                 const value = Math.min(
@@ -264,8 +254,14 @@ export default function TicketSelectionNoSeat() {
                                 )
                                 handleTicketQuantityChange(zoneLabel, priceType, value)
                               }}
-                              className='w-20 text-right border rounded-md p-3 text-lg'
-                            />
+                              className='w-24 border rounded-md p-2 text-lg bg-white text-black'
+                            >
+                              {Array.from({ length: 11 }, (_, i) => (
+                                <option key={i} value={i}>
+                                  {i}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                         </tr>
                       )
