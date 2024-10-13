@@ -166,8 +166,6 @@ export default function TicketSelectionNoSeat() {
 
         setCart((prev) => prev.filter((ticket) => !ticketsToRemove.includes(ticket)))
       }
-    } else {
-      alert('You cannot add more than 10 tickets in total.')
     }
   }
 
@@ -192,8 +190,8 @@ export default function TicketSelectionNoSeat() {
 
   return (
     <div className='flex flex-col min-h-screen bg-white'>
-      <div className='relative flex-grow bg-gray-100'>
-        <div className='absolute inset-0'>
+      <div className='flex-grow flex flex-col justify-between bg-gray-100'>
+        <div className='relative'>
           <div className='relative h-96'>
             {imageUrl && (
               <img
@@ -203,10 +201,23 @@ export default function TicketSelectionNoSeat() {
               />
             )}
             <div className='absolute inset-0 bg-black opacity-50'></div>
+
+            {/* Event Information */}
+            <div className='absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4'>
+              <h1 className='text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                {name}
+              </h1>
+              {venueInfo && (
+                <h2 className='text-2xl mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                  {venueInfo.venue_name}, {location}
+                </h2>
+              )}
+              <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>{date}</p>
+            </div>
           </div>
         </div>
 
-        <div className='relative z-10 flex flex-col items-center justify-start p-8'>
+        <div className='flex-grow flex flex-col items-center justify-start p-8'>
           {/* Sección de precios y selección de boletos */}
           {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
             <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
@@ -225,7 +236,6 @@ export default function TicketSelectionNoSeat() {
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
-
                       return (
                         <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
@@ -268,45 +278,25 @@ export default function TicketSelectionNoSeat() {
             <p>Loading zones and prices...</p>
           )}
 
-          {/* Sección del carrito */}
-          {cart.length > 0 ? (
-            <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
-              <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
-              {cart.map((ticket) => (
-                <div
-                  key={ticket.ticketId}
-                  className={`mb-4 pb-4 border-b-2 border-gray-300 flex justify-between text-black`}
-                >
-                  <div>
-                    <span className='font-semibold'>Ticket - {ticket.zoneName}</span>
-                    <p>Price: ${ticket.price_final.toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-
-              <div className='mt-8 flex justify-between'>
-                <div>
-                  <p className='text-xl font-bold text-black'>Total</p>
-                </div>
-                <div>
-                  <p className='text-xl font-bold text-black'>${totalCost.toFixed(2)}</p>
-                </div>
+          {/* Botón de Checkout */}
+          {cart.length > 0 && (
+            <div className='flex flex-col items-center mt-8 w-full max-w-4xl'>
+              {/* Total Cost aligned to the left */}
+              <div className='center mb-4 '>
+                <p className='text-xl font-bold text-black'>Total: ${totalCost.toFixed(2)}</p>
               </div>
 
-              <div className='flex justify-center mt-8'>
+              {/* Checkout Button centered */}
+              <div className='text-right'>
                 <Link to='/checkout'>
                   <button
-                    className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
+                    className='bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
                     onClick={handleCheckout}
                   >
                     Continue to Checkout
                   </button>
                 </Link>
               </div>
-            </div>
-          ) : (
-            <div className='w-full flex-grow flex flex-col justify-center items-center'>
-              <p className='text-2xl font-bold text-gray-500'>Your cart is empty</p>
             </div>
           )}
         </div>
