@@ -34,8 +34,10 @@ export default function TicketSelectionNoSeat() {
   const [zoneData, setZoneData] = useState<any>({})
   const [venueInfo, setVenue] = useState<any>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()
 
+  // Cargar la imagen del evento
   useEffect(() => {
     const loadImage = async () => {
       try {
@@ -49,6 +51,7 @@ export default function TicketSelectionNoSeat() {
     loadImage()
   }, [label])
 
+  // Cargar los datos de las zonas y los precios
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -110,31 +113,60 @@ export default function TicketSelectionNoSeat() {
     phone: user?.phone_number
   }
 
+  // Calcular el total de boletos en el carrito
+  const totalTicketsInCart = cart.length
+
+  // Calcular el costo total
   const totalCost = cart.reduce((acc, curr) => acc + curr.price_final, 0)
 
-  const handleBuyTicket = (zoneLabel: string, priceType: string) => {
-    const issuedAt = Date.now()
-    const cartLength = cart.length
-    const price_base = priceTagList[priceType]?.price_base / 100
-    if (!price_base) return
+  // Manejar cambios en la cantidad de boletos
+  const handleTicketQuantityChange = (
+    zoneLabel: string,
+    priceType: string,
+    newQuantity: number
+  ) => {
+    // Limitar el número total de boletos en el carrito a 10
+    const currentTotalTickets = totalTicketsInCart
+    const currentQuantity = cart.filter(
+      (ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType
+    ).length
 
-    const newTicketId = ticketId(label || '', zoneLabel, cartLength + 1, issuedAt)
+    const totalNewTickets = currentTotalTickets - currentQuantity + newQuantity
 
-    setCart((prev: Cart[] | undefined) => [
-      ...(prev || []),
-      {
-        price_base: price_base,
-        price_final: priceTagList[priceType].price_final / 100,
-        zoneName: zoneLabel,
-        seatLabel: newTicketId,
-        seatType: priceType,
-        subZone: zoneLabel,
-        priceType: priceType,
-        ticketId: newTicketId,
-        issuedAt: issuedAt,
-        numberOfTicket: cartLength + 1
+    if (totalNewTickets <= 10) {
+      setTicketQuantities((prev) => ({
+        ...prev,
+        [`${zoneLabel}-${priceType}`]: newQuantity
+      }))
+
+      if (newQuantity > currentQuantity) {
+        const issuedAt = Date.now()
+        const newTickets: Cart[] = Array.from(
+          { length: newQuantity - currentQuantity },
+          (_, index) => {
+            const newTicketId = ticketId(label || '', zoneLabel, cart.length + index + 1, issuedAt)
+            return {
+              price_base: priceTagList[priceType]?.price_base / 100,
+              price_final: priceTagList[priceType]?.price_final / 100,
+              zoneName: zoneLabel,
+              seatLabel: newTicketId,
+              seatType: priceType,
+              subZone: zoneLabel,
+              priceType: priceType,
+              ticketId: newTicketId
+            }
+          }
+        )
+
+        setCart((prev) => [...prev, ...newTickets])
+      } else if (newQuantity < currentQuantity) {
+        const ticketsToRemove = cart
+          .filter((ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType)
+          .slice(0, currentQuantity - newQuantity)
+
+        setCart((prev) => prev.filter((ticket) => !ticketsToRemove.includes(ticket)))
       }
-    ])
+    }
   }
 
   const handleCheckout = () => {
@@ -156,22 +188,11 @@ export default function TicketSelectionNoSeat() {
     navigate('/checkout')
   }
 
-  const handleRemoveTicket = (ticketId: string) => {
-    // Elimina solo el ticket específico basado en su `ticketId`
-    const updatedCart = cart.filter((ticket) => ticket.ticketId !== ticketId)
-
-    // Actualiza el carrito
-    setCart(updatedCart)
-  }
-
   return (
-    <div className='bg-white'>
-      <div className='relative bg-gray-100'>
-        {/* Event Header */}
-        <div className='absolute inset-0'>
-          {/* Cover Image */}
+    <div className='flex flex-col min-h-screen bg-white'>
+      <div className='flex-grow flex flex-col justify-between bg-gray-100'>
+        <div className='relative'>
           <div className='relative h-96'>
-            {/* Event Profile Image */}
             {imageUrl && (
               <img
                 src={imageUrl}
@@ -179,28 +200,42 @@ export default function TicketSelectionNoSeat() {
                 className='absolute inset-0 w-full h-full object-cover'
               />
             )}
-            {/* Overlay for blur effect */}
             <div className='absolute inset-0 bg-black opacity-50'></div>
+
+            {/* Event Information */}
+            <div className='absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4'>
+              <h1 className='text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                {name}
+              </h1>
+              {venueInfo && (
+                <h2 className='text-2xl mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                  {venueInfo.venue_name}, {location}
+                </h2>
+              )}
+              <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>{date}</p>
+            </div>
           </div>
         </div>
-        <div className='relative z-10 p-8'>
-          {/* Sección de la tabla de precios */}
+
+        <div className='flex-grow flex flex-col items-center justify-start p-8'>
+          {/* Sección de precios y selección de boletos */}
           {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
-            <div className='bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
+            <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
               <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
               <table className='w-full'>
                 <thead>
                   <tr>
                     <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
                     <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
-                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Add</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
+                      Quantity
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
-
                       return (
                         <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
@@ -210,12 +245,23 @@ export default function TicketSelectionNoSeat() {
                             <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
-                            <button
-                              className='bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 mr-2'
-                              onClick={() => handleBuyTicket(zoneLabel, priceType)}
+                            <select
+                              value={ticketQuantities[`${zoneLabel}-${priceType}`] || 0}
+                              onChange={(e) => {
+                                const value = Math.min(
+                                  10,
+                                  Math.max(0, parseInt(e.target.value, 10))
+                                )
+                                handleTicketQuantityChange(zoneLabel, priceType, value)
+                              }}
+                              className='w-24 border rounded-md p-2 text-lg bg-white text-black'
                             >
-                              Add to Cart
-                            </button>
+                              {Array.from({ length: 11 }, (_, i) => (
+                                <option key={i} value={i}>
+                                  {i}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                         </tr>
                       )
@@ -228,42 +274,19 @@ export default function TicketSelectionNoSeat() {
             <p>Loading zones and prices...</p>
           )}
 
-          {/* Sección del carrito */}
+          {/* Botón de Checkout */}
           {cart.length > 0 && (
-            <div className='bg-white rounded-lg shadow-lg p-8 border border-gray-300'>
-              <h2 className='text-2xl font-bold mb-6 text-black'>Cart</h2>
-              {cart.map((ticket) => (
-                <div
-                  key={ticket.ticketId} // Usa ticketId como key
-                  className='mb-4 pb-4 border-b-2 border-gray-300 flex justify-between text-black'
-                >
-                  <div>
-                    <span className='font-semibold'>Ticket - {ticket.zoneName}</span>
-                    <p> Price: ${ticket.price_final.toFixed(2)}</p>
-                  </div>
-                  <div className='flex items-center'>
-                    <button
-                      className='bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300'
-                      onClick={() => handleRemoveTicket(ticket.ticketId)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              <div className='mt-8 flex justify-between'>
-                <div>
-                  <p className='text-xl font-bold text-black'>Total</p>
-                </div>
-                <div>
-                  <p className='text-xl font-bold text-black'>${totalCost.toFixed(2)}</p>
-                </div>
+            <div className='flex flex-col items-center mt-8 w-full max-w-4xl'>
+              {/* Total Cost aligned to the left */}
+              <div className='center mb-4 '>
+                <p className='text-xl font-bold text-black'>Total: ${totalCost.toFixed(2)}</p>
               </div>
-              <div className='flex justify-center mt-8'>
+
+              {/* Checkout Button centered */}
+              <div className='text-right'>
                 <Link to='/checkout'>
                   <button
-                    className='bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
+                    className='bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
                     onClick={handleCheckout}
                   >
                     Continue to Checkout

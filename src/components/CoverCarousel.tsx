@@ -5,25 +5,35 @@ export default function CoverCarousel() {
   const slides = [
     {
       id: 1,
-      imageUrl: '/carouselImg/festival.jpeg',
+      imageUrl: '/events/turbulence-sf.jpg',
       caption: 'Welcome to Ticketsaver!'
     },
     {
       id: 2,
-      imageUrl: '/public/events/IndiaYuridia.png',
+      imageUrl: '/events/IndiaYuridia.jpg',
       caption: 'Discover amazing events!'
     },
     {
       id: 3,
-      imageUrl: '/public/events/Leonas.png',
+      imageUrl: '/events/Leonas.jpg',
       caption: 'We save you the seats so you can savour the night'
+    },
+    {
+      id: 4,
+      imageUrl: '/events/turbulence-sf.jpg',
+      caption: ''
+    },
+    {
+      id: 5,
+      imageUrl: '/events/turbulence-sj.jpg',
+      caption: ''
     }
   ]
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide === slides.length - 1 ? 0 : prevSlide + 1))
-    }, 10000) // 10 seconds interval
+    }, 6000) // 6 seconds interval
 
     return () => clearInterval(intervalId)
   }, [slides.length])
@@ -41,8 +51,9 @@ export default function CoverCarousel() {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`carousel-item ${index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
-            } flex justify-center items-center transition-opacity duration-500`}
+          className={`carousel-item ${
+            index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
+          } flex justify-center items-center transition-opacity duration-500`}
           onClick={() => console.log('click a', slide.id)}
         >
           <div className='w-full relative'>
