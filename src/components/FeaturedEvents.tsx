@@ -54,6 +54,7 @@ export default function FeaturedEvents() {
     }
   }
 
+  const hiddenEventLabels = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01'] // Define los event_la
   const { data } = useFetchJson(githubApiUrl, options)
 
   console.log('data', data)
@@ -179,43 +180,44 @@ export default function FeaturedEvents() {
         <div
           className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map((event, index) =>
-            event.tricket_url ? (
-              <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
-                <EventCard
-                  key={index}
-                  id={event.eventId}
-                  eventId={event.eventId}
-                  title={event.event_name}
-                  description={descriptions[event.event_label]} // Add description if available
-                  thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.venue_name || event.venue_label}
-                  date={new Date(event.event_date)
-                    .toLocaleDateString('en-GB', optionsDate)
-                    .replace(',', '')}
-                  city={event.venue?.location.city} // Pass the city property from the venue object
-                />
-              </a>
-            ) : (
-              <Link
-                to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
-                key={index}
-              >
-                <EventCard
-                  key={index}
-                  id={event.eventId}
-                  eventId={event.eventId}
-                  title={event.event_name}
-                  description={descriptions[event.event_label]} // Add description if available
-                  thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.venue_name || event.venue_label}
-                  date={new Date(event.event_date)
-                    .toLocaleDateString('en-GB', optionsDate)
-                    .replace(',', '')}
-                  city={event.venue?.location.city} // Pass the city property from the venue object
-                />
-              </Link>
-            )
+          {eventsWithVenues.map(
+            (event, index) =>
+              !hiddenEventLabels.includes(event.event_label) ? (
+                event.tricket_url ? (
+                  <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
+                    <EventCard
+                      id={event.eventId}
+                      eventId={event.eventId}
+                      title={event.event_name}
+                      description={descriptions[event.event_label]}
+                      thumbnailURL={images[event.event_label]}
+                      venue={event.venue?.venue_name || event.venue_label}
+                      date={new Date(event.event_date)
+                        .toLocaleDateString('en-GB', optionsDate)
+                        .replace(',', '')}
+                      city={event.venue?.location.city}
+                    />
+                  </a>
+                ) : (
+                  <Link
+                    to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
+                    key={index}
+                  >
+                    <EventCard
+                      id={event.eventId}
+                      eventId={event.eventId}
+                      title={event.event_name}
+                      description={descriptions[event.event_label]}
+                      thumbnailURL={images[event.event_label]}
+                      venue={event.venue?.venue_name || event.venue_label}
+                      date={new Date(event.event_date)
+                        .toLocaleDateString('en-GB', optionsDate)
+                        .replace(',', '')}
+                      city={event.venue?.location.city}
+                    />
+                  </Link>
+                )
+              ) : null // Oculta la tarjeta si el event_label está en hiddenEventLabels
           )}
         </div>
       </div>

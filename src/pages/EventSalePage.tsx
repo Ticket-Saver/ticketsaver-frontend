@@ -235,18 +235,13 @@ export default function EventPage() {
           <h3 className='text-black'>Sobre el evento</h3>
           <p className='text-left'>{description}</p>
         </div>
-        <div className='carousel carousel-center flex justify-start max-h-50 min-w-full abs'>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-left'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
+        <div className='flex justify-center items-center py-8'>
+          <div className='w-2/3 h-2/3'>
+            <img
+              src={image}
+              alt='Event image'
+              className='object-scale-down rounded-xl w-full h-full'
+            />
           </div>
         </div>
       </div>
