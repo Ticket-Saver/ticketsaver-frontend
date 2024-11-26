@@ -96,6 +96,7 @@ export default function EventPage() {
 
   const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
+  const eventsWithFees = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01']
 
   useEffect(() => {
     const fetchZonePrices = async () => {
@@ -146,11 +147,11 @@ export default function EventPage() {
     <div className='bg-white'>
       <div className='bg-gray-100 relative'>
         {/* Event Header */}
-        <div className='absolute inset-0'>
+        <div className='absolute inset-0 '>
           {/* Cover Image */}
           <div className='relative h-96 bg-gray-500'>
             {/* Event Profile Image */}
-            <div className='absolute inset-0 overflow-hidden'>
+            <div className='relative h-96'>
               <img
                 src={image} // Replace with a default image
                 alt='Event Profile'
@@ -193,11 +194,9 @@ export default function EventPage() {
                       <th className='text-center font-normal'>Starting prices from</th>
                       <th>
                         <a className='font-bold' style={{ fontSize: '14px' }}>
-                          {' '}
-                          $
-                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
-                            100}{' '}
-                          USD
+                          {eventsWithFees.includes(label!)
+                            ? `${Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) / 100} USD + fees`
+                            : `${Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) / 100} USD`}
                         </a>
                       </th>
                     </tr>
@@ -235,18 +234,13 @@ export default function EventPage() {
           <h3 className='text-black'>Sobre el evento</h3>
           <p className='text-left'>{description}</p>
         </div>
-        <div className='carousel carousel-center flex justify-start max-h-50 min-w-full abs'>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-left'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
-          </div>
-          <div className='carousel-item object-scale-down h-2/3 w-2/3 rounded-xl max-h-1/8 object-center'>
-            <img src={image} />
+        <div className='flex justify-center items-center py-8'>
+          <div className='w-2/3 h-2/3'>
+            <img
+              src={image}
+              alt='Event image'
+              className='object-scale-down rounded-xl w-full h-full'
+            />
           </div>
         </div>
       </div>
