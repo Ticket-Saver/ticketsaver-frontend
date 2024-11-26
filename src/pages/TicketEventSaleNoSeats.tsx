@@ -33,6 +33,7 @@ export default function TicketSelectionNoSeat() {
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>({})
   const [venueInfo, setVenue] = useState<any>(null)
+  const eventsWithFees = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01']
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()
@@ -236,13 +237,18 @@ export default function TicketSelectionNoSeat() {
                   {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
+                      const priceBase = priceTagList[priceType]?.price_base / 100
                       return (
                         <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
                             {zoneLabel}
                           </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
-                            <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
+                            <p className='font-bold'>
+                              {eventsWithFees.includes(label!)
+                                ? `$${priceBase?.toFixed(2)} + fees`
+                                : `$${priceFinal?.toFixed(2)}`}
+                            </p>
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
                             <select
