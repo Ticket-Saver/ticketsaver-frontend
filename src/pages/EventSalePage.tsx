@@ -171,7 +171,7 @@ export default function EventPage() {
               {venues?.venue_name}, {venues?.location.city}
             </h2>
             <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              {hour} hrs,
+              Doors {hour} hrs
             </h2>
             <div className='ml-auto md:w-96 sm:w-full text-black bg-white rounded-lg shadow-sm p-6'>
               <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
