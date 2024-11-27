@@ -35,7 +35,7 @@ const findData = (data: any[], id: string) => {
 
 const fetchGitHubImage = async (label: string): Promise<string> => {
   const token = import.meta.env.VITE_GITHUB_TOKEN //
-  const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
+  const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/banner.png`
 
   const response = await fetch(Url, {
     headers: {
