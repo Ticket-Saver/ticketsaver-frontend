@@ -51,8 +51,9 @@ export default function CoverCarousel() {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`carousel-item ${index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
-            } flex justify-center items-center transition-opacity duration-500`}
+          className={`carousel-item ${
+            index === currentSlide ? 'opacity-100' : 'opacity-0 hidden'
+          } flex justify-center items-center transition-opacity duration-500`}
           onClick={() => console.log('click a', slide.id)}
         >
           <div className='w-full relative'>
