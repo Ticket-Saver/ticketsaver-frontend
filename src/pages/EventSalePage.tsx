@@ -97,6 +97,8 @@ export default function EventPage() {
   const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
   const eventsWithFees = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01']
+  const eventsDoors: { [key: string]: string } = { 'turbulence_burrita.04': '20:00' }
+  const doorHour = label && eventsDoors[label] ? eventsDoors[label] : hour
 
   useEffect(() => {
     const fetchZonePrices = async () => {
@@ -172,7 +174,7 @@ export default function EventPage() {
               {venues?.venue_name}, {venues?.location.city}
             </h2>
             <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              Doors {hour} hrs
+              Doors {doorHour} hrs
             </h2>
             <div className='ml-auto md:w-96 sm:w-full text-black bg-white rounded-lg shadow-sm p-6'>
               <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
