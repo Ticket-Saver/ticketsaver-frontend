@@ -54,10 +54,14 @@ export default function FeaturedEvents() {
     }
   }
 
-  const hiddenEventLabels = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01'] // Define los event_la
+  const hiddenEventLabels = [
+    'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
+    'deorro_claytons.01'
+  ]
   const { data } = useFetchJson(githubApiUrl, options)
-
-  console.log('data', data)
 
   useEffect(() => {
     let filteredEvents: Event[] = []

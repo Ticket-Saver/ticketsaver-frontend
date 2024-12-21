@@ -54,7 +54,13 @@ export default function EventPage() {
       Accept: 'application/vnd.github.v3.raw'
     }
   }
-  const hiddenEventLabels = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01'] // Define los event_la
+  const hiddenEventLabels = [
+    'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
+    'deorro_claytons.01'
+  ] // Define los event_la
 
   const { data } = useFetchJson(githubApiUrl, options)
   useEffect(() => {
@@ -63,8 +69,6 @@ export default function EventPage() {
     if (data) {
       const eventsArray = Object.values(data)
       const currentDate = new Date()
-
-      console.log('currentDate', currentDate)
 
       filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {

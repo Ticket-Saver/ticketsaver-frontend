@@ -95,7 +95,6 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       }
 
       const data: EventData = await response.json()
-      console.log('Tickets:', data)
       const [images, descriptions] = await Promise.all([
         imagesFromGithub(data),
         descriptionsFromGithub(data)

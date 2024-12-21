@@ -33,7 +33,13 @@ export default function TicketSelectionNoSeat() {
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>({})
   const [venueInfo, setVenue] = useState<any>(null)
-  const eventsWithFees = ['ice_spice.01', 'bossman_dlow.01', 'bigxthaplug.01']
+  const eventsWithFees = [
+    'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
+    'deorro_claytons.01'
+  ]
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()

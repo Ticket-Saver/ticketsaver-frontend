@@ -42,7 +42,5 @@ export default function SalePage() {
     fetchVenues()
   }, [venue, githubApiUrl, token])
 
-  console.log(venue)
-
   return <>{venues?.seatmap ? <TicketSelectionSeat /> : <TicketSelectionNoSeat />}</>
 }
