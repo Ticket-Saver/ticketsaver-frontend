@@ -234,7 +234,9 @@ export default function EventPage() {
             - {hour} hrs
           </h2>
           <h3 className='text-black'>Event Info</h3>
-          <p className='text-left'>{description}</p>
+          <p className='text-left' style={{ whiteSpace: 'pre-wrap' }}>
+            {description}
+          </p>
         </div>
         <div className='flex justify-center items-center py-8'>
           <div className='w-2/3 h-2/3'>
