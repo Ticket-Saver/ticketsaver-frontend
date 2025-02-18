@@ -1,18 +1,20 @@
 # Dependency directories
 node_modules/
 
-# Package manager files
+# Package manager files - solo permitir yarn.lock
 package-lock.json
 pnpm-lock.yaml
 .pnp.*
+.npm
 
-# Yarn specific
+# Yarn
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+.pnp.*
 
 # Environment files
 .env
