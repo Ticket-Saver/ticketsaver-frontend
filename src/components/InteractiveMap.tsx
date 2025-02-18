@@ -70,8 +70,9 @@ const InteractiveMap = ({
   }
 
   return (
-    <div className='flex-row overflow-visible justify-center content-center '>
+    <div   className='flex-row overflow-visible justify-center content-center '>
       <div className='justify-center content-center items-center overline mt-4 cursor-pointer'>
+       
         <ImageMapper
           src={src}
           map={updatedMap}

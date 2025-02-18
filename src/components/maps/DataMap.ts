@@ -74,6 +74,18 @@ export const eventData: EventData = {
       priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
     }*/
   },
+  map1: {
+    orchestra: {
+      zones: ['Orange', 'Green', 'Pink', 'Blue', 'Yellow', 'Purple'],
+      priceTag: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']
+    }
+  },
+  map2: {
+    Map: {
+      zones: ['Purple', 'Green', 'Blue', 'Red', 'Orange', 'Brown'],
+      priceTag: ['P1', 'P2', 'P5', 'P3', 'P4', 'P6']
+    }
+  },
   india_yuridia02: {
     Map: {
       zones: ['Purple', 'Green', 'Blue', 'Red', 'Orange', 'Brown'],
@@ -103,6 +115,54 @@ export const mapConfig: MapConfig = {
       Map: {
         defaultMap: ManuelArtTime,
         src: ManuelArtTimePng
+      }
+    }
+  },
+  'map1': {
+    zones: {
+      orchestra: {
+        defaultMap: OrchestraMap,
+        src: OrchestraMap2
+      },
+      loge: {
+        defaultMap: LogeMap,
+        src: LogeMapPng
+      }
+    }
+  },
+  'map2': {
+    zones: {
+      orchestra: {
+        defaultMap: OrchestraMap,
+        src: OrchestraMap2
+      },
+      loge: {
+        defaultMap: LogeMap,
+        src: LogeMapPng
+      }
+    }
+  },
+  'map1': {
+    zones: {
+      orchestra: {
+        defaultMap: OrchestraMap,
+        src: OrchestraMap2
+      },
+      loge: {
+        defaultMap: LogeMap,
+        src: LogeMapPng
+      }
+    }
+  },
+  'map2': {
+    zones: {
+      orchestra: {
+        defaultMap: OrchestraMap,
+        src: OrchestraMap2
+      },
+      loge: {
+        defaultMap: LogeMap,
+        src: LogeMapPng
       }
     }
   },

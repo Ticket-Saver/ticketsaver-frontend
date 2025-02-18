@@ -201,7 +201,13 @@ export default function EventPage() {
                 to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
                 key={index}
                 state={{
-                  sale_starts_at: event.sale_starts_at
+                  sale_starts_at: event.sale_starts_at,
+                  eventId: event.eventId,
+                  eventName: event.event_name,
+                  venueName: event.venue?.venue_name,
+                  eventDate: event.event_date,
+                  eventLabel: event.event_label,
+                  venueLocation: event.venue?.location
                 }}
               >
                 <EventCard

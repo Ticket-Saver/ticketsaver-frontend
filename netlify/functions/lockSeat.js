@@ -45,12 +45,13 @@ exports.handler = async function (event, _context) {
     .eq('Event', seat.Event)
     .single()
 
-  if (seatError) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to fetch seat data' })
+    if (seatError) {
+      console.error('Error fetching seat data:', seatError); // Agregado
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to fetch seat data' })
+      };
     }
-  }
 
   // Check if the seat can be updated by this session
   if (!seatData || (seatData.LockedBy && seatData.LockedBy !== seat.sessionId)) {

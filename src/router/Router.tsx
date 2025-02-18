@@ -25,6 +25,7 @@ import TermsConditionPage from '../pages/Terms&conditionsPage'
 import PrivayPolicyPage from '../pages/PrivayPolicyPage'
 import PCICompliancePage from '../pages/PciCompliancePage'
 import FaqsPage from '../pages/FaqsPage'
+import SuccessCheckout from '../components/SuccessCheckout'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const { isAuthenticated, loginWithRedirect } = useAuth0()
@@ -50,7 +51,7 @@ export const AppRouter = () => (
           </LayoutHeaderFooter>
         }
       />
-
+<Route path="/success" element={<SuccessCheckout />} />
       <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
 
       <Route path='return' element={<ReturnPage />} />

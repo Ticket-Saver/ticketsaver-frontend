@@ -36,69 +36,121 @@ export default function TicketSelectionNoSeat() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()
+  const [ticketData, setTicketData] = useState(null)
+  const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
 
   // Cargar la imagen del evento
   useEffect(() => {
     const loadImage = async () => {
       try {
-        const url = await fetchGitHubImage(label!)
-        setImageUrl(url)
+        // Primero intentar con GitHub
+        try {
+          const url = await fetchGitHubImage(label!)
+          setImageUrl(url)
+        } catch (error) {
+          // Si falla GitHub, intentar con la API local
+          const localResponse = await fetch(
+            `${import.meta.env.VITE_HIEVENTS_API_URL as string}/events/${venue}/images`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${import.meta.env.VITE_TOKEN_HIEVENTS}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!localResponse.ok) {
+            throw new Error('Error fetching local images');
+          }
+
+          const localData = await localResponse.json();
+          if (localData.data && localData.data.length > 0) {
+            setImageUrl(localData.data[0].url);
+          }
+        }
       } catch (error) {
         console.error('Error loading image:', error)
       }
     }
 
     loadImage()
-  }, [label])
+  }, [label, venue])
 
   // Cargar los datos de las zonas y los precios
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const zonePriceData = await response.json()
-        setZoneData(zonePriceData)
-
-        const zonePriceListData = extractLatestPrices(zonePriceData)
-        setPriceTags(zonePriceListData)
-      } catch (error) {
-        console.error('Error fetching zone data', error)
-      }
-    }
-    const fetchVenues = async () => {
-      const storedVenues = localStorage.getItem('Venues')
-      localStorage.removeItem('Venues')
-
-      if (storedVenues) {
-        setVenue(JSON.parse(storedVenues))
-      } else {
-        try {
-          const response = await fetch(githubApiUrl2, {
+        // Primer intento: Nuevo endpoint de tickets
+        const ticketsResponse = await fetch(
+          'https://localhost:8443/api/events/1/tickets?page=1&per_page=20&query=&sort_by=&sort_direction=',
+          {
             headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/vnd.github.v3.raw'
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token2}`
+            },
+            // @ts-ignore
+            rejectUnauthorized: false
           }
+        )
 
-          const data = await response.json()
-          const matchingVenue = data[venue!]
-          setVenue(matchingVenue)
-        } catch (error) {
-          console.error('Error fetching data: ', error)
+        if (ticketsResponse.ok) {
+          const ticketsData = await ticketsResponse.json()
+          console.log('Tickets Data:', ticketsData)
+          setTicketData(ticketsData)
+
+          // Formatear los datos de tickets para el formato esperado
+          if (ticketsData.data && ticketsData.data.length > 0) {
+            const formattedZoneData = {
+              zones: ticketsData.data.reduce((acc: any, ticket: any) => {
+                // Usar el título del ticket como nombre de zona si no hay seat_label
+                const zoneName = ticket.title || 'General'
+                acc[zoneName] = {
+                  [`price_${ticket.id}`]: {
+                    price_base: ticket.price * 100,
+                    price_final: ticket.price_final ? parseFloat(ticket.price_final) * 100 : ticket.price * 100
+                  }
+                }
+                return acc
+              }, {})
+            }
+            setZoneData(formattedZoneData)
+
+            const formattedPriceTags = ticketsData.data.reduce((acc: any, ticket: any) => {
+              acc[`price_${ticket.id}`] = {
+                price_base: ticket.price * 100,
+                price_final: ticket.price_final ? parseFloat(ticket.price_final) * 100 : ticket.price * 100
+              }
+              return acc
+            }, {})
+            setPriceTags(formattedPriceTags)
+
+            console.log('Formatted Zone Data:', formattedZoneData)
+            console.log('Formatted Price Tags:', formattedPriceTags)
+          }
+        } else {
+          throw new Error('Failed to fetch tickets')
+        }
+      } catch (error) {
+        console.error('Error fetching tickets:', error)
+        // Fallback a GitHub
+        try {
+          const response = await fetch(githubApiUrl, options)
+          if (!response.ok) {
+            throw new Error('GitHub response error')
+          }
+          const zonePriceData = await response.json()
+          setZoneData(zonePriceData)
+          const zonePriceListData = extractLatestPrices(zonePriceData)
+          setPriceTags(zonePriceListData)
+        } catch (githubError) {
+          console.error('Error fetching from GitHub:', githubError)
         }
       }
     }
 
     fetchData()
-    fetchVenues()
-  }, [githubApiUrl, githubApiUrl2, token, venue])
+  }, [githubApiUrl, options, token2])
 
   useEffect(() => {
     localStorage.removeItem('local_cart')
@@ -221,38 +273,36 @@ export default function TicketSelectionNoSeat() {
           {/* Sección de precios y selección de boletos */}
           {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
             <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
-              <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
+              <h2 className='text-2xl font-bold mb-6 text-black'>Precios de Tickets</h2>
               <table className='w-full'>
                 <thead>
                   <tr>
-                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Zone</th>
-                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Price</th>
-                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
-                      Quantity
-                    </th>
+                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Tipo</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Precio</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>Cantidad</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(zoneData.zones).map(([zoneLabel, priceTypes]) =>
-                    Object.entries(priceTypes as any[]).map(([priceType]) => {
+                  {Object.entries(zoneData.zones).map(([zoneName, priceTypes]) =>
+                    Object.entries(priceTypes as any).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
                       return (
-                        <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
+                        <tr key={`${zoneName}-${priceType}`} className='hover:bg-gray-100'>
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
-                            {zoneLabel}
+                            {zoneName}
                           </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
                             <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
                           </td>
                           <td className='text-right py-2 border-b border-gray-300'>
                             <select
-                              value={ticketQuantities[`${zoneLabel}-${priceType}`] || 0}
+                              value={ticketQuantities[`${zoneName}-${priceType}`] || 0}
                               onChange={(e) => {
                                 const value = Math.min(
                                   10,
                                   Math.max(0, parseInt(e.target.value, 10))
                                 )
-                                handleTicketQuantityChange(zoneLabel, priceType, value)
+                                handleTicketQuantityChange(zoneName, priceType, value)
                               }}
                               className='w-24 border rounded-md p-2 text-lg bg-white text-black'
                             >
@@ -271,7 +321,7 @@ export default function TicketSelectionNoSeat() {
               </table>
             </div>
           ) : (
-            <p>Loading zones and prices...</p>
+            <p>Cargando zonas y precios...</p>
           )}
 
           {/* Botón de Checkout */}

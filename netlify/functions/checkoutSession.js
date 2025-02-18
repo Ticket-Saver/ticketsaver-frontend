@@ -122,7 +122,7 @@ exports.handler = async function (event, _context) {
         body: JSON.stringify({ clientSecret: session.client_secret })
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error.message)
+      console.error('Error creating checkout session:', error)
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Failed to create checkout session' })
