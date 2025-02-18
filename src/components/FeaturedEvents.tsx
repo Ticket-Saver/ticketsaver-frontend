@@ -48,7 +48,7 @@ export default function FeaturedEvents() {
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
 
-  const options = {
+  const options = { 
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3.raw'
