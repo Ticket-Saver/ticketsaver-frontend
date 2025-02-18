@@ -14,7 +14,6 @@ pnpm-lock.yaml
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-.pnp.*
 
 # Environment files
 .env
