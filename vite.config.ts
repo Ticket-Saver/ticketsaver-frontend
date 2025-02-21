@@ -34,10 +34,6 @@ export default defineConfig({
         skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
-      devOptions: {
-        enabled: true
-      },
-      includeAssets: [],
       manifest: {
         name: 'TechDetech WebApp',
         theme_color: '#8F00FF',
@@ -46,34 +42,14 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'any maskable'
           }
         ]
       }
     })
   ],
   server: {
-    proxy: {
-      '/api': {
-        target: 'https://localhost:8443',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            proxyReq.setHeader('Origin', 'https://localhost:8443');
-          });
-        }
-      }
-    }
+    host: true,
+    port: Number(process.env.PORT) || 3000
   }
 })
