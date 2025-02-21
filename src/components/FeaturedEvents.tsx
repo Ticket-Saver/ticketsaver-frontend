@@ -59,7 +59,8 @@ export default function FeaturedEvents() {
     'bossman_dlow.01',
     'bigxthaplug.01',
     'geazy_claytons.01',
-    'deorro_claytons.01'
+    'deorro_claytons.01',
+    'deebaby_zro.01'
   ]
   const { data } = useFetchJson(githubApiUrl, options)
 

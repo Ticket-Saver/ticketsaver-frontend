@@ -52,8 +52,16 @@ const extractZonePrices = (result: any) => {
     const priceTierKeys = Object.keys(priceTiers as Record<string, any>)
     const pricesForZone = priceTierKeys.map((priceTierKey) => {
       const availableDates = Object.keys(prices[priceTierKey])
-      const firstAvailableDate = availableDates[0]
-      const priceInfo = prices[priceTierKey][firstAvailableDate]
+      console.log('availableDates', availableDates)
+      const today = new Date()
+      const closestDate = availableDates
+        .map((date) => new Date(date)) // Convertir a Date
+        .sort(
+          (a, b) =>
+            Math.abs(a.getTime() - today.getTime()) - Math.abs(b.getTime() - today.getTime())
+        )[0]
+      const priceInfo =
+        prices[priceTierKey][closestDate.toISOString().split('T')[0] ?? availableDates[0]]
       return {
         priceBase: priceInfo.price_base,
         priceFinal: priceInfo.price_final
