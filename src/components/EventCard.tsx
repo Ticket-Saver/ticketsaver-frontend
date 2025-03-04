@@ -10,7 +10,6 @@ export interface EventCardConfig {
   venue?: string
   city?: string
 }
-
 export function EventCard({
   title,
   city,
@@ -27,18 +26,18 @@ export function EventCard({
     <div
       className={`card ${color} ${fontColor} shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-lg cursor-pointer w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl mx-auto`}
     >
-      <figure className='w-full'>
+      <figure className='w-full aspect-video relative'>
         {thumbnailURL === 'none' ? (
           <img
             src='ticketsaver.png'
-            className='w-full object-cover h-32 sm:h-40 md:h-48 lg:h-56 bg-white'
             alt='Default Event'
+            className='absolute inset-0 w-full h-full object-cover bg-white'
           />
         ) : (
           <img
             src={thumbnailURL}
             alt='Event'
-            className='w-full object-cover h-32 sm:h-40 md:h-48 lg:h-56'
+            className='absolute inset-0 w-full h-full object-cover'
           />
         )}
       </figure>
@@ -48,10 +47,7 @@ export function EventCard({
         </div>
         <h1 className='inline-block text-sm sm:text-base'>{city}</h1>
         <div className='inline-block space-y-2 space-x-2'>
-          <h2 className='badge badge-outline '>
-            {' '}
-            {isSmallScreen ? truncateText(venue, 27) : venue}
-          </h2>
+          <h2 className='badge badge-outline'>{isSmallScreen ? truncateText(venue, 27) : venue}</h2>
           <h2 className='badge badge-outline'>{date}</h2>
         </div>
         <p className='text-sm sm:text-base'>{description}</p>
