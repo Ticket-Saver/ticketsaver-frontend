@@ -102,7 +102,8 @@ export default function EventPage() {
     'bigxthaplug.01',
     'geazy_claytons.01',
     'deorro_claytons.01',
-    'deebaby_zro.01'
+    'deebaby_zro.01',
+    'yeri_mua.01'
   ]
   const eventsDoors: { [key: string]: string } = { 'turbulence_burrita.04': '20:00' }
   const doorHour = label && eventsDoors[label] ? eventsDoors[label] : hour
