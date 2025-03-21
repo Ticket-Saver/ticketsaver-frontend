@@ -1,100 +1,26 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { extractZonePrices } from '../components/Utils/priceUtils'
 import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { useVenues } from '../router/venuesContext'
+import { useEvents } from '../router/eventsContext'
 
 export default function EventPage() {
   const navigate = useNavigate()
   const { venue, name, date, label, delete: deleteParam } = useParams()
 
-  const [venues, setVenue] = useState<any>(null)
+  const { venues } = useVenues()
+  const { events } = useEvents()
+
+  const matchingVenue = venues ? venues[venue!] : null
+  const eventData = events ? events[label!] : null
+
   const [description, setDescription] = useState<string>('')
   const [image, setImage] = useState<string>('')
-  const [hour, setHour] = useState<string>('')
-  const [saleStartsAt, setSaleStartsAt] = useState<string>('')
 
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
-  const token = import.meta.env.VITE_GITHUB_TOKEN
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
+  const hour = eventData?.event_hour || ''
+  const saleStartsAt = eventData?.sale_starts_at || ''
 
-  useEffect(() => {
-    const fetchHour = async () => {
-      try {
-        const response = await fetch(githubApiUrl2, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const events = await response.json()
-        const event = events[label!]
-
-        if (event) {
-          setHour(event.event_hour)
-          setSaleStartsAt(event.sale_starts_at)
-        }
-      } catch (error) {
-        console.error('Failed to fetch event hour:', error)
-      }
-    }
-
-    if (label) {
-      fetchHour()
-    }
-  }, [label, githubApiUrl2, options])
-
-  useEffect(() => {
-    if (deleteParam === 'delete') {
-      navigate('/')
-      return
-    }
-
-    const currentDate = new Date()
-    const endDate = date ? new Date(date) : new Date()
-
-    endDate.setDate(endDate.getDate() + 2)
-
-    if (currentDate.getTime() > endDate.getTime()) {
-      navigate('/')
-      return
-    }
-
-    const fetchVenues = async () => {
-      const storedVenues = localStorage.getItem('Venues')
-      localStorage.removeItem('Venues')
-
-      if (storedVenues) {
-        setVenue(JSON.parse(storedVenues))
-      } else {
-        try {
-          const response = await fetch(githubApiUrl, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/vnd.github.v3.raw'
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          const matchingVenue = data[venue!]
-          setVenue(matchingVenue)
-        } catch (error) {
-          console.error('Error fetching data: ', error)
-        }
-      }
-    }
-    fetchVenues()
-  }, [venue, githubApiUrl, token])
-
-  const customUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
   const eventsWithFees = [
     'ice_spice.01',
@@ -113,7 +39,38 @@ export default function EventPage() {
   }
   const doorHour = label && eventsDoors[label] ? eventsDoors[label] : hour
 
+  // Redirigir si se debe borrar o si la fecha ya expiró
   useEffect(() => {
+    if (deleteParam === 'delete') {
+      navigate('/')
+      return
+    }
+    const currentDate = new Date()
+    const endDate = date ? new Date(date) : new Date()
+    endDate.setDate(endDate.getDate() + 2)
+    if (currentDate.getTime() > endDate.getTime()) {
+      navigate('/')
+      return
+    }
+  }, [deleteParam, date, navigate])
+
+  const token = import.meta.env.VITE_GITHUB_TOKEN
+  const options = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3.raw'
+      }
+    }),
+    [token]
+  )
+  const customUrl = useMemo(
+    () => `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`,
+    [label]
+  )
+  // Fetch de zone prices (se actualiza cada vez que carga la página)
+  useEffect(() => {
+    if (!label) return
     const fetchZonePrices = async () => {
       try {
         const response = await fetch(customUrl, options)
@@ -122,36 +79,32 @@ export default function EventPage() {
         }
         const zonePrices = await response.json()
         const zonePriceListData = extractZonePrices(zonePrices)
-
         setZonePriceList(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone prices', error)
       }
     }
     fetchZonePrices()
-  }, [])
+  }, [customUrl, options, label])
 
+  // Fetch de descripción
   useEffect(() => {
+    if (!label) return
     const fetchDescriptions = async () => {
-      const description = await fetchDescription(label!, options)
-
-      setDescription(description)
+      const desc = await fetchDescription(label, options)
+      setDescription(desc)
     }
+    fetchDescriptions()
+  }, [label, options])
 
-    if (label) {
-      fetchDescriptions()
-    }
-  }, [label])
-
+  // Fetch de imagen (se ejecuta solo cuando label cambia)
   useEffect(() => {
+    if (!label) return
     const fetchImages = async () => {
-      const image = await fetchGitHubImage(label!)
-      setImage(image)
+      const img = await fetchGitHubImage(label)
+      setImage(img)
     }
-
-    if (label) {
-      fetchImages()
-    }
+    fetchImages()
   }, [label])
 
   const currentDate = new Date()
@@ -168,7 +121,7 @@ export default function EventPage() {
             {/* Event Profile Image */}
             <div className='relative h-96'>
               <img
-                src={image} // Replace with a default image
+                src={image}
                 alt='Event Profile'
                 className='w-full h-full object-cover overflow-hidden blur-sm object-top'
               />
@@ -184,7 +137,7 @@ export default function EventPage() {
               {name}
             </h1>
             <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
-              {venues?.venue_name}, {venues?.location.city}
+              {matchingVenue?.venue_name}, {matchingVenue?.location.city}
             </h2>
             <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'>
               Doors {doorHour}
@@ -197,12 +150,10 @@ export default function EventPage() {
                   <tr>
                     <th className='text-left'>Type</th>
                     <th className='text-center'></th>
-
                     <th className='text-right'>Price</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Static ticket data */}
                   {zonePriceList.map((zoneItem) => (
                     <tr key={zoneItem.zone}>
                       <th className='text-left font-normal'>{zoneItem.zone}</th>
@@ -221,8 +172,12 @@ export default function EventPage() {
               {/* Buy Tickets Button */}
               <div className='mt-6'>
                 <Link
-                  to={`/sale/${name}/${venues?.venue_label}/${venues?.location.city}/${date}/${label}/${deleteParam}`}
-                  className={`btn ${isSaleActive ? 'btn-active bg-blue-500 hover:bg-blue-600' : 'btn-disabled bg-gray-400'} text-white py-2 px-4 rounded w-full`}
+                  to={`/sale/${name}/${matchingVenue?.venue_label}/${matchingVenue?.location.city}/${date}/${label}/${deleteParam}`}
+                  className={`btn ${
+                    isSaleActive
+                      ? 'btn-active bg-blue-500 hover:bg-blue-600'
+                      : 'btn-disabled bg-gray-400'
+                  } text-white py-2 px-4 rounded w-full`}
                 >
                   {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${saleStartsAt}`}
                 </Link>

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { extractLatestPrices } from '../components/Utils/priceUtils'
-import { Link } from 'react-router-dom'
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { useVenues } from '../router/venuesContext'
 
 interface Cart {
   price_base: number
@@ -19,20 +19,37 @@ interface Cart {
 
 export default function TicketSelectionNoSeat() {
   const { name, venue, date, location, label } = useParams()
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
-  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-
+  const navigate = useNavigate()
   const token = import.meta.env.VITE_GITHUB_TOKEN
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
+
+  // Memoriza el objeto options para evitar recrearlo en cada render
+  const options = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3.raw'
+      }
+    }),
+    [token]
+  )
+
+  // Memoriza la URL del endpoint para zone prices (solo cambia si label cambia)
+  const githubApiUrl = useMemo(
+    () => `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`,
+    [label]
+  )
+
+  // Estados locales para datos específicos
   const [cart, setCart] = useState<Cart[]>([])
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>({})
-  const [venueInfo, setVenue] = useState<any>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
+
+  // Usar el contexto para obtener la información de venues de forma centralizada
+  const { venues: contextVenues } = useVenues()
+  const venueInfo = contextVenues ? contextVenues[venue!] : null
+
   const eventsWithFees = [
     'ice_spice.01',
     'bossman_dlow.01',
@@ -41,12 +58,10 @@ export default function TicketSelectionNoSeat() {
     'deorro_claytons.01',
     'deebaby_zro.01'
   ]
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
-  const navigate = useNavigate()
 
-  // Cargar la imagen del evento
+  // Cargar la imagen del evento solo cuando label cambie
   useEffect(() => {
+    if (!label) return
     const loadImage = async () => {
       try {
         const url = await fetchGitHubImage(label!)
@@ -55,12 +70,12 @@ export default function TicketSelectionNoSeat() {
         console.error('Error loading image:', error)
       }
     }
-
     loadImage()
   }, [label])
 
-  // Cargar los datos de las zonas y los precios
+  // Cargar los datos de zone prices una sola vez cuando label cambie
   useEffect(() => {
+    if (!label) return
     const fetchData = async () => {
       try {
         const response = await fetch(githubApiUrl, options)
@@ -69,45 +84,16 @@ export default function TicketSelectionNoSeat() {
         }
         const zonePriceData = await response.json()
         setZoneData(zonePriceData)
-
         const zonePriceListData = extractLatestPrices(zonePriceData)
         setPriceTags(zonePriceListData)
       } catch (error) {
         console.error('Error fetching zone data', error)
       }
     }
-    const fetchVenues = async () => {
-      const storedVenues = localStorage.getItem('Venues')
-      localStorage.removeItem('Venues')
-
-      if (storedVenues) {
-        setVenue(JSON.parse(storedVenues))
-      } else {
-        try {
-          const response = await fetch(githubApiUrl2, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/vnd.github.v3.raw'
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-          const matchingVenue = data[venue!]
-          setVenue(matchingVenue)
-        } catch (error) {
-          console.error('Error fetching data: ', error)
-        }
-      }
-    }
-
     fetchData()
-    fetchVenues()
-  }, [githubApiUrl, githubApiUrl2, token, venue])
+  }, [githubApiUrl, options, label])
 
+  // Limpiar datos del carrito en localStorage solo una vez al montar el componente
   useEffect(() => {
     localStorage.removeItem('local_cart')
     localStorage.removeItem('cart_checkout')
@@ -121,10 +107,8 @@ export default function TicketSelectionNoSeat() {
     phone: user?.phone_number
   }
 
-  // Calcular el total de boletos en el carrito
+  // Calcular el total de boletos y costo total
   const totalTicketsInCart = cart.length
-
-  // Calcular el costo total
   const totalCost = cart.reduce((acc, curr) => acc + curr.price_final, 0)
 
   // Manejar cambios en la cantidad de boletos
@@ -133,12 +117,10 @@ export default function TicketSelectionNoSeat() {
     priceType: string,
     newQuantity: number
   ) => {
-    // Limitar el número total de boletos en el carrito a 10
     const currentTotalTickets = totalTicketsInCart
     const currentQuantity = cart.filter(
       (ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType
     ).length
-
     const totalNewTickets = currentTotalTickets - currentQuantity + newQuantity
 
     if (totalNewTickets <= 10) {
@@ -165,13 +147,11 @@ export default function TicketSelectionNoSeat() {
             }
           }
         )
-
         setCart((prev) => [...prev, ...newTickets])
       } else if (newQuantity < currentQuantity) {
         const ticketsToRemove = cart
           .filter((ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType)
           .slice(0, currentQuantity - newQuantity)
-
         setCart((prev) => prev.filter((ticket) => !ticketsToRemove.includes(ticket)))
       }
     }
@@ -209,7 +189,6 @@ export default function TicketSelectionNoSeat() {
               />
             )}
             <div className='absolute inset-0 bg-black opacity-50'></div>
-
             {/* Event Information */}
             <div className='absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4'>
               <h1 className='text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
@@ -224,9 +203,7 @@ export default function TicketSelectionNoSeat() {
             </div>
           </div>
         </div>
-
         <div className='flex-grow flex flex-col items-center justify-start p-8'>
-          {/* Sección de precios y selección de boletos */}
           {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
             <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
               <h2 className='text-2xl font-bold mb-6 text-black'>Ticket Prices</h2>
@@ -287,15 +264,11 @@ export default function TicketSelectionNoSeat() {
             <p>Loading zones and prices...</p>
           )}
 
-          {/* Botón de Checkout */}
           {cart.length > 0 && (
             <div className='flex flex-col items-center mt-8 w-full max-w-4xl'>
-              {/* Total Cost aligned to the left */}
               <div className='center mb-4 '>
                 <p className='text-xl font-bold text-black'>Total: ${totalCost.toFixed(2)}</p>
               </div>
-
-              {/* Checkout Button centered */}
               <div className='text-right'>
                 <Link to='/checkout'>
                   <button

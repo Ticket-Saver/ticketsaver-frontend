@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { EventCard } from './EventCard'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchJson, fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
+import { fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
+import { useEvents } from '../router/eventsContext'
+import { useVenues } from '../router/venuesContext'
 
 interface Event {
   eventId: string
@@ -37,66 +39,53 @@ interface EventWithVenue extends Event {
 }
 
 export default function FeaturedEvents() {
+  // Obtenemos los datos desde los contextos
+  const { events: contextEvents } = useEvents()
+  const { venues: contextVenues } = useVenues()
+
+  // Estados locales para trabajar con los datos filtrados y combinados
   const [events, setEvents] = useState<Event[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
+  const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string>>({})
 
-  const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
-  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
+  // Definir options con token (usamos useMemo para que sea estable)
   const token = import.meta.env.VITE_GITHUB_TOKEN
+  const options = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3.raw'
+      }
+    }),
+    [token]
+  )
 
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
-
-  const hiddenEventLabels = [
-    'ice_spice.01',
-    'bossman_dlow.01',
-    'bigxthaplug.01',
-    'geazy_claytons.01',
-    'deorro_claytons.01',
-    'deebaby_zro.01'
-  ]
-  const { data } = useFetchJson(githubApiUrl, options)
-
+  // Filtrar eventos: descartamos los eliminados y aquellos cuya fecha haya expirado (más 2 días)
   useEffect(() => {
-    let filteredEvents: Event[] = []
-
-    if (data) {
-      const eventsArray = Object.values(data)
+    if (contextEvents) {
+      const eventsArray: Event[] = Object.values(contextEvents)
       const currentDate = new Date()
-
-      filteredEvents = eventsArray.filter((event) => {
-        if (event.event_deleted_at) {
-          return false
-        }
-
+      const filteredEvents = eventsArray.filter((event) => {
+        if (event.event_deleted_at) return false
         const endDate = new Date(event.event_date)
         endDate.setDate(endDate.getDate() + 2)
-
         return endDate.getTime() > currentDate.getTime()
       })
+      setEvents(filteredEvents)
     }
-    setEvents(filteredEvents)
-  }, [data])
+  }, [contextEvents])
 
-  const { data: data2 } = useFetchJson(githubApiUrl2, options)
-
+  // Convertir venues del contexto a array
   useEffect(() => {
-    let filteredVenue: Venue[] = []
-
-    if (data2) {
-      const venuesArray = Object.values(data2)
-      filteredVenue = venuesArray
+    if (contextVenues) {
+      const venuesArray: Venue[] = Object.values(contextVenues)
+      setVenues(venuesArray)
     }
+  }, [contextVenues])
 
-    setVenues(filteredVenue)
-  }, [data2])
+  // Combinar cada evento con su venue correspondiente
   useEffect(() => {
     const combinedData = events.map((event) => {
       const venue = venues.find((v) => v.venue_label === event.venue_label)
@@ -105,42 +94,38 @@ export default function FeaturedEvents() {
     setEventsWithVenues(combinedData)
   }, [events, venues])
 
+  // Obtener las descripciones de cada evento usando las options
   useEffect(() => {
     const fetchAllDescriptions = async () => {
       const descriptionsDict: Record<string, string> = {}
-
       for (const event of events) {
-        const description = await fetchDescription(event.event_label, options)
-        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+        const desc = await fetchDescription(event.event_label, options)
+        descriptionsDict[event.event_label] = desc.slice(0, 250) + '...'
       }
-
       setDescriptions(descriptionsDict)
     }
-
     if (events.length > 0) {
       fetchAllDescriptions()
     }
-  }, [events])
+  }, [events, options])
 
+  // Obtener las imágenes de cada evento usando las options
   useEffect(() => {
     const fetchAllImages = async () => {
       const imagesDict: Record<string, string> = {}
-
       for (const event of events) {
-        const image = await fetchGitHubImage(event.event_label)
-        imagesDict[event.event_label] = image
+        const img = await fetchGitHubImage(event.event_label)
+        imagesDict[event.event_label] = img
       }
-
       setImages(imagesDict)
     }
-
     if (events.length > 0) {
       fetchAllImages()
     }
-  }, [events])
+  }, [events, options])
 
-  const setSessionId = useState<string>('')[1] // State to store sessionId
-
+  // Generación o lectura del sessionId (para tracking u otro fin)
+  const setSessionId = useState<string>('')[1]
   const getCookie = (name: string) => {
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
@@ -152,19 +137,16 @@ export default function FeaturedEvents() {
     return null
   }
   useEffect(() => {
-    // Check if sessionId already exists in cookies
     const existingSessionId = getCookie('sessionId')
-
-    // If sessionId doesn't exist, generate a new one and store it as a cookie
     if (!existingSessionId) {
       const newSessionId = uuidv4()
       setSessionId(newSessionId)
-      document.cookie = `sessionId=${newSessionId}; path=/` // Set the cookie with name 'sessionId'
+      document.cookie = `sessionId=${newSessionId}; path=/`
     } else {
-      // Use existing sessionId if it exists
       setSessionId(existingSessionId)
     }
   }, [])
+
   const optionsDate: Intl.DateTimeFormatOptions = {
     day: '2-digit',
     month: 'short',
@@ -172,57 +154,69 @@ export default function FeaturedEvents() {
     timeZone: 'UTC'
   }
 
+  // Lista de eventos que queremos ocultar
+  const hiddenEventLabels = [
+    'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
+    'deorro_claytons.01',
+    'deebaby_zro.01'
+  ]
+
   return (
-    <section className='py-10 md:py-16 bg-base-300'>
-      <div className='container'>
+    <section className='min-h-screen flex flex-col justify-center py-10 md:py-16 bg-base-300'>
+      <div className='container mx-auto'>
         <div className='text-center'>
           <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
-            {' '}
             Don’t miss out! Buy now before tickets sell out!.
           </p>
         </div>
         <div
-          className={`grid ${eventsWithVenues.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
+          className={`grid ${
+            eventsWithVenues.length === 1
+              ? 'grid-cols-1 place-items-center'
+              : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'
+          } gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map(
-            (event, index) =>
-              !hiddenEventLabels.includes(event.event_label) ? (
-                event.tricket_url ? (
-                  <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
-                    <EventCard
-                      id={event.eventId}
-                      eventId={event.eventId}
-                      title={event.event_name}
-                      description={descriptions[event.event_label]}
-                      thumbnailURL={images[event.event_label]}
-                      venue={event.venue?.venue_name || event.venue_label}
-                      date={new Date(event.event_date)
-                        .toLocaleDateString('en-GB', optionsDate)
-                        .replace(',', '')}
-                      city={event.venue?.location.city}
-                    />
-                  </a>
-                ) : (
-                  <Link
-                    to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
-                    key={index}
-                  >
-                    <EventCard
-                      id={event.eventId}
-                      eventId={event.eventId}
-                      title={event.event_name}
-                      description={descriptions[event.event_label]}
-                      thumbnailURL={images[event.event_label]}
-                      venue={event.venue?.venue_name || event.venue_label}
-                      date={new Date(event.event_date)
-                        .toLocaleDateString('en-GB', optionsDate)
-                        .replace(',', '')}
-                      city={event.venue?.location.city}
-                    />
-                  </Link>
-                )
-              ) : null // Oculta la tarjeta si el event_label está en hiddenEventLabels
+          {eventsWithVenues.map((event, index) =>
+            !hiddenEventLabels.includes(event.event_label) ? (
+              event.tricket_url ? (
+                <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
+                  <EventCard
+                    id={event.eventId}
+                    eventId={event.eventId}
+                    title={event.event_name}
+                    description={descriptions[event.event_label]}
+                    thumbnailURL={images[event.event_label]}
+                    venue={event.venue?.venue_name || event.venue_label}
+                    date={new Date(event.event_date)
+                      .toLocaleDateString('en-GB', optionsDate)
+                      .replace(',', '')}
+                    city={event.venue?.location.city}
+                  />
+                </a>
+              ) : (
+                <Link
+                  to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
+                  key={index}
+                >
+                  <EventCard
+                    id={event.eventId}
+                    eventId={event.eventId}
+                    title={event.event_name}
+                    description={descriptions[event.event_label]}
+                    thumbnailURL={images[event.event_label]}
+                    venue={event.venue?.venue_name || event.venue_label}
+                    date={new Date(event.event_date)
+                      .toLocaleDateString('en-GB', optionsDate)
+                      .replace(',', '')}
+                    city={event.venue?.location.city}
+                  />
+                </Link>
+              )
+            ) : null
           )}
         </div>
       </div>
