@@ -4,6 +4,7 @@ import SanJoseMapPng from '../../assets/maps/IndiaYuridia/sanjose_ca.png'
 import OrchestraMap2 from '../../assets/maps/IndiaYuridia/ticketeraMapa3.png'
 import LogeMapPng from '../../assets/maps/IndiaYuridia/Loge.png'
 import ManuelArtTimePng from '../../assets/maps/Leonas/manuelartime_fl.svg'
+import RichmondsMapSvg from '../../assets/maps/Marisela/richmonds_ca.png'
 
 import LogeMap from './IndiaYuridia/LogeMap'
 import OrchestraMap from './IndiaYuridia/OrchestraMap'
@@ -12,6 +13,7 @@ import SanJoseMap from './IndiaYuridia/sanjose_ca'
 import CalifoniaTheatreMap from './Leonas/californiatheatre_ca'
 import Unioncountry from './Leonas/unioncounty_nj'
 import ManuelArtTime from './Leonas/ManuelArtTimeMap'
+import richmondMap from './Marisela/richmond_ca'
 
 type EventZoneData = {
   zones: string[]
@@ -79,9 +81,23 @@ export const eventData: EventData = {
       zones: ['Purple', 'Green', 'Blue', 'Red', 'Orange', 'Brown'],
       priceTag: ['P1', 'P2', 'P5', 'P3', 'P4', 'P6']
     }
+  },
+  marisela01: {
+    Map: {
+      zones: ['Yellow', 'Blue', 'Orange', 'Purple', 'Gray'],
+      priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+    }
   }
 }
 export const mapConfig: MapConfig = {
+  'marisela.01': {
+    zones: {
+      Map: {
+        defaultMap: richmondMap,
+        src: RichmondsMapSvg
+      }
+    }
+  },
   'las_leonas.03': {
     zones: {
       Map: {
