@@ -1,13 +1,17 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 
 const LoginPage = () => {
   const { loginWithRedirect, isAuthenticated } = useAuth0()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogin = async () => {
     await loginWithRedirect({
+      appState: {
+        returnTo: location.pathname + location.search
+      },
       authorizationParams: {
         screen_hint: 'signup'
       }
