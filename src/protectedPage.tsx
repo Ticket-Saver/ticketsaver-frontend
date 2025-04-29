@@ -6,7 +6,11 @@ const ProtectedPage = () => {
   const [token, setToken] = useState('')
 
   const handleLogout = () => {
-    logout()
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    })
   }
 
   useEffect(() => {
