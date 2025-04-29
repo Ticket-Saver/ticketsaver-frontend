@@ -27,13 +27,18 @@ import PCICompliancePage from '../pages/PciCompliancePage'
 import FaqsPage from '../pages/FaqsPage'
 import { VenuesProvider } from '../router/venuesContext'
 import { EventsProvider } from '../router/eventsContext'
+import { useLocation } from 'react-router-dom'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
+  const location = useLocation()
   const { isAuthenticated, loginWithRedirect } = useAuth0()
   if (!isAuthenticated) {
     loginWithRedirect({
       authorizationParams: {
         screen_hint: 'signup'
+      },
+      appState: {
+        returnTo: location.pathname + location.search
       }
     })
     return null
