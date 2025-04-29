@@ -9,7 +9,11 @@ export default function Header() {
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
 
   const handleLogout = () => {
-    logout()
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    })
   }
 
   const handleLogin = async () => {
