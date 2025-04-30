@@ -2,16 +2,25 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { Link } from 'react-router-dom'
 import Logo from '/logos/ticketsaver-logo.svg'
 import flecha from '../assets/icons/flechita.svg'
+import { useLocation } from 'react-router-dom'
 
 export default function Header() {
+  const location = useLocation()
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
 
   const handleLogout = () => {
-    logout()
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    })
   }
 
   const handleLogin = async () => {
     await loginWithRedirect({
+      appState: {
+        returnTo: location.pathname + location.search
+      },
       authorizationParams: {
         screen_hint: 'signup'
       }
