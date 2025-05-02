@@ -29,9 +29,19 @@ import { VenuesProvider } from '../router/venuesContext'
 import { EventsProvider } from '../router/eventsContext'
 import { useLocation } from 'react-router-dom'
 
+// Modificado para permitir acceso sin autenticación cuando USE_MOCK_AUTH es true
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const location = useLocation()
   const { isAuthenticated, loginWithRedirect } = useAuth0()
+
+  // La bandera USE_MOCK_AUTH está definida en main.tsx
+  // Si usamos mock, siempre devolvemos el elemento sin verificar autenticación
+  const USE_MOCK_AUTH = true
+
+  if (USE_MOCK_AUTH) {
+    return element
+  }
+
   if (!isAuthenticated) {
     loginWithRedirect({
       authorizationParams: {
@@ -43,6 +53,7 @@ const ProtectedRoute = ({ element }: { element: ReactNode }) => {
     })
     return null
   }
+
   return isAuthenticated ? element : <Navigate to='/' />
 }
 

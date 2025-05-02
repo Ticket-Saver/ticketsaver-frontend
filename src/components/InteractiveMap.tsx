@@ -65,6 +65,7 @@ const InteractiveMap = ({
   }, [highlightedAreas, width, height, getDefaultMap])
 
   const handleAreaClick = (area: Area) => {
+    console.log('Clicked section title:', area.title, ' id: ', area.id)
     handleClickImageZone(area)
     setHighlightedAreas([area])
   }

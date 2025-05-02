@@ -47,7 +47,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '1',
-      title: 'Balcony 1 Orange',
+      title: 'Balcony 15 Orange Rear',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#ff8b2b',
@@ -105,7 +105,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '2',
-      title: 'Balcony 2 Orange',
+      title: 'Balcony 15 Orange Front',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -157,7 +157,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '3',
-      title: 'Balcony 3 Orange',
+      title: 'Balcony 14 Orange Rear',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -204,7 +204,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '4',
-      title: 'Balcony 4 Orange',
+      title: 'Balcony 14 Orange Front',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -250,7 +250,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '5',
-      title: 'Balcony 5 Orange',
+      title: 'Balcony 2 Orange Front',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -296,7 +296,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '6',
-      title: 'Balcony 6 orange',
+      title: 'Balcony 2 Orange Rear',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -346,7 +346,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '7',
-      title: 'Balcony 7 orange',
+      title: 'Balcony 1 Orange Front',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -403,7 +403,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '8',
-      title: 'Balcony 8 orange',
+      title: 'Balcony 1 Orange Rear',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -456,7 +456,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '9',
-      title: 'Balcony 1 Purple',
+      title: 'Balcony 13 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -507,7 +507,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '10',
-      title: 'Balcony 2 Purple',
+      title: 'Balcony 13 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -552,7 +552,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '11',
-      title: 'Balcony 3 Purple',
+      title: 'Balcony 12 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -598,7 +598,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '12',
-      title: 'Balcony 4 Purple',
+      title: 'Balcony 12 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -649,7 +649,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '13',
-      title: 'Balcony 5 Purple',
+      title: 'Balcony 11 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -712,7 +712,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '14',
-      title: 'Balcony 6 Purple',
+      title: 'Balcony 11 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -774,7 +774,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '15',
-      title: 'Balcony 7 Purple',
+      title: 'Balcony 9 Purple',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -875,7 +875,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '17',
-      title: 'Balcony 9 Purple',
+      title: 'Balcony 7 Purple',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -934,7 +934,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '18',
-      title: 'Balcony 10 Purple',
+      title: 'Balcony 5 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1019,7 +1019,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '19',
-      title: 'Balcony 11 Purple',
+      title: 'Balcony 5 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1078,7 +1078,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '20',
-      title: 'Balcony 12 Purple',
+      title: 'Balcony 4 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1125,7 +1125,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '21',
-      title: 'Balcony 13 Purple',
+      title: 'Balcony 4 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1172,7 +1172,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '22',
-      title: 'Balcony 14 Purple',
+      title: 'Balcony 3 Purple Front',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1219,7 +1219,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '23',
-      title: 'Balcony 15 Purple',
+      title: 'Balcony 3 Purple Rear',
       shape: 'poly',
       name: 'Purple',
       fillColor: '#eab54d4d',
@@ -1293,7 +1293,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '24',
-      title: 'Balcony 1 Gray',
+      title: 'Balcony 10 Gray',
       shape: 'poly',
       name: 'Gray',
       fillColor: '#eab54d4d',
@@ -1347,7 +1347,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '25',
-      title: 'Balcony 2 Gray',
+      title: 'Balcony 9 Gray',
       shape: 'poly',
       name: 'Gray',
       fillColor: '#eab54d4d',
@@ -1404,7 +1404,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '26',
-      title: 'Balcony 3 Gray',
+      title: 'Balcony 8 Gray',
       shape: 'poly',
       name: 'Gray',
       fillColor: '#eab54d4d',
@@ -1457,7 +1457,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '27',
-      title: 'Balcony 4 Gray',
+      title: 'Balcony 7 Gray',
       shape: 'poly',
       name: 'Gray',
       fillColor: '#eab54d4d',
@@ -1542,7 +1542,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '28',
-      title: 'Balcony 5 Gray',
+      title: 'Balcony 6 Gray',
       shape: 'poly',
       name: 'Gray',
       fillColor: '#eab54d4d',
@@ -1601,7 +1601,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '29',
-      title: 'Mezzanine 1 Yellow',
+      title: 'Mezzanine 16 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1641,9 +1641,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${12 - row}`
-            }
+            label: (row: number) => `${12 - row}`
           },
           seatTypes: {
             default: {
@@ -1655,7 +1653,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '30',
-      title: 'Mezzanine 2 Yellow',
+      title: 'Mezzanine 15 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1688,9 +1686,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${5 - row}`
-            }
+            label: (row: number) => `${5 - row}`
           },
           seatTypes: {
             default: {
@@ -1706,7 +1702,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '31',
-      title: 'Mezzanine 3 Yellow',
+      title: 'Mezzanine 1 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1746,9 +1742,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${12 - row}`
-            }
+            label: (row: number) => `${12 - row}`
           },
           seatTypes: {
             default: {
@@ -1760,7 +1754,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '32',
-      title: 'Mezzanine 4 Yellow',
+      title: 'Mezzanine 2 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -1793,9 +1787,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${7 - row}`
-            }
+            label: (row: number) => `${7 - row}`
           },
           seatTypes: {
             default: {
@@ -1807,7 +1799,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '33',
-      title: 'Mezzanine 1 Blue',
+      title: 'Mezzanine 14 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1862,7 +1854,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '34',
-      title: 'Mezzanine 2 Blue',
+      title: 'Mezzanine 13 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1917,7 +1909,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '35',
-      title: 'Mezzanine 3 Blue',
+      title: 'Mezzanine 12 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -1950,9 +1942,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${7 - row}`
-            }
+            label: (row: number) => `${7 - row}`
           },
           seatTypes: {
             default: {
@@ -1964,7 +1954,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '36',
-      title: 'Mezzanine 4 Blue',
+      title: 'Mezzanine 3 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2021,7 +2011,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '37',
-      title: 'Mezzanine 5 Blue',
+      title: 'Mezzanine 4 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2058,9 +2048,7 @@ const getDefaultMap = () => ({
           },
           indexerRows: {
             visible: true,
-            label: (row: number) => {
-              return `${12 - row}`
-            }
+            label: (row: number) => `${12 - row}`
           },
           seatTypes: {
             default: {
@@ -2072,7 +2060,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '38',
-      title: 'Mezzanine 6 Blue',
+      title: 'Mezzanine 5 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2128,7 +2116,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '39',
-      title: 'Mezzanine 1 Orange',
+      title: 'Mezzanine 11 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2198,7 +2186,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '40',
-      title: 'Mezzanine 2 Orange',
+      title: 'Mezzanine 10 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2261,7 +2249,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '41',
-      title: 'Mezzanine 3 Orange',
+      title: 'Mezzanine 9 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2312,7 +2300,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '42',
-      title: 'Mezzanine 4 Orange',
+      title: 'Mezzanine 8 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2372,7 +2360,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '43',
-      title: 'Mezzanine 5 Orange',
+      title: 'Mezzanine 7 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2500,7 +2488,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '45',
-      title: 'Orchestra 1 Orange',
+      title: 'Orchestra 6 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2547,7 +2535,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '46',
-      title: 'Orchestra 2 Orange',
+      title: 'Orchestra 4 Orange',
       shape: 'poly',
       name: 'Orange',
       fillColor: '#eab54d4d',
@@ -2594,7 +2582,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '47',
-      title: 'Orchestra 1 Blue',
+      title: 'Orchestra 3 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2688,7 +2676,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '49',
-      title: 'Orchestra 3 Blue',
+      title: 'Orchestra 1 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2735,7 +2723,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '50',
-      title: 'Orchestra 4 Blue',
+      title: 'Orchestra 6 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2829,7 +2817,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '52',
-      title: 'Orchestra 6 Blue',
+      title: 'Orchestra 4 Blue',
       shape: 'poly',
       name: 'Blue',
       fillColor: '#eab54d4d',
@@ -2879,7 +2867,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '53',
-      title: 'Orchestra 1 Yellow',
+      title: 'Orchestra 3 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
@@ -2980,7 +2968,7 @@ const getDefaultMap = () => ({
         }
       },
       id: '55',
-      title: 'Orchestra 3 Yellow',
+      title: 'Orchestra 1 Yellow',
       shape: 'poly',
       name: 'Yellow',
       fillColor: '#eab54d4d',
