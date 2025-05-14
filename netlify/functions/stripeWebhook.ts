@@ -67,10 +67,11 @@ export const handler: Handler = async (event, _context) => {
             }
           }
         }
-        const quantity = item.quantity || 1 // Suponiendo que `quantity` está en el objeto del ítem
+        const quantity = item.quantity || 1
         totalSeatsSoldBySubZone[subZone] = (totalSeatsSoldBySubZone[subZone] || 0) + quantity
       }
 
+      /* 
       for (const [subZone, seatsSold] of Object.entries(totalSeatsSoldBySubZone)) {
         const { data: currentData, error } = await supabase
           .from('eventseatstatus')
@@ -115,6 +116,7 @@ export const handler: Handler = async (event, _context) => {
           `EventSeatStatus actualizado: ${seatsSold} asientos vendidos para el evento ${event_label}, subZone ${subZone}`
         )
       }
+      */
       return { statusCode: 200, body: JSON.stringify({ message: 'Webhook handled successfully' }) }
     } else {
       return { statusCode: 400, body: 'Event type not handled' }
