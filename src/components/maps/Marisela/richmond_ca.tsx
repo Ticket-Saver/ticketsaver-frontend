@@ -133,14 +133,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(73 - index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(73 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 6,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(73 - col)}`
+              const charCode = String.fromCharCode(73 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -179,7 +182,9 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (14 - index.col > 10) {
-              return `${String.fromCharCode(67 - index.col)}${14 - index.row}`
+              const charCode = String.fromCharCode(67 - index.col)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${14 - index.row}`
             }
           },
           rows: 14,
@@ -187,7 +192,8 @@ const getDefaultMap = () => ({
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(67 - col)}`
+              const charCode = String.fromCharCode(67 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -272,14 +278,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(68 + index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(68 + index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 6,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(68 + col)}`
+              const charCode = String.fromCharCode(68 + col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -432,14 +441,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(73 - index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(73 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 4,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(73 - col)}`
+              const charCode = String.fromCharCode(73 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -483,14 +495,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(67 - index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(67 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 3,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(67 - col)}`
+              const charCode = String.fromCharCode(67 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -528,14 +543,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(73 - index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(73 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 6,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(73 - col)}`
+              const charCode = String.fromCharCode(73 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -574,14 +592,17 @@ const getDefaultMap = () => ({
           frontVisible: false,
 
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(67 - index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(67 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 3,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(67 - col)}`
+              const charCode = String.fromCharCode(67 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -620,9 +641,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.col == 0) {
-              return `${String.fromCharCode(75 - index.col)}${17 - index.row}`
+              const charCode = String.fromCharCode(75 - index.col)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${17 - index.row}`
             }
-            return `${String.fromCharCode(74 - index.col)}${17 - index.row}`
+            const charCode = String.fromCharCode(74 - index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${17 - index.row}`
           },
           rows: 17,
           columns: 5,
@@ -630,9 +655,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (col: number) => {
               if (col == 0) {
-                return `${String.fromCharCode(75 - col)}`
+                const charCode = String.fromCharCode(75 - col)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(74 - col)}`
+              const charCode = String.fromCharCode(74 - col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -969,9 +996,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 4) {
-              return `${String.fromCharCode(71 + index.row)}${index.col + 1}`
+              const charCode = String.fromCharCode(71 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${index.col + 1}`
             }
-            return `${String.fromCharCode(70 + index.row)}${index.col + 1}`
+            const charCode = String.fromCharCode(70 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${index.col + 1}`
           },
           rows: 5,
           columns: 17,
@@ -985,9 +1016,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 4) {
-                return `${String.fromCharCode(71 + row)}`
+                const charCode = String.fromCharCode(71 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(70 + row)}`
+              const charCode = String.fromCharCode(70 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
@@ -1099,14 +1132,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(68 + index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(68 + index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 6,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(68 + col)}`
+              const charCode = String.fromCharCode(68 + col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -1193,14 +1229,17 @@ const getDefaultMap = () => ({
         map: {
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
-            return `${String.fromCharCode(70 + index.col)}${14 - index.row}`
+            const charCode = String.fromCharCode(70 + index.col)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.row}`
           },
           rows: 14,
           columns: 4,
           indexerColumns: {
             visible: true,
             label: (col: number) => {
-              return `${String.fromCharCode(70 + col)}`
+              const charCode = String.fromCharCode(70 + col)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           indexerRows: {
@@ -1241,9 +1280,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 6) {
-              return `${String.fromCharCode(69 + index.row)}${15 - index.col}`
+              const charCode = String.fromCharCode(69 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${15 - index.col}`
             }
-            return `${String.fromCharCode(68 + index.row)}${15 - index.col}`
+            const charCode = String.fromCharCode(68 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${15 - index.col}`
           },
           rows: 7,
           columns: 15,
@@ -1257,9 +1300,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 6) {
-                return `${String.fromCharCode(69 + row)}`
+                const charCode = String.fromCharCode(69 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(68 + row)}`
+              const charCode = String.fromCharCode(68 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
@@ -1316,9 +1361,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 4) {
-              return `${String.fromCharCode(71 + index.row)}${14 - index.col}`
+              const charCode = String.fromCharCode(71 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${14 - index.col}`
             }
-            return `${String.fromCharCode(70 + index.row)}${14 - index.col}`
+            const charCode = String.fromCharCode(70 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${14 - index.col}`
           },
           rows: 5,
           columns: 14,
@@ -1332,9 +1381,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 4) {
-                return `${String.fromCharCode(71 + row)}`
+                const charCode = String.fromCharCode(71 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(70 + row)}`
+              const charCode = String.fromCharCode(70 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
@@ -1373,9 +1424,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 6) {
-              return `${String.fromCharCode(69 + index.row)}${1 + index.col}`
+              const charCode = String.fromCharCode(69 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${1 + index.col}`
             }
-            return `${String.fromCharCode(68 + index.row)}${1 + index.col}`
+            const charCode = String.fromCharCode(68 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${1 + index.col}`
           },
           rows: 7,
           columns: 14,
@@ -1389,9 +1444,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 6) {
-                return `${String.fromCharCode(69 + row)}`
+                const charCode = String.fromCharCode(69 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(68 + row)}`
+              const charCode = String.fromCharCode(68 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
@@ -1426,9 +1483,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 4) {
-              return `${String.fromCharCode(71 + index.row)}${1 + index.col}`
+              const charCode = String.fromCharCode(71 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${1 + index.col}`
             }
-            return `${String.fromCharCode(70 + index.row)}${1 + index.col}`
+            const charCode = String.fromCharCode(70 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${1 + index.col}`
           },
           rows: 5,
           columns: 14,
@@ -1442,9 +1503,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 4) {
-                return `${String.fromCharCode(71 + row)}`
+                const charCode = String.fromCharCode(71 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(70 + row)}`
+              const charCode = String.fromCharCode(70 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
@@ -1490,9 +1553,13 @@ const getDefaultMap = () => ({
           frontVisible: false,
           seatLabel: (index: SeatIndex) => {
             if (index.row == 6) {
-              return `${String.fromCharCode(69 + index.row)}${1 + index.col}`
+              const charCode = String.fromCharCode(69 + index.row)
+              const finalChar = charCode === 'I' ? 'J' : charCode
+              return `${finalChar}${1 + index.col}`
             }
-            return `${String.fromCharCode(68 + index.row)}${1 + index.col}`
+            const charCode = String.fromCharCode(68 + index.row)
+            const finalChar = charCode === 'I' ? 'J' : charCode
+            return `${finalChar}${1 + index.col}`
           },
           rows: 7,
           columns: 15,
@@ -1506,9 +1573,11 @@ const getDefaultMap = () => ({
             visible: true,
             label: (row: number) => {
               if (row == 6) {
-                return `${String.fromCharCode(69 + row)}`
+                const charCode = String.fromCharCode(69 + row)
+                return charCode === 'I' ? 'J' : charCode
               }
-              return `${String.fromCharCode(68 + row)}`
+              const charCode = String.fromCharCode(68 + row)
+              return charCode === 'I' ? 'J' : charCode
             }
           },
           seatTypes: {
