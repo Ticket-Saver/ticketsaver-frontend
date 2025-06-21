@@ -29,13 +29,17 @@ export default function EventPage() {
     'geazy_claytons.01',
     'deorro_claytons.01',
     'deebaby_zro.01',
-    'yeri_mua.01'
+    'yeri_mua.01',
+    'insane_clown_posse.01'
+
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',
     'bossman_dlow.01': '8:00 PM',
     'bigxthaplug.01': '8:00 PM',
-    'geazy_claytons.01': '8:00 PM'
+    'geazy_claytons.01': '8:00 PM',
+        'insane_clown_posse.01'
+    : '8:00 PM',
   }
   const doorHour = label && eventsDoors[label] ? eventsDoors[label] : hour
 
