@@ -10,7 +10,7 @@ export default function CoverCarousel() {
     },
     {
       id: 2,
-      imageUrl: '/events/marisela.png',
+      imageUrl: '/events/Nestor420.png',
       caption: 'Discover amazing events!'
     },
     {
