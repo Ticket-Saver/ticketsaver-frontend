@@ -30,7 +30,8 @@ export default function EventPage() {
     'deorro_claytons.01',
     'deebaby_zro.01',
     'yeri_mua.01',
-    'insane_clown_posse.01'
+    'insane_clown_posse.01',
+    'nestor_420.01'
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',
