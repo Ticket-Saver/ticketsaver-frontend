@@ -4,6 +4,7 @@ import { extractLatestPrices } from '../components/Utils/priceUtils'
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import parseLocalDate from '../components/Utils/dateUtils'
 import { useVenues } from '../router/venuesContext'
 
 interface Cart {
@@ -109,12 +110,18 @@ export default function TicketSelectionNoSeat() {
     phone: user?.phone_number
   }
 
-  // Formatea la fecha del parámetro `date` para mostrarla como "March 16, 2026"
+  // Formatea la fecha del parámetro `date` usando el util parseLocalDate.
+  // Este util interpreta fechas tipo "YYYY-MM-DD" como locales para evitar
+  // desplazamientos por zona horaria.
   const formattedDate = useMemo(() => {
     if (!date) return ''
-    const d = new Date(date)
-    if (isNaN(d.getTime())) return date
-    return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+    const parsedDate = parseLocalDate(date)
+    if (!parsedDate) return date
+    return parsedDate.toLocaleDateString(undefined, {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }, [date])
 
   // Calcular el total de boletos y costo total
