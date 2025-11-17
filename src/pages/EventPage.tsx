@@ -61,7 +61,8 @@ export default function EventPage() {
     'geazy_claytons.01',
     'deorro_claytons.01',
     'deebaby_zro.01',
-    'insane_clown_posse.01'
+    'insane_clown_posse.01',
+    'steve_aoki.01'
   ] // Define los event_la
 
   const { data } = useFetchJson(githubApiUrl, options)
