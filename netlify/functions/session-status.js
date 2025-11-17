@@ -3,7 +3,6 @@ import Stripe from 'stripe'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 exports.handler = async function (event, _context) {
-
   const sessionId = event.queryStringParameters?.session_id
 
   if (!sessionId) {
@@ -16,7 +15,6 @@ exports.handler = async function (event, _context) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId)
     const customer = session.customer_details
-
 
     return {
       statusCode: 200,
