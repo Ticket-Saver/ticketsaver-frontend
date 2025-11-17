@@ -109,6 +109,14 @@ export default function TicketSelectionNoSeat() {
     phone: user?.phone_number
   }
 
+  // Formatea la fecha del parámetro `date` para mostrarla como "March 16, 2026"
+  const formattedDate = useMemo(() => {
+    if (!date) return ''
+    const d = new Date(date)
+    if (isNaN(d.getTime())) return date
+    return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+  }, [date])
+
   // Calcular el total de boletos y costo total
   const totalTicketsInCart = cart.length
   const totalCost = cart.reduce((acc, curr) => acc + curr.price_final, 0)
@@ -201,7 +209,9 @@ export default function TicketSelectionNoSeat() {
                   {venueInfo.venue_name}, {location}
                 </h2>
               )}
-              <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>{date}</p>
+              <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                {formattedDate}
+              </p>
             </div>
           </div>
         </div>
