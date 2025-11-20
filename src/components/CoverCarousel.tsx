@@ -5,17 +5,17 @@ export default function CoverCarousel() {
   const slides = [
     {
       id: 1,
-      imageUrl: '/events/marisela.png',
+      imageUrl: '/events/lasAlucines.jpg',
       caption: 'Welcome to Ticketsaver!'
     },
     {
       id: 2,
-      imageUrl: '/events/Nestor420.png',
+      imageUrl: '/events/lasAlucines.jpg',
       caption: 'Discover amazing events!'
     },
     {
       id: 3,
-      imageUrl: '/events/marisela.png',
+      imageUrl: '/events/lasAlucines.jpg',
       caption: 'We save you the seats so you can savour the night'
     }
   ]
