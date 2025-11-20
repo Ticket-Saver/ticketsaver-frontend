@@ -13,6 +13,7 @@ const useFetchJson = (url: string, options?: RequestInit) => {
           throw new Error('response error')
         }
         const eventData = await response.json()
+        console.log(eventData)
         setData(eventData)
       } catch (error) {
         setError(error as Error)
@@ -29,19 +30,22 @@ const useFetchJson = (url: string, options?: RequestInit) => {
 }
 
 const findData = (data: any[], id: string) => {
-  return data.find((item) => item.id === id)
+  return data.find(item => item.id === id)
 }
 
 const fetchGitHubImage = async (label: string): Promise<string> => {
   const token = import.meta.env.VITE_GITHUB_TOKEN //
-  const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/banner.png`
+  // const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/banners/${label}.png`
+  const Url = `/assets/richmonds_ca-0KWpsyhw.png`
 
-  const response = await fetch(Url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  })
+  // const response = await fetch(Url, {
+  //   headers: {
+  //     Authorization: `Bearer ${token}`,
+  //     Accept: 'application/vnd.github.v3.raw'
+  //   }
+  // })
+
+  const response = await fetch(Url)
 
   if (!response.ok) {
     throw new Error(`Error al obtener la imagen: ${response.status} ${response.statusText}`)

@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { EventCard } from './EventCard'
 import { Link } from 'react-router-dom'
-import { v4 as uuidv4 } from 'uuid'
-import { fetchDescription, fetchGitHubImage } from './Utils/FetchDataJson'
-import { useEvents } from '../router/eventsContext'
-import { useVenues } from '../router/venuesContext'
+import { useFetchJson } from './Utils/FetchDataJson'
+import { API_CONFIG } from '../config/api'
 
 interface Event {
   eventId: string
@@ -36,116 +34,100 @@ interface Venue {
 
 interface EventWithVenue extends Event {
   venue: Venue | undefined
+  images: { url: string; type: string }[]
+  city: string
+  id: string
+  description: string
 }
 
 export default function FeaturedEvents() {
-  // Obtenemos los datos desde los contextos
-  const { events: contextEvents } = useEvents()
-  const { venues: contextVenues } = useVenues()
-
-  // Estados locales para trabajar con los datos filtrados y combinados
-  const [events, setEvents] = useState<Event[]>([])
-  const [venues, setVenues] = useState<Venue[]>([])
-  const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
+  const [events, setEvents] = useState<EventWithVenue[]>([])
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
-  const [images, setImages] = useState<Record<string, string>>({})
 
-  // Definir options con token (usamos useMemo para que sea estable)
+  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
+  const hieventsUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EVENTS}?page=1&per_page=20&query=&sort_by=&sort_direction=&eventsStatus=upcoming&only_live=true`
   const token = import.meta.env.VITE_GITHUB_TOKEN
-  const options = useMemo(
-    () => ({
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3.raw'
+  const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
+
+  const options = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3.raw'
+    }
+  }
+
+  // Fetch de eventos de la API
+  useEffect(() => {
+    const fetchEventsFromAPI = async () => {
+      try {
+        const response = await fetch(hieventsUrl, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token2}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('Fetched events:', data.data)
+
+        const formattedEvents: EventWithVenue[] = data.data.map((event: any) => ({
+          eventId: event.id,
+          event_name: event.title,
+          event_label: event.map || 'general',
+          event_date: new Date(event.end_date).toISOString().split('T')[0],
+          event_hour: event.event_hour || '',
+          venue_label: 'default_venue',
+          event_deleted_at: null,
+          sale_starts_at: '',
+          tricket_url: '',
+          id: event.id,
+          images: event.images || [],
+          city: event.settings?.location_details?.city || '-',
+          description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
+          venue: {
+            venue_name: event.venue_name || 'Default Venue',
+            venue_label: 'default_venue',
+            capacity: 0,
+            seatmap: false,
+            location: {
+              city: event.settings?.location_details?.city || '-',
+              address: '',
+              country: '',
+              maps_url: '',
+              zip_code: ''
+            }
+          }
+        }))
+
+        setEvents(formattedEvents)
+        //  console.log(formattedEvents)
+      } catch (error) {
+        console.error('Error fetching events:', error)
       }
-    }),
-    [token]
-  )
-
-  // Filtrar eventos: descartamos los eliminados y aquellos cuya fecha haya expirado (más 2 días)
-  useEffect(() => {
-    if (contextEvents) {
-      const eventsArray: Event[] = Object.values(contextEvents)
-      const currentDate = new Date()
-      const filteredEvents = eventsArray.filter((event) => {
-        if (event.event_deleted_at) return false
-        const endDate = new Date(event.event_date)
-        endDate.setDate(endDate.getDate() + 2)
-        return endDate.getTime() > currentDate.getTime()
-      })
-      setEvents(filteredEvents)
     }
-  }, [contextEvents])
 
-  // Convertir venues del contexto a array
-  useEffect(() => {
-    if (contextVenues) {
-      const venuesArray: Venue[] = Object.values(contextVenues)
-      setVenues(venuesArray)
-    }
-  }, [contextVenues])
+    fetchEventsFromAPI()
+  }, [token2])
 
-  // Combinar cada evento con su venue correspondiente
-  useEffect(() => {
-    const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.venue_label === event.venue_label)
-      return { ...event, venue }
-    })
-    setEventsWithVenues(combinedData)
-  }, [events, venues])
+  // Fetch de descripciones desde GitHub
+  const { data: githubData } = useFetchJson(githubApiUrl, options)
 
-  // Obtener las descripciones de cada evento usando las options
   useEffect(() => {
-    const fetchAllDescriptions = async () => {
+    if (githubData) {
       const descriptionsDict: Record<string, string> = {}
-      for (const event of events) {
-        const desc = await fetchDescription(event.event_label, options)
-        descriptionsDict[event.event_label] = desc.slice(0, 250) + '...'
-      }
+      Object.values(githubData).forEach((event: any) => {
+        if (event.description) {
+          descriptionsDict[event.event_label] = event.description.slice(0, 250) + '...'
+        }
+      })
       setDescriptions(descriptionsDict)
     }
-    if (events.length > 0) {
-      fetchAllDescriptions()
-    }
-  }, [events, options])
-
-  // Obtener las imágenes de cada evento usando las options
-  useEffect(() => {
-    const fetchAllImages = async () => {
-      const imagesDict: Record<string, string> = {}
-      for (const event of events) {
-        const img = await fetchGitHubImage(event.event_label)
-        imagesDict[event.event_label] = img
-      }
-      setImages(imagesDict)
-    }
-    if (events.length > 0) {
-      fetchAllImages()
-    }
-  }, [events, options])
-
-  // Generación o lectura del sessionId (para tracking u otro fin)
-  const setSessionId = useState<string>('')[1]
-  const getCookie = (name: string) => {
-    const cookies = document.cookie.split(';')
-    for (const cookie of cookies) {
-      const [cookieName, cookieValue] = cookie.split('=')
-      if (cookieName.trim() === name) {
-        return cookieValue
-      }
-    }
-    return null
-  }
-  useEffect(() => {
-    const existingSessionId = getCookie('sessionId')
-    if (!existingSessionId) {
-      const newSessionId = uuidv4()
-      setSessionId(newSessionId)
-      document.cookie = `sessionId=${newSessionId}; path=/`
-    } else {
-      setSessionId(existingSessionId)
-    }
-  }, [])
+  }, [githubData])
 
   const optionsDate: Intl.DateTimeFormatOptions = {
     day: '2-digit',
@@ -154,72 +136,44 @@ export default function FeaturedEvents() {
     timeZone: 'UTC'
   }
 
-  // Lista de eventos que queremos ocultar
-  const hiddenEventLabels = [
-    'ice_spice.01',
-    'bossman_dlow.01',
-    'bigxthaplug.01',
-    'geazy_claytons.01',
-    'deorro_claytons.01',
-    'deebaby_zro.01',
-    'insane_clown_posse.01',
-    'steve_aoki.01'
-  ]
-
   return (
-    <section className='min-h-screen flex flex-col justify-center py-10 md:py-16 bg-base-300'>
-      <div className='container mx-auto'>
-        <div className='text-center'>
-          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!</h2>
-          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
-            Don’t miss out! Buy now before tickets sell out!.
+    <section className="py-10 md:py-16 bg-base-300">
+      <div className="container">
+        <div className="text-center">
+          <h2 className="text-3xl sm:text-5xl font-bold mb-4">Select your city!!</h2>
+          <p className="text-lg sm:text-2xl mb-6 md:mb-14">
+            Don't miss out! Buy now before tickets sell out!!
           </p>
         </div>
         <div
-          className={`grid ${
-            eventsWithVenues.length === 1
-              ? 'grid-cols-1 place-items-center'
-              : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'
-          } gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
+          className={`grid ${events.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
         >
-          {eventsWithVenues.map((event, index) =>
-            !hiddenEventLabels.includes(event.event_label) ? (
-              event.tricket_url ? (
-                <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
-                  <EventCard
-                    id={event.eventId}
-                    eventId={event.eventId}
-                    title={event.event_name}
-                    description={descriptions[event.event_label]}
-                    thumbnailURL={images[event.event_label]}
-                    venue={event.venue?.venue_name || event.venue_label}
-                    date={new Date(event.event_date)
-                      .toLocaleDateString('en-GB', optionsDate)
-                      .replace(',', '')}
-                    city={event.venue?.location.city}
-                  />
-                </a>
-              ) : (
-                <Link
-                  to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
+          {events.map((event, index) => (
+            <div key={index}>
+              <Link
+                style={{ width: '100%' }}
+                to={`/event/${encodeURIComponent(event.event_name)}/${event.id}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
+              >
+                <EventCard
                   key={index}
-                >
-                  <EventCard
-                    id={event.eventId}
-                    eventId={event.eventId}
-                    title={event.event_name}
-                    description={descriptions[event.event_label]}
-                    thumbnailURL={images[event.event_label]}
-                    venue={event.venue?.venue_name || event.venue_label}
-                    date={new Date(event.event_date)
-                      .toLocaleDateString('en-GB', optionsDate)
-                      .replace(',', '')}
-                    city={event.venue?.location.city}
-                  />
-                </Link>
-              )
-            ) : null
-          )}
+                  id={event.eventId}
+                  eventId={event.eventId}
+                  title={event.event_name}
+                  description={descriptions[event.event_label] || event.description}
+                  thumbnailURL={
+                    event.images.find(img => img.type === 'EVENT_THUMBNAIL')?.url ||
+                    event.images[0]?.url ||
+                    '/default.jpg'
+                  }
+                  venue={event.venue?.venue_name || event.venue_label}
+                  date={new Date(event.event_date)
+                    .toLocaleDateString('en-GB', optionsDate)
+                    .replace(',', '')}
+                  city={event.venue?.location.city || event.city}
+                />
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
     </section>

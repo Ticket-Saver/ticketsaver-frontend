@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ReactNode } from 'react'
 import ProtectedPage from '../protectedPage'
 import HomeUnlogin from '../pages/HomeUnlogin'
@@ -25,155 +25,149 @@ import TermsConditionPage from '../pages/Terms&conditionsPage'
 import PrivayPolicyPage from '../pages/PrivayPolicyPage'
 import PCICompliancePage from '../pages/PciCompliancePage'
 import FaqsPage from '../pages/FaqsPage'
-import { VenuesProvider } from '../router/venuesContext'
-import { EventsProvider } from '../router/eventsContext'
-import { useLocation } from 'react-router-dom'
+import SuccessCheckout from '../components/SuccessCheckout'
+import TicketValidation from '../components/TicketValidation'
+import UserTicketsTest from '../components/UserTicketsTest'
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
-  const location = useLocation()
   const { isAuthenticated, loginWithRedirect } = useAuth0()
+  const location = useLocation()
   if (!isAuthenticated) {
     loginWithRedirect({
+      appState: { returnTo: location.pathname + location.search },
       authorizationParams: {
         screen_hint: 'signup'
-      },
-      appState: {
-        returnTo: location.pathname + location.search
       }
     })
     return null
   }
-  return isAuthenticated ? element : <Navigate to='/' />
+  return isAuthenticated ? element : <Navigate to="/" />
 }
 
 export const AppRouter = () => (
-  <VenuesProvider>
-    <EventsProvider>
-      {/* Envolvemos las rutas con ambos providers para compartir datos de venues y events */}
-      <Routes>
-        <Route
-          path='/'
+  // <Router>
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <LayoutHeaderFooter>
+          <HomeUnlogin />
+        </LayoutHeaderFooter>
+      }
+    />
+    <Route path="/success" element={<SuccessCheckout />} />
+    <Route path="/checkout/:venueId/:orderShortId/success" element={<SuccessCheckout />} />
+    <Route path="/checkout" element={<ProtectedRoute element={<CheckoutPage />} />} />
+    <Route path="/ticket/:ticketId" element={<TicketValidation />} />
+    <Route path="/test-tickets" element={<ProtectedRoute element={<UserTicketsTest />} />} />
+
+    <Route path="return" element={<ReturnPage />} />
+
+    <Route path="/protected" element={<ProtectedRoute element={<ProtectedPage />} />} />
+
+    <Route
+      path="/footer/contact"
+      element={
+        <LayoutHeaderFooter>
+          <Contact />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/footer/terms&conditions"
+      element={
+        <LayoutHeaderFooter>
+          <TermsConditionPage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/footer/PrivayPolicy"
+      element={
+        <LayoutHeaderFooter>
+          <PrivayPolicyPage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/footer/PCICompliance"
+      element={
+        <LayoutHeaderFooter>
+          <PCICompliancePage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/faqs"
+      element={
+        <LayoutHeaderFooter>
+          <FaqsPage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/about"
+      element={
+        <LayoutHeaderFooter>
+          <AboutPage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/events"
+      element={
+        <LayoutHeaderFooter>
+          <EventPage />
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/event/:name/:venue/:date/:label/:delete?"
+      element={
+        <LayoutHeaderFooter>
+          <EventSalePage />{' '}
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/sale/:name/:venue/:location/:date/:label/:delete?"
+      element={
+        <LayoutHeaderFooter>
+          <SalePage />{' '}
+        </LayoutHeaderFooter>
+      }
+    />
+
+    <Route
+      path="/dashboard"
+      element={
+        <ProtectedRoute
           element={
-            <LayoutHeaderFooter>
-              <HomeUnlogin />
-            </LayoutHeaderFooter>
+            <LayoutHeader>
+              <Dashboard />
+            </LayoutHeader>
           }
         />
-
-        <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
-
-        <Route path='return' element={<ReturnPage />} />
-
-        <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
-
-        <Route
-          path='/footer/contact'
-          element={
-            <LayoutHeaderFooter>
-              <Contact />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/footer/terms&conditions'
-          element={
-            <LayoutHeaderFooter>
-              <TermsConditionPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/footer/PrivayPolicy'
-          element={
-            <LayoutHeaderFooter>
-              <PrivayPolicyPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/footer/PCICompliance'
-          element={
-            <LayoutHeaderFooter>
-              <PCICompliancePage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/faqs'
-          element={
-            <LayoutHeaderFooter>
-              <FaqsPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/about'
-          element={
-            <LayoutHeaderFooter>
-              <AboutPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/events'
-          element={
-            <LayoutHeaderFooter>
-              <EventPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/event/:name/:venue/:date/:label/:delete?'
-          element={
-            <LayoutHeaderFooter>
-              <EventSalePage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/sale/:name/:venue/:location/:date/:label/:delete?'
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutHeaderFooter>
-                  <SalePage />
-                </LayoutHeaderFooter>
-              }
-            />
-          }
-        />
-
-        <Route
-          path='/dashboard'
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutHeader>
-                  <Dashboard />
-                </LayoutHeader>
-              }
-            />
-          }
-        >
-          <Route path='profile' element={<MyProfile />} />
-          <Route path='tickets' element={<MyTickets />}>
-            <Route path='upcomingevent' element={<UpcomingEvent />} />
-            <Route path='pastevent' element={<PastEvent />} />
-            <Route path='collectibles' element={<Collectibles />} />
-          </Route>
-          <Route path='settings' element={<MySettings />} />
-          <Route path='help' element={<YouNeedHelp />} />
-          <Route path='web3' element={<Web3 />} />
-        </Route>
-      </Routes>
-    </EventsProvider>
-  </VenuesProvider>
+      }
+    >
+      <Route path="profile" element={<MyProfile />} />
+      <Route path="tickets" element={<MyTickets />}>
+        <Route path="upcomingevent" element={<UpcomingEvent />} />
+        <Route path="pastevent" element={<PastEvent />} />
+        <Route path="collectibles" element={<Collectibles />} />
+      </Route>
+      <Route path="settings" element={<MySettings />} />
+      <Route path="help" element={<YouNeedHelp />} />
+      <Route path="web3" element={<Web3 />} />
+    </Route>
+  </Routes>
+  // </Router>
 )

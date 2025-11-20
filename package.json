@@ -3,12 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.x"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "build": "vite build --mode production",
     "preview": "vite preview",
-    "format": "prettier --write --list-different ."
+    "start": "node server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",
@@ -19,6 +25,7 @@
     "@supabase/supabase-js": "^2.44.4",
     "@tailwindcss/typography": "^0.5.13",
     "@tanstack/react-query": "^5.48.0",
+    "@types/qrcode": "^1.5.5",
     "@zoralabs/protocol-deployments": "^0.1.13",
     "@zoralabs/protocol-sdk": "^0.7.1",
     "auth0-lock": "^12.5.1",
@@ -30,13 +37,16 @@
     "dotenv": "^16.4.5",
     "effect": "^3.1.3",
     "ethers": "^6.13.1",
-    "express": "^4.19.2",
+    "express": "^4.18.2",
     "localforage": "^1.10.0",
+    "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-img-mapper": "^1.5.1",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.23.1",
+    "remix": "^2.13.1",
     "seatchart": "^0.1.0",
     "stripe": "^16.1.0",
     "uuid": "^10.0.0",
@@ -70,5 +80,5 @@
     "vite-plugin-pwa": "^0.20.0",
     "web-vitals": "^3.5.2"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

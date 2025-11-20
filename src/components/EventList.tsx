@@ -95,6 +95,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       }
 
       const data: EventData = await response.json()
+      console.log('Tickets:', data)
       const [images, descriptions] = await Promise.all([
         imagesFromGithub(data),
         descriptionsFromGithub(data)
@@ -119,7 +120,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           date: firstItem.date,
           city: firstItem.location,
           route: `/dashboard/claimtickets/${firstItem.eventName}/mynftsclaim`,
-          ticketDetails: items.map((item) => ({
+          ticketDetails: items.map(item => ({
             ticket: item.Ticket,
             zone: item.Zone,
             price: item.price
@@ -127,7 +128,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
         }
       })
 
-      const filteredEvents = groupedEvents.filter((event) => filterFunction(event.date))
+      const filteredEvents = groupedEvents.filter(event => filterFunction(event.date))
 
       setEvents(filteredEvents)
     } catch (error) {
@@ -142,11 +143,11 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
   }, [])
 
   return (
-    <div className='space-y-5'>
+    <div className="space-y-5">
       {!events || events.length === 0 ? (
-        <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
+        <p className="text-center text-lg font-semibold">{noEventsMessage}</p>
       ) : (
-        events.map((event) => (
+        events.map(event => (
           <EventClaim
             key={event.id}
             eventId={event.eventId}

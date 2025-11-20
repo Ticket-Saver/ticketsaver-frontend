@@ -61,20 +61,6 @@ export const eventData: EventData = {
       zones: ['Orange', 'Green', 'Pink', 'Blue', 'Yellow', 'Purple'],
       priceTag: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']
     }
-    /* loge: {
-      zones: [
-        'Yellow',
-        'Purple',
-        'Gray',
-        'Section 1',
-        'Section 2',
-        'Section 3',
-        'Section 4',
-        'Section 5',
-        'Section 6'
-      ],
-      priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
-    }*/
   },
   india_yuridia02: {
     Map: {
