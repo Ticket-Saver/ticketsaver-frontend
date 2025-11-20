@@ -9,6 +9,7 @@ directory = "netlify/functions"
 from = "/proxy-api/*"
 to = "/.netlify/functions/proxy-api/:splat"
 status = 200
+force = true
 
 [[redirects]]
 from = "/api/*"
