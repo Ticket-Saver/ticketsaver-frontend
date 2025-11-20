@@ -4,8 +4,8 @@
  */
 
 // URL base del API - puede ser sobrescrita por variables de entorno
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ticketsaverapi.strangled.net'
-const API_BASE_URL = ''
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ticketsaverapi.strangled.net'
+// const API_BASE_URL = ''
 
 // Configuración completa del API
 export const API_CONFIG = {
