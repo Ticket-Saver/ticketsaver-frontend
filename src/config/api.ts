@@ -3,9 +3,11 @@
  * Permite cambiar la URL base del API entre desarrollo local y producción
  */
 
-// URL base del API - puede ser sobrescrita por variables de entorno
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ticketsaverapi.strangled.net'
 // const API_BASE_URL = ''
+// URL base del API - usa el proxy de Netlify para evitar problemas de CORS
+// En producción, usa el proxy-api de Netlify
+// Puede ser sobrescrita por variables de entorno para desarrollo local
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/proxy-api'
 
 // Configuración completa del API
 export const API_CONFIG = {
