@@ -3,7 +3,6 @@
  * Permite cambiar la URL base del API entre desarrollo local y producción
  */
 
-// const API_BASE_URL = ''
 // URL base del API - usa el proxy de Netlify para evitar problemas de CORS
 // En producción, usa el proxy-api de Netlify
 // Puede ser sobrescrita por variables de entorno para desarrollo local
