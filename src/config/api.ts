@@ -4,7 +4,7 @@
  */
 
 // URL base del API - usa el proxy de Netlify para evitar problemas de CORS
-// En producción, usa el proxy-api de Netlify
+// En producción, el redirect /proxy-api/* redirige a /.netlify/functions/proxy-api/:splat
 // Puede ser sobrescrita por variables de entorno para desarrollo local
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/proxy-api'
 

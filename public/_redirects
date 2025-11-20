@@ -1,4 +1,4 @@
-/proxy-api/*  /.netlify/functions/proxy-api/:splat  200!
-/api/*         /.netlify/functions/:splat            200
-/*             /index.html                            200
+/proxy-api/*    /.netlify/functions/proxy-api/:splat    200!
+/api/*          /.netlify/functions/:splat                200
+/*              /index.html                                200
 

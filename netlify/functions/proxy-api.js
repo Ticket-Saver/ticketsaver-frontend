@@ -3,6 +3,15 @@
  * Redirige todas las peticiones a la API de ticketsaver
  */
 
+// Intentar usar fetch nativo o importar node-fetch
+let fetch
+try {
+  fetch = globalThis.fetch || require('node-fetch')
+} catch (e) {
+  // En Node 18+ fetch es global
+  fetch = globalThis.fetch
+}
+
 const API_BASE_URL = 'https://ticketsaverapi.strangled.net'
 
 exports.handler = async (event, context) => {
