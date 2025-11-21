@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import EventClaim from '../components/EventsClaim'
 import { fetchGitHubImage, fetchDescription } from './Utils/FetchDataJson'
+import { API_URLS } from '../config/api'
 
 interface Event {
   eventId: string
@@ -12,7 +13,24 @@ interface Event {
   description: string
   cardImage: string
   venue: string
+  /**
+   * Fecha "cruda" que viene de Stripe (normalmente YYYY-MM-DD sin hora).
+   * Se usa para la lógica (upcoming/past).
+   */
   date: string
+  /**
+   * Fecha amigable para mostrar al usuario, ya formateada usando
+   * el timezone real del evento cuando es posible.
+   */
+  displayDate?: string
+  /**
+   * Fecha/hora real de inicio del evento (start_date de la API pública)
+   */
+  eventStartDate?: string
+  /**
+   * Timezone oficial del evento (por ejemplo "America/Chicago")
+   */
+  eventTimeZone?: string
   city: string
   route?: string
   ticketDetails?: {
@@ -38,6 +56,7 @@ interface EventData {
 }
 
 const token = import.meta.env.VITE_GITHUB_TOKEN
+const hieventsToken = import.meta.env.VITE_TOKEN_HIEVENTS
 
 const options = {
   headers: {
@@ -104,7 +123,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
       setImages(images)
       setDescriptions(descriptions)
 
-      const groupedEvents = Object.entries(data).map(([key, items]) => {
+      const groupedEvents: Event[] = Object.entries(data).map(([key, items]) => {
         const firstItem = items[0]
 
         return {
@@ -118,6 +137,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
 
           venue: firstItem.venue,
           date: firstItem.date,
+          displayDate: firstItem.date,
           city: firstItem.location,
           route: `/dashboard/claimtickets/${firstItem.eventName}/mynftsclaim`,
           ticketDetails: items.map(item => ({
@@ -128,7 +148,83 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
         }
       })
 
-      const filteredEvents = groupedEvents.filter(event => filterFunction(event.date))
+      // Enriquecer cada evento con la fecha/hora real desde la API pública
+      const enrichedEvents: Event[] = await Promise.all(
+        groupedEvents.map(async event => {
+          // Si no tenemos token de la API, devolvemos el evento tal cual
+          if (!hieventsToken) {
+            return event
+          }
+
+          try {
+            const publicEventUrl = API_URLS.getPublicEvent(event.eventId)
+            const response = await fetch(publicEventUrl, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${hieventsToken}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+              }
+            })
+
+            if (!response.ok) {
+              console.warn(
+                `No se pudo obtener datos públicos del evento ${event.eventId}:`,
+                response.status
+              )
+              return event
+            }
+
+            const result = await response.json()
+            const eventData = result.data || result
+
+            const timeZone: string =
+              (eventData && (eventData.timezone || eventData.settings?.timezone)) || 'UTC'
+            const startDate: string | undefined = eventData.start_date
+
+            if (!startDate) {
+              return {
+                ...event,
+                eventTimeZone: timeZone
+              }
+            }
+
+            const dateTime = new Date(startDate)
+
+            // Formato de fecha similar a otras pantallas (ej. página de evento)
+            const formattedDate = new Intl.DateTimeFormat('en-GB', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              timeZone
+            }).format(dateTime)
+
+            const formattedTime = new Intl.DateTimeFormat('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+              timeZone
+            }).format(dateTime)
+
+            const displayDate = `${formattedDate} at ${formattedTime}`
+
+            return {
+              ...event,
+              displayDate,
+              eventStartDate: startDate,
+              eventTimeZone: timeZone
+            }
+          } catch (err) {
+            console.error('Error enriqueciendo evento con timezone:', err)
+            return event
+          }
+        })
+      )
+
+      const filteredEvents = enrichedEvents.filter(event =>
+        filterFunction(event.eventStartDate || event.date)
+      )
 
       setEvents(filteredEvents)
     } catch (error) {
@@ -156,7 +252,8 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
             description={Descriptions[event.id]}
             thumbnailURL={Images[event.id]}
             venue={event.venue}
-            date={event.date}
+            // Usamos la fecha amigable con timezone si está disponible; si no, la cruda.
+            date={event.displayDate || event.date}
             route={event.route}
             ticketDetails={event.ticketDetails}
           />

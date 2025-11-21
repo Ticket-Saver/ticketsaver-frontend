@@ -26,6 +26,8 @@ interface RouteParams {
   location?: string
   label?: string
   delete?: string
+  displayDate?: string
+  bannerImageUrl?: string
 }
 
 interface TicketEventSaleNoSeatsProps {
@@ -35,7 +37,7 @@ interface TicketEventSaleNoSeatsProps {
 export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNoSeatsProps) {
   // Usar los parámetros de props si están disponibles, sino usar useParams
   const params = useParams()
-  const { name, venue, date, location, label } = routeParams || params
+  const { name, venue, date, location, label, displayDate, bannerImageUrl } = routeParams || params
 
   console.log('DEBUG - routeParams recibidos:', routeParams)
   console.log('DEBUG - params de useParams:', params)
@@ -49,6 +51,9 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
     label // identificador o etiqueta del evento
   })
 
+  // Fecha que se mostrará al usuario: priorizar la fecha formateada que viene del API
+  const effectiveDate = (displayDate as string | undefined) || date
+
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
 
   const token = import.meta.env.VITE_GITHUB_TOKEN
@@ -60,7 +65,7 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
     zones?: Record<string, Record<string, { price_base: number; price_final: number }>>
   }>({})
   const [venueInfo] = useState<{ venue_name?: string } | null>(null)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(bannerImageUrl || null)
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
@@ -95,6 +100,12 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
   useEffect(() => {
     const loadImage = async () => {
       try {
+        // Si ya tenemos banner desde la API pública, usarlo directamente
+        if (bannerImageUrl) {
+          setImageUrl(bannerImageUrl)
+          return
+        }
+
         // Primero intentar con GitHub
         try {
           const url = await fetchGitHubImage(label!)
@@ -124,7 +135,7 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
     }
 
     loadImage()
-  }, [label, venue, hieventsUrl])
+  }, [label, venue, hieventsUrl, bannerImageUrl])
 
   // Cargar los datos de las zonas y los precios (solo si NO hay seating map)
   useEffect(() => {
@@ -272,13 +283,13 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
     // Limitar el número total de boletos en el carrito a 10
     const currentTotalTickets = totalTicketsInCart
     const currentQuantity = cart.filter(
-      ticket => ticket.zoneName === zoneLabel && ticket.priceType === priceType
+      (ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType
     ).length
 
     const totalNewTickets = currentTotalTickets - currentQuantity + newQuantity
 
     if (totalNewTickets <= 10) {
-      setTicketQuantities(prev => ({
+      setTicketQuantities((prev) => ({
         ...prev,
         [`${zoneLabel}-${priceType}`]: newQuantity
       }))
@@ -302,13 +313,13 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
           }
         )
 
-        setCart(prev => [...prev, ...newTickets])
+        setCart((prev) => [...prev, ...newTickets])
       } else if (newQuantity < currentQuantity) {
         const ticketsToRemove = cart
-          .filter(ticket => ticket.zoneName === zoneLabel && ticket.priceType === priceType)
+          .filter((ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType)
           .slice(0, currentQuantity - newQuantity)
 
-        setCart(prev => prev.filter(ticket => !ticketsToRemove.includes(ticket)))
+        setCart((prev) => prev.filter((ticket) => !ticketsToRemove.includes(ticket)))
       }
     }
   }
@@ -335,27 +346,29 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
   // Si existe un seating map, renderizarlo y omitir el listado
   if (seatingMap) {
     return (
-      <div className="flex flex-col min-h-screen bg-white">
-        <div className="flex-grow flex flex-col justify-between bg-gray-100">
-          <div className="relative">
-            <div className="relative h-96">
+      <div className='flex flex-col min-h-screen bg-white'>
+        <div className='flex-grow flex flex-col justify-between bg-gray-100'>
+          <div className='relative'>
+            <div className='relative h-96'>
               {imageUrl && (
                 <img
                   src={imageUrl}
-                  alt="Event banner"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  alt='Event banner'
+                  className='absolute inset-0 w-full h-full object-cover'
                 />
               )}
-              <div className="absolute inset-0 bg-black opacity-50"></div>
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4">
-                <h1 className="text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2">
+              <div className='absolute inset-0 bg-black opacity-50'></div>
+              <div className='absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4'>
+                <h1 className='text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
                   {name}
                 </h1>
-                <p className="text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2">{date}</p>
+                <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                  {effectiveDate}
+                </p>
               </div>
             </div>
           </div>
-          <div className="flex-grow flex flex-col items-center justify-start p-8 w-full max-w-6xl mx-auto">
+          <div className='flex-grow flex flex-col items-center justify-start p-8 w-full max-w-6xl mx-auto'>
             <ApiSeatingMap
               eventId={venue!}
               mapType={seatingMap.map_type}
@@ -412,51 +425,53 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-grow flex flex-col justify-between bg-gray-100">
-        <div className="relative">
-          <div className="relative h-96">
+    <div className='flex flex-col min-h-screen bg-white'>
+      <div className='flex-grow flex flex-col justify-between bg-gray-100'>
+        <div className='relative'>
+          <div className='relative h-96'>
             {imageUrl && (
               <img
                 src={imageUrl}
-                alt="Event banner"
-                className="absolute inset-0 w-full h-full object-cover"
+                alt='Event banner'
+                className='absolute inset-0 w-full h-full object-cover'
               />
             )}
-            <div className="absolute inset-0 bg-black opacity-50"></div>
+            <div className='absolute inset-0 bg-black opacity-50'></div>
 
             {/* Event Information */}
-            <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4">
-              <h1 className="text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2">
+            <div className='absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4'>
+              <h1 className='text-4xl font-bold mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
                 {name}
               </h1>
               {venueInfo && (
-                <h2 className="text-2xl mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2">
+                <h2 className='text-2xl mb-4 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
                   {venueInfo.venue_name}, {location}
                 </h2>
               )}
-              <p className="text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2">{date}</p>
+              <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
+                {effectiveDate}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="flex-grow flex flex-col items-center justify-start p-8">
+        <div className='flex-grow flex flex-col items-center justify-start p-8'>
           {/* Sección de precios y selección de boletos */}
           {(() => {
             console.log('DEBUG - zoneData actual:', zoneData)
             return null
           })()}
           {zoneData.zones && Object.keys(zoneData.zones).length > 0 ? (
-            <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300">
-              <h2 className="text-2xl font-bold mb-6 text-black">Precios de Tickets</h2>
-              <table className="w-full">
+            <div className='w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-300'>
+              <h2 className='text-2xl font-bold mb-6 text-black'>Precios de Tickets</h2>
+              <table className='w-full'>
                 <thead>
                   <tr>
-                    <th className="text-left text-black border-b-2 border-gray-300 pb-2">Tipo</th>
-                    <th className="text-right text-black border-b-2 border-gray-300 pb-2">
+                    <th className='text-left text-black border-b-2 border-gray-300 pb-2'>Tipo</th>
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
                       Precio
                     </th>
-                    <th className="text-right text-black border-b-2 border-gray-300 pb-2">
+                    <th className='text-right text-black border-b-2 border-gray-300 pb-2'>
                       Cantidad
                     </th>
                   </tr>
@@ -466,26 +481,26 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
                     Object.entries(priceTypes).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
                       return (
-                        <tr key={`${zoneName}-${priceType}`} className="hover:bg-gray-100">
-                          <td className="text-left font-normal text-black py-2 border-b border-gray-300">
+                        <tr key={`${zoneName}-${priceType}`} className='hover:bg-gray-100'>
+                          <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
                             {zoneName}
                           </td>
-                          <td className="text-right font-normal text-black py-2 border-b border-gray-300">
-                            <p className="font-bold">${priceFinal?.toFixed(2)}</p>
+                          <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
+                            <p className='font-bold'>${priceFinal?.toFixed(2)}</p>
                           </td>
-                          <td className="text-right py-2 border-b border-gray-300">
+                          <td className='text-right py-2 border-b border-gray-300'>
                             <select
                               value={ticketQuantities[`${zoneName}-${priceType}`] || 0}
-                              onChange={e => {
+                              onChange={(e) => {
                                 const value = Math.min(
                                   10,
                                   Math.max(0, parseInt(e.target.value, 10))
                                 )
                                 handleTicketQuantityChange(zoneName, priceType, value)
                               }}
-                              className="w-24 border rounded-md p-2 text-lg bg-white text-black"
+                              className='w-24 border rounded-md p-2 text-lg bg-white text-black'
                             >
-                              {Array.from({ length: 2 }, (_, i) => (
+                              {Array.from({ length: 11 }, (_, i) => (
                                 <option key={i} value={i}>
                                   {i}
                                 </option>
@@ -505,17 +520,17 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
 
           {/* Botón de Checkout */}
           {cart.length > 0 && (
-            <div className="flex flex-col items-center mt-8 w-full max-w-4xl">
+            <div className='flex flex-col items-center mt-8 w-full max-w-4xl'>
               {/* Total Cost aligned to the left */}
-              <div className="center mb-4 ">
-                <p className="text-xl font-bold text-black">Total: ${totalCost.toFixed(2)}</p>
+              <div className='center mb-4 '>
+                <p className='text-xl font-bold text-black'>Total: ${totalCost.toFixed(2)}</p>
               </div>
 
               {/* Checkout Button centered */}
-              <div className="text-right">
-                <Link to="/checkout">
+              <div className='text-right'>
+                <Link to='/checkout'>
                   <button
-                    className="bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300"
+                    className='bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
                     onClick={handleCheckout}
                   >
                     Continue to Checkout

@@ -4,7 +4,7 @@ import TicketQR from './TicketQR'
 // Función para traducir zonas del español al inglés
 function translateZone(zone: string | null | undefined): string {
   if (!zone) return 'General Admission'
-  
+
   const zoneTranslations: { [key: string]: string } = {
     centro: 'center',
     izquierda: 'left',
@@ -19,12 +19,36 @@ function translateZone(zone: string | null | undefined): string {
 
 function formatEventDate(dateStr?: string) {
   if (!dateStr) return ''
+  // Si la cadena ya parece una fecha amigable (contiene letras y no es claramente YYYY-MM-DD),
+  // la devolvemos tal cual para no romper el formato ni el timezone aplicado en otras pantallas.
+  const isPlainISODate = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+  const hasLetters = /[a-zA-Z]/.test(dateStr)
+
+  if (hasLetters && !isPlainISODate) {
+    return dateStr
+  }
+
+  // Para cadenas tipo YYYY-MM-DD usamos una fecha en UTC y mostramos SOLO la parte de fecha,
+  // así evitamos desplazamientos de día por timezone del navegador.
+  if (isPlainISODate) {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    const utcDate = new Date(Date.UTC(year, month - 1, day))
+    return utcDate.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return dateStr
-  return date.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'long',
+
+  return date.toLocaleString('en-GB', {
+    weekday: 'long',
     day: 'numeric',
+    month: 'long',
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: true
@@ -70,31 +94,29 @@ function AdditionalInfo({
       {details.map((detail, index) => {
         // Detectar si es un ticket numerado o general
         const hasSeating = detail.zone || detail.section || detail.seatNumber
-        
+
         return (
           <div
             key={index}
-            className="w-full bg-neutral rounded-xl flex flex-col sm:flex-row mb-4 items-center justify-between"
+            className='w-full bg-neutral rounded-xl flex flex-col sm:flex-row mb-4 items-center justify-between'
           >
-            <div className="flex flex-col justify-between p-4 py-6 w-full sm:w-2/5">
-              <p className="text-xl font-bold py-3">Ticket: {detail.ticket}</p>
-              <div className="w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4"></div>
-              
+            <div className='flex flex-col justify-between p-4 py-6 w-full sm:w-2/5'>
+              <p className='text-xl font-bold py-3'>Ticket: {detail.ticket}</p>
+              <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
+
               {hasSeating ? (
                 // Ticket numerado con asiento
-                <p className="text-lg">
+                <p className='text-lg'>
                   Zone: {translateZone(detail.zone)} - Seat: {detail.section}
                   {detail.seatNumber}
                 </p>
               ) : (
                 // Ticket general sin asiento específico
-                <p className="text-lg">
-                  Type: General Admission
-                </p>
+                <p className='text-lg'>Type: General Admission</p>
               )}
               {/* <p className="text-lg">Price: {detail.price}</p> */}
             </div>
-            <div className="flex justify-center items-center p-4 w-full sm:w-1/3">
+            <div className='flex justify-center items-center p-4 w-full sm:w-1/3'>
               {/* Prefer QR by ticket id; fallback to legacy event/publicId URL if missing */}
               {detail.ticket ? (
                 <TicketQR value={detail.ticket} size={100} />
@@ -128,27 +150,27 @@ export default function EveClaim({
 
   return (
     <>
-      <div className="w-full bg-neutral rounded-xl flex flex-col sm:flex-row items-center justify-between">
-        <div className="flex flex-col justify-between p-4 py-6 w-full sm:w-2/5">
-          <div className="text-xl sm:text-3xl font-semibold">{title}</div>
-          <div className="w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4"></div>
-          <div className="text-lg sm:text-xl font-semibold pb-4">{venue}</div>
-          <div className="text-lg sm:text-xl pb-4">{formatEventDate(date)}</div>
+      <div className='w-full bg-neutral rounded-xl flex flex-col sm:flex-row items-center justify-between'>
+        <div className='flex flex-col justify-between p-4 py-6 w-full sm:w-2/5'>
+          <div className='text-xl sm:text-3xl font-semibold'>{title}</div>
+          <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
+          <div className='text-lg sm:text-xl font-semibold pb-4'>{venue}</div>
+          <div className='text-lg sm:text-xl font-bold pb-4'>{formatEventDate(date)}</div>
           <div
-            className="text-sm sm:text-lg pb-4"
+            className='text-sm sm:text-lg pb-4'
             dangerouslySetInnerHTML={{ __html: description }}
           ></div>
           {ticketDetails && (
-            <div onClick={handleViewTicketsClick} className="cursor-pointer mt-4 text-blue-500">
+            <div onClick={handleViewTicketsClick} className='cursor-pointer mt-4 text-blue-500'>
               {showAdditionalInfo ? '▲ Hide tickets' : '▼ View tickets'}
             </div>
           )}
         </div>
-        <div className="w-full sm:w-2/5 flex justify-center items-center p-4">
+        <div className='w-full sm:w-2/5 flex justify-center items-center p-4'>
           <img
             src={thumbnailURL}
-            alt="Event Image"
-            className="w-full h-48 sm:h-64 object-cover rounded-xl"
+            alt='Event Image'
+            className='w-full h-48 sm:h-64 object-cover rounded-xl'
           />
         </div>
       </div>

@@ -34,6 +34,7 @@ interface RouteParams {
   location?: string
   label?: string
   delete?: string
+  bannerImageUrl?: string
 }
 
 interface TicketEventSaleProps {
@@ -43,7 +44,8 @@ interface TicketEventSaleProps {
 export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
   // Usar los parámetros de props si están disponibles, sino usar useParams
   const params = useParams()
-  const { name, venue, date, location, label, delete: deleteParam } = routeParams || params
+  const { name, venue, date, location, label, delete: deleteParam, bannerImageUrl } =
+    routeParams || params
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
   const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const hieventsUrl = API_URLS.EVENTS
@@ -56,7 +58,7 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
     }
   }
 
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(bannerImageUrl || null)
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>([])
@@ -68,6 +70,12 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
   useEffect(() => {
     const loadImage = async () => {
       try {
+        // Si ya tenemos banner desde la API pública, usarlo directamente
+        if (bannerImageUrl) {
+          setImageUrl(bannerImageUrl)
+          return
+        }
+
         const url = await fetchGitHubImage(label!)
         setImageUrl(url)
       } catch (error) {
@@ -95,7 +103,7 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
       }
     }
     if (label) loadImage()
-  }, [label])
+  }, [label, bannerImageUrl])
 
   // Fetch zone data when label changes
   useEffect(() => {

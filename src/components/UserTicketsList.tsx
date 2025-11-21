@@ -8,6 +8,35 @@ interface UserTicketsListProps {
   noEventsMessage: string
 }
 
+const formatEventDateTime = (dateStr: string, timezone?: string) => {
+  if (!dateStr) return ''
+
+  try {
+    const date = new Date(dateStr)
+    const tz = timezone || 'UTC'
+
+    const formattedDate = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: tz
+    }).format(date)
+
+    const formattedTime = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: tz
+    }).format(date)
+
+    return `${formattedDate} at ${formattedTime}`
+  } catch {
+    // Si algo falla, devolvemos la cadena original para no romper la UI
+    return dateStr
+  }
+}
+
 const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEventsMessage }) => {
   const { user } = useAuth0()
   const { tickets, loading, error } = useUpcomingTickets(user?.email || '')
@@ -68,7 +97,8 @@ const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEve
             description={event.description || ''}
             thumbnailURL={event.imageUrl || '/default.jpg'}
             venue={mapVenueName(event.venueId, event.venue)}
-            date={event.date}
+            // Mostramos una fecha amigable usando el timezone del evento
+            date={formatEventDateTime(event.date, event.timezone)}
             route={`/dashboard/claimtickets/${event.eventName}/mynftsclaim`}
             ticketDetails={event.tickets.map(ticket => ({
               ticket: ticket.ticketId,

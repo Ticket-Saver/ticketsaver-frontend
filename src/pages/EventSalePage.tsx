@@ -33,6 +33,13 @@ interface EventTicket {
   }>
 }
 
+// Mapa de compatibilidad para URLs legacy:
+// interpreta ciertos "venue_label" históricos como IDs numéricos de eventos actuales.
+// Ejemplo: /event/.../claytonbar_tx/... -> internamente usamos el ID 11.
+const LEGACY_VENUE_ID_MAP: Record<string, string> = {
+  claytonbar_tx: '11'
+}
+
 import { Skeleton } from '../components/Skeleton'
 import { API_URLS } from '../config/api'
 
@@ -78,6 +85,31 @@ export default function EventPage() {
   const [eventTickets, setEventTickets] = useState<EventTicket[]>([])
 
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
+  const [resolvedVenueId, setResolvedVenueId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Si no hay venue en la URL, no hay nada que resolver
+    if (!venue) {
+      setResolvedVenueId(null)
+      return
+    }
+
+    // Si ya viene un ID numérico (formato nuevo), lo usamos tal cual
+    if (/^\d+$/.test(venue)) {
+      setResolvedVenueId(venue)
+      return
+    }
+
+    // Formato legacy: intentar mapear usando el mapa estático
+    const mappedId = LEGACY_VENUE_ID_MAP[venue]
+    if (mappedId) {
+      console.log('✅ Resolved legacy venue_label to eventId from map:', venue, '->', mappedId)
+      setResolvedVenueId(mappedId)
+    } else {
+      console.warn('⚠️ No legacy mapping for venue_label, using original:', venue)
+      setResolvedVenueId(venue)
+    }
+  }, [venue])
 
   // Una sola llamada API al endpoint público
   useEffect(() => {
@@ -95,14 +127,14 @@ export default function EventPage() {
       return
     }
 
-    if (!venue || !label) return
+    if (!resolvedVenueId || !label) return
 
     const fetchAllEventData = async () => {
       setIsLoading(true)
 
       try {
         // UNA SOLA LLAMADA: GET /api/public/events/{venue}/
-        const publicEventUrl = API_URLS.getPublicEvent(venue)
+        const publicEventUrl = API_URLS.getPublicEvent(resolvedVenueId)
         console.log('🔍 Fetching from:', publicEventUrl)
 
         const response = await fetch(publicEventUrl, {
@@ -187,10 +219,6 @@ export default function EventPage() {
           }
 
           // Extraer imágenes de galería del array 'gallery' o de images con tipo EVENT_GALLERY
-          const galleryFromImages = eventData.images.filter(
-            (img: { type: string; url: string; file_name: string }) => img.type === 'EVENT_GALLERY'
-          )
-
           const galleryFromArray =
             eventData.gallery && Array.isArray(eventData.gallery) ? eventData.gallery : []
 
@@ -267,7 +295,7 @@ export default function EventPage() {
 
     fetchAllEventData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venue, date, deleteParam])
+  }, [resolvedVenueId, date, deleteParam])
 
   // Sales are always active - no date restrictions
   return (
@@ -440,9 +468,19 @@ export default function EventPage() {
                             )
                           }
 
+                          // Construir URL de venta evitando agregar el segmento opcional ":delete"
+                          // cuando viene indefinido en los params.
+                          const deleteSegment = deleteParam ? `/${deleteParam}` : ''
+
+                          // Codificar nombre del evento y ciudad para URLs más seguras
+                          const encodedName = encodeURIComponent(name || '')
+                          const encodedCity = encodeURIComponent(
+                            venues?.location?.city || 'unknown'
+                          )
+
                           return (
                             <Link
-                              to={`/sale/${name}/${venue}/${venues?.location?.city || 'unknown'}/${date}/${label}/${deleteParam}`}
+                              to={`/sale/${encodedName}/${venue}/${encodedCity}/${date}/${label}${deleteSegment}`}
                               state={{
                                 eventName: name,
                                 eventHour: hour,

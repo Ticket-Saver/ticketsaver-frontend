@@ -53,8 +53,12 @@ export default function SalePage() {
     venue_name?: string
     location: { city: string }
   } | null>(null)
+  const [eventStartDate, setEventStartDate] = useState<string | null>(null)
+  const [eventTimeZone, setEventTimeZone] = useState<string | null>(null)
+  const [displayDate, setDisplayDate] = useState<string | null>(null)
   const [tipoticket, setTipoticket] = useState<'enumerado' | 'general' | null>(null)
   const [eventTickets, setEventTickets] = useState<EventTicket[]>([])
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null)
   const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
   const token = import.meta.env.VITE_GITHUB_TOKEN
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
@@ -82,7 +86,46 @@ export default function SalePage() {
             if (publicEventResponse.ok) {
               const publicEventData = await publicEventResponse.json()
               const eventData = publicEventData.data || publicEventData
-              
+
+              // Imagen de banner del evento (EVENT_BANNER)
+              if (eventData.images && Array.isArray(eventData.images)) {
+                const bannerImage = eventData.images.find(
+                  (img: { type?: string }) => img.type === 'EVENT_BANNER'
+                )
+                if (bannerImage?.url) {
+                  setBannerImageUrl(bannerImage.url)
+                }
+              }
+
+              // Guardar timezone y fecha de inicio del evento para mostrar la fecha formateada
+              const timeZone =
+                (eventData && (eventData.timezone || eventData.settings?.timezone)) || null
+              setEventTimeZone(timeZone)
+
+              if (eventData.start_date) {
+                setEventStartDate(eventData.start_date)
+
+                const dateTime = new Date(eventData.start_date)
+                const formatter = new Intl.DateTimeFormat('en-GB', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                  timeZone: timeZone || 'UTC'
+                })
+
+                setDisplayDate(formatter.format(dateTime))
+              } else if (date) {
+                // Fallback si no viene start_date: usar el parámetro de la URL
+                const fallbackFormatter = new Intl.DateTimeFormat('en-GB', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })
+                setDisplayDate(fallbackFormatter.format(new Date(date)))
+              }
+
               // Establecer el tipoticket desde la API
               if (eventData.tipoticket) {
                 setTipoticket(eventData.tipoticket)
@@ -157,7 +200,18 @@ export default function SalePage() {
   console.log('tipoticket', tipoticket)
 
   // Pasar todos los parámetros a los componentes hijos
-  const routeParams = { name, venue, date, location, label, delete: deleteParam }
+  const routeParams = {
+    name,
+    venue,
+    date,
+    location,
+    label,
+    delete: deleteParam,
+    // Fecha amigable para mostrar en las pantallas de venta
+    displayDate: displayDate || date,
+    // Imagen de banner del evento
+    bannerImageUrl: bannerImageUrl || undefined
+  }
 
   console.log('DEBUG - SalePage - routeParams a pasar:', routeParams)
 

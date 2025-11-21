@@ -10,6 +10,8 @@ interface RouteParams {
   location?: string
   label?: string
   delete?: string
+  displayDate?: string
+  bannerImageUrl?: string
 }
 
 interface GeneralAdmissionTicketsProps {
@@ -58,8 +60,8 @@ export default function GeneralAdmissionTickets({
 }: GeneralAdmissionTicketsProps) {
   const params = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, loginWithRedirect } = useAuth0()
-  const { name, venue, date, location, label } = routeParams || params
+  const { isAuthenticated, loginWithRedirect, user } = useAuth0()
+  const { name, venue, date, location, label, displayDate } = routeParams || params
 
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [selectedQuantities, setSelectedQuantities] = useState<{ [key: number]: number }>({})
@@ -69,6 +71,18 @@ export default function GeneralAdmissionTickets({
   const [validationErrors, setValidationErrors] = useState<{ [key: number]: string }>({})
 
   const token = import.meta.env.VITE_TOKEN_HIEVENTS
+
+  // Fecha amigable a mostrar: priorizar la que viene formateada desde SalePage / API
+  const effectiveDate =
+    (displayDate as string | undefined) ||
+    (date
+      ? new Date(date).toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+      : '')
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -282,7 +296,88 @@ export default function GeneralAdmissionTickets({
 
       console.log('✅ Order created:', order)
 
-      // Iniciar el checkout de Stripe usando el mismo endpoint que eventos numerados
+      // 2b. Enviar attendees básicos con los datos del comprador antes de crear la sesión de pago
+      const buyerEmail = user?.email || ''
+      const fullName = user?.name || ''
+
+      if (!buyerEmail) {
+        throw new Error('No se encontró email del comprador para asignar a los asistentes')
+      }
+
+      let buyerFirstName = fullName || ''
+      let buyerLastName = ''
+
+      if (fullName && fullName.includes(' ')) {
+        const parts = fullName.split(' ')
+        buyerFirstName = parts[0]
+        buyerLastName = parts.slice(1).join(' ')
+      }
+
+      if (!buyerFirstName) {
+        buyerFirstName = 'Guest'
+      }
+
+      if (!buyerLastName) {
+        buyerLastName = buyerFirstName
+      }
+
+      // Construir arreglo de attendees: mismo comprador repetido según cantidad de tickets
+      const attendeesPayload: {
+        first_name: string
+        last_name: string
+        email: string
+        ticket_price_id: number
+      }[] = []
+
+      selectedTickets.forEach(ticket => {
+        const quantity = selectedQuantities[ticket.id] || 0
+        const price = ticket.prices[0]
+        if (!price) return
+
+        for (let i = 0; i < quantity; i++) {
+          attendeesPayload.push({
+            first_name: buyerFirstName,
+            last_name: buyerLastName,
+            email: buyerEmail,
+            ticket_price_id: price.id
+          })
+        }
+      })
+
+      if (attendeesPayload.length === 0) {
+        throw new Error('No se pudo construir la lista de asistentes para la orden')
+      }
+
+      console.log('👥 Enviando attendees para orden general:', attendeesPayload)
+
+      const updateOrderResponse = await fetch(
+        `${apiUrl}public/events/${venue}/order/${order.short_id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            order: {
+              first_name: buyerFirstName,
+              last_name: buyerLastName,
+              email: buyerEmail
+            },
+            attendees: attendeesPayload
+          })
+        }
+      )
+
+      if (!updateOrderResponse.ok) {
+        const errorData = await updateOrderResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Error updating order attendees')
+      }
+
+      console.log('✅ Order attendees updated for general admission:', await updateOrderResponse.json())
+
+      // 3. Iniciar el checkout de Stripe usando el mismo endpoint que eventos numerados
       const successUrl = `${window.location.origin}/checkout/${venue}/${order.short_id}/success`
 
       // Construir cancel_url con componentes codificados correctamente
@@ -408,12 +503,7 @@ export default function GeneralAdmissionTickets({
           </button>
           <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
           <p className="text-gray-600 mt-2">
-            {new Date(date!).toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            })}
+            {effectiveDate}
           </p>
         </div>
 

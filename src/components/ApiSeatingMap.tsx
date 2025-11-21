@@ -84,6 +84,7 @@ export default function ApiSeatingMap({
     total: number
     available: number
     isSeatLevel?: boolean
+    isLoadingGroup?: boolean
   } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
@@ -95,6 +96,7 @@ export default function ApiSeatingMap({
   const [seatsByRow, setSeatsByRow] = useState<Record<string, SeatItem[]>>({})
   const [stageDirection, setStageDirection] = useState<'north' | 'south' | 'east' | 'west'>('north')
   const lastFetchedGroupRef = useRef<string | null>(null)
+  const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
 
   const toTitleCaseFromKebab = (value: string): string => {
     return value
@@ -503,17 +505,23 @@ export default function ApiSeatingMap({
         if (response.ok) {
           const data = await response.json()
           console.log('Realtime availability data:', data)
-          return {
+          const stats = {
             total: data.total || 0,
             available: data.available || 0
           }
+          availabilityCacheRef.current[groupKey] = stats
+          return stats
         }
       } catch (error) {
         console.warn('Error fetching realtime availability:', error)
       }
 
       // Fallback a cálculo local si falla la API
-      return computeStatsForGroupKey(groupKey)
+      const fallback = computeStatsForGroupKey(groupKey)
+      if (fallback) {
+        availabilityCacheRef.current[groupKey] = fallback
+      }
+      return fallback
     }
 
     const getLastNonNumericToken = (tokens: string[]): string | undefined => {
@@ -605,37 +613,57 @@ export default function ApiSeatingMap({
         lastFetchedGroupRef.current
       )
       if (groupKey) {
-        // Mostrar tooltip inmediatamente (sin datos, se llenará con el endpoint)
+        // Mostrar tooltip inmediatamente en la posición actual del puntero
         if (ev && container) {
           const rect = container.getBoundingClientRect()
           setTooltipPos({ x: ev.clientX - rect.left, y: ev.clientY - rect.top })
           setTooltipVisible(true)
         }
 
-        // Solo llamar al endpoint si el grupo ha cambiado
-        if (groupKey !== lastFetchedGroupRef.current) {
-          // Si había un grupo anterior diferente, resetear
+        const cached = availabilityCacheRef.current[groupKey]
+
+        if (cached) {
+          // Si ya tenemos datos del endpoint (o fallback) en caché, los usamos siempre.
+          setHoverInfo({
+            label: toTitleCaseFromKebab(groupKey),
+            total: cached.total,
+            available: cached.available,
+            isLoadingGroup: false
+          })
+        } else {
+          // Si todavía no tenemos datos, mostrar estado "loading" en el tooltip.
+          setHoverInfo({
+            label: toTitleCaseFromKebab(groupKey),
+            total: 0,
+            available: 0,
+            isLoadingGroup: true
+          })
+        }
+
+        // Llamar al endpoint solo si el grupo ha cambiado y aún no tenemos datos cacheados.
+        if (!cached && groupKey !== lastFetchedGroupRef.current) {
           if (lastFetchedGroupRef.current && lastFetchedGroupRef.current !== groupKey) {
             console.log('Group changed from', lastFetchedGroupRef.current, 'to', groupKey)
           }
           lastFetchedGroupRef.current = groupKey
           console.log('Fetching realtime data for new group:', groupKey)
 
-          // Obtener datos en tiempo real y actualizar inmediatamente
           fetchRealtimeAvailability(groupKey)
             .then(realtimeStats => {
               if (realtimeStats) {
-                // Usar datos del endpoint en lugar del cálculo local
                 setHoverInfo({
                   label: toTitleCaseFromKebab(groupKey),
                   total: realtimeStats.total,
-                  available: realtimeStats.available
+                  available: realtimeStats.available,
+                  isLoadingGroup: false
                 })
               }
             })
             .catch(error => {
               console.warn('Error updating realtime availability:', error)
             })
+        } else if (cached) {
+          console.log('Using cached availability for group:', groupKey, cached)
         } else {
           console.log('Same group, skipping API call:', groupKey)
         }
@@ -1292,10 +1320,19 @@ export default function ApiSeatingMap({
             height: 'auto'
           }}
           dangerouslySetInnerHTML={{
-            __html: svgContent.replace(
-              /<svg([^>]*)>/g,
-              '<svg$1 style="width: 100%; height: auto; max-width: 100%; min-width: 320px;" class="w-full h-auto max-w-full" preserveAspectRatio="xMidYMid meet">'
-            )
+            __html: svgContent
+              // Quitar títulos y descripciones internas del SVG para que
+              // el navegador no muestre los nombres de las capas como tooltip nativo.
+              .replace(/<title[\s\S]*?<\/title>/gi, '')
+              .replace(/<desc[\s\S]*?<\/desc>/gi, '')
+              // Quitar atributos title="..." en elementos individuales.
+              .replace(/\s+title="[^"]*"/gi, '')
+              // Forzar estilos responsivos y desactivar selección de texto
+              // para que no se pueda seleccionar/copiar el texto del mapa.
+              .replace(
+                /<svg([^>]*)>/gi,
+                '<svg$1 style="width: 100%; height: auto; max-width: 100%; min-width: 320px; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;" class="w-full h-auto max-w-full" preserveAspectRatio="xMidYMid meet">'
+              )
           }}
         />
         {tooltipVisible && hoverInfo && tooltipPos && (
@@ -1305,6 +1342,8 @@ export default function ApiSeatingMap({
           >
             {hoverInfo.isSeatLevel
               ? `${hoverInfo.label} ${hoverInfo.available === 1 ? 'available' : 'no available'}`
+              : hoverInfo.isLoadingGroup
+              ? `${hoverInfo.label}: loading...`
               : `${hoverInfo.label}: ${hoverInfo.available}/${hoverInfo.total} available`}
           </div>
         )}

@@ -65,7 +65,7 @@ export default function EventPage() {
 
       console.log('currentDate', currentDate)
 
-      filteredEvents = eventsArray.filter(event => {
+      filteredEvents = eventsArray.filter((event) => {
         if (event.event_deleted_at) {
           return false
         }
@@ -93,8 +93,8 @@ export default function EventPage() {
   }, [data2])
 
   useEffect(() => {
-    const combinedData = events.map(event => {
-      const venue = venues.find(v => v.venue_label === event.venue_label)
+    const combinedData = events.map((event) => {
+      const venue = venues.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
@@ -168,11 +168,11 @@ export default function EventPage() {
     timeZone: 'UTC'
   }
   return (
-    <section className="py-10 md:py-16 bg-base-300">
-      <div className="container">
-        <div className="text-center">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">Select your city!!!</h2>
-          <p className="text-lg sm:text-2xl mb-6 md:mb-14">
+    <section className='py-10 md:py-16 bg-base-300'>
+      <div className='container'>
+        <div className='text-center'>
+          <h2 className='text-3xl sm:text-5xl font-bold mb-4'>Select your city!!!</h2>
+          <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
             Don’t miss out! Buy now before tickets sell out!.
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function EventPage() {
         >
           {eventsWithVenues.map((event, index) =>
             event.tricket_url ? (
-              <a href={event.tricket_url} key={index} target="_blank" rel="noopener noreferrer">
+              <a href={event.tricket_url} key={index} target='_blank' rel='noopener noreferrer'>
                 <EventCard
                   key={index}
                   id={event.eventId}
@@ -197,33 +197,46 @@ export default function EventPage() {
                 />
               </a>
             ) : (
-              <Link
-                to={`/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`}
-                key={index}
-                state={{
-                  sale_starts_at: event.sale_starts_at,
-                  eventId: event.eventId,
-                  eventName: event.event_name,
-                  venueName: event.venue?.venue_name,
-                  eventDate: event.event_date,
-                  eventLabel: event.event_label,
-                  venueLocation: event.venue?.location
-                }}
-              >
-                <EventCard
-                  key={index}
-                  id={event.eventId}
-                  eventId={event.eventId}
-                  title={event.event_name}
-                  description={descriptions[event.event_label]} // Add description if available
-                  thumbnailURL={images[event.event_label]}
-                  venue={event.venue?.venue_name || event.venue_label}
-                  date={new Date(event.event_date)
-                    .toLocaleDateString('en-GB', optionsDate)
-                    .replace(',', '')}
-                  city={event.venue?.location.city} // Pass the city property from the venue object
-                />
-              </Link>
+              <>
+                {/*
+                  Igual que en FeaturedEvents, si event_deleted_at es null no queremos que aparezca "null"
+                  como string en la URL. El parámetro :delete es opcional en el route.
+                */}
+                {(() => {
+                  const deleteSegment = event.event_deleted_at ? `/${event.event_deleted_at}` : ''
+                  const eventUrl = `/event/${event.event_name}/${event.venue_label}/${event.event_date}/${event.event_label}${deleteSegment}`
+
+                  return (
+                    <Link
+                      to={eventUrl}
+                      key={index}
+                      state={{
+                        sale_starts_at: event.sale_starts_at,
+                        eventId: event.eventId,
+                        eventName: event.event_name,
+                        venueName: event.venue?.venue_name,
+                        eventDate: event.event_date,
+                        eventLabel: event.event_label,
+                        venueLocation: event.venue?.location
+                      }}
+                    >
+                      <EventCard
+                        key={index}
+                        id={event.eventId}
+                        eventId={event.eventId}
+                        title={event.event_name}
+                        description={descriptions[event.event_label]} // Add description if available
+                        thumbnailURL={images[event.event_label]}
+                        venue={event.venue?.venue_name || event.venue_label}
+                        date={new Date(event.event_date)
+                          .toLocaleDateString('en-GB', optionsDate)
+                          .replace(',', '')}
+                        city={event.venue?.location.city} // Pass the city property from the venue object
+                      />
+                    </Link>
+                  )
+                })()}
+              </>
             )
           )}
         </div>
