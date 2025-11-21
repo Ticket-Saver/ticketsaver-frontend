@@ -497,7 +497,7 @@ const SuccessCheckout = () => {
 
                   <QRCodeSVG
                     // value={`${import.meta.env.VITE_HIEVENTS_API_URL}ticket/${attendee.ticket.event_id}/${attendee.public_id}`}
-                    value={`https://localhost:8443/ticket/${attendee.ticket.event_id}/${attendee.public_id}`}
+                    value={`https://ticketsaverapi.strangled.net/ticket/${attendee.ticket.event_id}/${attendee.public_id}`}
                     size={200}
                     level='H'
                     includeMargin={true}

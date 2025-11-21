@@ -70,7 +70,7 @@ export default function GeneralAdmissionTickets({
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<{ [key: number]: string }>({})
 
-  const token = import.meta.env.VITE_TOKEN_HIEVENTS
+  const token = import.meta.env.TOKEN_HIEVENTS
 
   // Fecha amigable a mostrar: priorizar la que viene formateada desde SalePage / API
   const effectiveDate =
@@ -152,13 +152,13 @@ export default function GeneralAdmissionTickets({
   }, [venue, token, preloadedTickets])
 
   const handleQuantityChange = (ticketId: number, quantity: number) => {
-    setSelectedQuantities(prev => ({
+    setSelectedQuantities((prev) => ({
       ...prev,
       [ticketId]: quantity
     }))
     // Limpiar error de validación cuando el usuario cambia la cantidad
     if (validationErrors[ticketId]) {
-      setValidationErrors(prev => {
+      setValidationErrors((prev) => {
         const newErrors = { ...prev }
         delete newErrors[ticketId]
         return newErrors
@@ -169,7 +169,7 @@ export default function GeneralAdmissionTickets({
   const validateAvailability = async (selectedTickets: Ticket[]) => {
     try {
       const validationPayload = {
-        tickets: selectedTickets.map(ticket => ({
+        tickets: selectedTickets.map((ticket) => ({
           ticket_id: ticket.id,
           quantity: selectedQuantities[ticket.id]
         }))
@@ -203,7 +203,7 @@ export default function GeneralAdmissionTickets({
         // Procesar errores de validación
         const errors: { [key: number]: string } = {}
         const validationItems = validationResult.validation as ValidationItem[]
-        validationItems?.forEach(item => {
+        validationItems?.forEach((item) => {
           if (!item.is_available && item.error) {
             errors[item.ticket_id] = item.error
           }
@@ -234,7 +234,7 @@ export default function GeneralAdmissionTickets({
     }
 
     // Filtrar tickets con cantidad > 0
-    const selectedTickets = tickets.filter(ticket => selectedQuantities[ticket.id] > 0)
+    const selectedTickets = tickets.filter((ticket) => selectedQuantities[ticket.id] > 0)
 
     if (selectedTickets.length === 0) {
       alert('Please select at least one ticket')
@@ -257,7 +257,7 @@ export default function GeneralAdmissionTickets({
       }
 
       // 2. Construir el array de tickets según el formato de la API
-      const ticketsPayload = selectedTickets.map(ticket => {
+      const ticketsPayload = selectedTickets.map((ticket) => {
         const price = ticket.prices[0] // Usar el primer precio disponible
         return {
           ticket_id: ticket.id,
@@ -329,7 +329,7 @@ export default function GeneralAdmissionTickets({
         ticket_price_id: number
       }[] = []
 
-      selectedTickets.forEach(ticket => {
+      selectedTickets.forEach((ticket) => {
         const quantity = selectedQuantities[ticket.id] || 0
         const price = ticket.prices[0]
         if (!price) return
@@ -375,7 +375,10 @@ export default function GeneralAdmissionTickets({
         throw new Error(errorData.message || 'Error updating order attendees')
       }
 
-      console.log('✅ Order attendees updated for general admission:', await updateOrderResponse.json())
+      console.log(
+        '✅ Order attendees updated for general admission:',
+        await updateOrderResponse.json()
+      )
 
       // 3. Iniciar el checkout de Stripe usando el mismo endpoint que eventos numerados
       const successUrl = `${window.location.origin}/checkout/${venue}/${order.short_id}/success`
@@ -441,10 +444,10 @@ export default function GeneralAdmissionTickets({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading tickets...</p>
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto'></div>
+          <p className='mt-4 text-gray-600'>Loading tickets...</p>
         </div>
       </div>
     )
@@ -452,12 +455,12 @@ export default function GeneralAdmissionTickets({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">{error}</p>
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-red-600'>{error}</p>
           <button
             onClick={() => navigate(-1)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
           >
             Go Back
           </button>
@@ -468,12 +471,12 @@ export default function GeneralAdmissionTickets({
 
   if (tickets.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">No tickets available for this event.</p>
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-gray-600'>No tickets available for this event.</p>
           <button
             onClick={() => navigate(-1)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
           >
             Go Back
           </button>
@@ -483,35 +486,33 @@ export default function GeneralAdmissionTickets({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className='min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='max-w-4xl mx-auto'>
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className='bg-white rounded-lg shadow-sm p-6 mb-6'>
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className='flex items-center text-gray-600 hover:text-gray-900 mb-4'
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className='w-5 h-5 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinecap='round'
+                strokeLinejoin='round'
                 strokeWidth={2}
-                d="M15 19l-7-7 7-7"
+                d='M15 19l-7-7 7-7'
               />
             </svg>
             Back to Event
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
-          <p className="text-gray-600 mt-2">
-            {effectiveDate}
-          </p>
+          <h1 className='text-3xl font-bold text-gray-900'>{name}</h1>
+          <p className='text-gray-600 mt-2'>{effectiveDate}</p>
         </div>
 
         {/* Tickets List */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Select Your Tickets</h2>
+        <div className='space-y-4'>
+          <h2 className='text-2xl font-bold text-gray-900 mb-4'>Select Your Tickets</h2>
 
-          {tickets.map(ticket => {
+          {tickets.map((ticket) => {
             const price = ticket.prices[0]
             const hasError = validationErrors[ticket.id]
 
@@ -522,17 +523,17 @@ export default function GeneralAdmissionTickets({
                   hasError ? 'border-2 border-red-500' : ''
                 }`}
               >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div className="flex-1 mb-4 md:mb-0">
-                    <h3 className="text-xl font-semibold text-gray-900">{ticket.title}</h3>
+                <div className='flex flex-col md:flex-row md:items-center md:justify-between'>
+                  <div className='flex-1 mb-4 md:mb-0'>
+                    <h3 className='text-xl font-semibold text-gray-900'>{ticket.title}</h3>
                     {ticket.description && (
-                      <p className="text-gray-600 mt-1">{ticket.description}</p>
+                      <p className='text-gray-600 mt-1'>{ticket.description}</p>
                     )}
-                    <div className="mt-2">
-                      <p className="text-2xl font-bold text-blue-600">
+                    <div className='mt-2'>
+                      <p className='text-2xl font-bold text-blue-600'>
                         ${price.price_including_taxes_and_fees.toFixed(2)}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className='text-sm text-gray-500'>
                         Base: ${price.price.toFixed(2)} + Taxes: ${price.tax_total.toFixed(2)} +
                         Fees: ${price.fee_total.toFixed(2)}
                       </p>
@@ -540,24 +541,24 @@ export default function GeneralAdmissionTickets({
 
                     {/* Mostrar error de validación si existe */}
                     {hasError && (
-                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                        <p className="text-sm text-red-600 font-medium">⚠️ {hasError}</p>
+                      <div className='mt-2 p-2 bg-red-50 border border-red-200 rounded'>
+                        <p className='text-sm text-red-600 font-medium'>⚠️ {hasError}</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-4">
-                    <div className="flex flex-col">
+                  <div className='flex items-center space-x-4'>
+                    <div className='flex flex-col'>
                       <label
                         htmlFor={`quantity-${ticket.id}`}
-                        className="text-sm text-gray-600 mb-1"
+                        className='text-sm text-gray-600 mb-1'
                       >
                         Quantity
                       </label>
                       <select
                         id={`quantity-${ticket.id}`}
                         value={selectedQuantities[ticket.id] || 0}
-                        onChange={e => handleQuantityChange(ticket.id, parseInt(e.target.value))}
+                        onChange={(e) => handleQuantityChange(ticket.id, parseInt(e.target.value))}
                         className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                           hasError
                             ? 'border-red-300 focus:ring-red-500'
@@ -567,7 +568,7 @@ export default function GeneralAdmissionTickets({
                       >
                         <option value={0}>0</option>
                         {/* Permitir seleccionar de 1 a 10 sin límite de disponibilidad */}
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                        {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                           <option key={num} value={num}>
                             {num}
                           </option>
@@ -576,9 +577,9 @@ export default function GeneralAdmissionTickets({
                     </div>
 
                     {selectedQuantities[ticket.id] > 0 && (
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Subtotal</p>
-                        <p className="text-xl font-bold text-gray-900">
+                      <div className='text-right'>
+                        <p className='text-sm text-gray-600'>Subtotal</p>
+                        <p className='text-xl font-bold text-gray-900'>
                           $
                           {(
                             selectedQuantities[ticket.id] * price.price_including_taxes_and_fees
@@ -595,13 +596,13 @@ export default function GeneralAdmissionTickets({
 
         {/* Checkout Summary */}
         {getTotalTickets() > 0 && (
-          <div className="sticky bottom-0 mt-8 bg-white rounded-lg shadow-lg p-6 border-t-4 border-blue-600">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className='sticky bottom-0 mt-8 bg-white rounded-lg shadow-lg p-6 border-t-4 border-blue-600'>
+            <div className='flex flex-col md:flex-row md:items-center md:justify-between'>
               <div>
-                <p className="text-gray-600">
+                <p className='text-gray-600'>
                   {getTotalTickets()} ticket{getTotalTickets() > 1 ? 's' : ''} selected
                 </p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
+                <p className='text-3xl font-bold text-gray-900 mt-1'>
                   ${calculateTotal().toFixed(2)}
                 </p>
               </div>

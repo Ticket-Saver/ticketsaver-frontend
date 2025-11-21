@@ -23,7 +23,7 @@ const Auth0ProviderWithNavigate: React.FC<React.PropsWithChildren<{}>> = ({ chil
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      cacheLocation="localstorage"
+      cacheLocation='localstorage'
       useRefreshTokens={true}
       authorizationParams={{ redirect_uri: window.location.origin }}
       onRedirectCallback={onRedirectCallback}

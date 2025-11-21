@@ -161,7 +161,7 @@ const CheckoutStripe = () => {
         console.log('Cart data:', cart) // Para debug
 
         // Extraer IDs reales de asientos del carrito
-        const seatIds = cart.map(item => {
+        const seatIds = cart.map((item) => {
           console.log(`🔍 Using real seat ID: ${item.seatId}`)
           return item.seatId
         })
@@ -368,7 +368,7 @@ const CheckoutStripe = () => {
   const computeCartSignature = (cart: CartItem[]) => {
     try {
       const ids = cart
-        .map(item => Number(item.seatId))
+        .map((item) => Number(item.seatId))
         .filter(Boolean)
         .sort((a, b) => a - b)
       return ids.join('-')
@@ -399,7 +399,7 @@ const CheckoutStripe = () => {
 
   const validateAttendees = () => {
     return attendees.every(
-      attendee =>
+      (attendee) =>
         attendee.firstName.trim() &&
         attendee.lastName.trim() &&
         attendee.email.trim() &&
@@ -428,7 +428,7 @@ const CheckoutStripe = () => {
         const cartItem = cart[index]
 
         // Buscar el mapeo correspondiente por seatLabel
-        const mapping = ticketMappings.find(m => m.seatLabel === cartItem.seatLabel)
+        const mapping = ticketMappings.find((m) => m.seatLabel === cartItem.seatLabel)
 
         if (!mapping) {
           throw new Error(
@@ -504,7 +504,7 @@ const CheckoutStripe = () => {
       // No usar placeholder - Stripe añadirá automáticamente ?session_id=... al redirigir
       // Esto evita problemas de validación de URL en el backend
       const successUrl = `${window.location.origin}/checkout/${eventInfo.venueId}/${orderData.short_id}/success`
-      
+
       const response = await fetch(
         `${apiUrl}public/events/${eventInfo.venueId}/order/${orderData.short_id}/stripe/checkout_session`,
         {
@@ -575,9 +575,9 @@ const CheckoutStripe = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div className='max-w-2xl mx-auto p-6'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4'></div>
           <p>Cargando checkout...</p>
         </div>
       </div>
@@ -586,14 +586,14 @@ const CheckoutStripe = () => {
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p className="font-bold">Error</p>
+      <div className='max-w-2xl mx-auto p-6'>
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+          <p className='font-bold'>Error</p>
           <p>{error}</p>
         </div>
         <button
           onClick={() => navigate('/events')}
-          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          className='bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700'
         >
           Volver a eventos
         </button>
@@ -606,12 +606,12 @@ const CheckoutStripe = () => {
   console.log('cartData', cartData)
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+    <div className='max-w-2xl mx-auto p-6 bg-white rounded-lg shadow'>
+      <h1 className='text-2xl font-bold mb-6'>Checkout</h1>
 
       {/* Resumen del evento */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-2">Resumen del Evento</h2>
+      <div className='bg-gray-50 p-4 rounded-lg mb-6'>
+        <h2 className='text-lg font-semibold mb-2'>Resumen del Evento</h2>
         <p>
           <strong>Evento:</strong> {eventInfo.name}
         </p>
@@ -627,21 +627,21 @@ const CheckoutStripe = () => {
       </div>
 
       {/* Resumen de tickets */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-2">Tickets Seleccionados</h2>
+      <div className='bg-gray-50 p-4 rounded-lg mb-6'>
+        <h2 className='text-lg font-semibold mb-2'>Tickets Seleccionados</h2>
         {cart.map((ticket: CartItem, index: number) => (
           <div
             key={index}
-            className="flex justify-between items-center py-2 border-b last:border-b-0"
+            className='flex justify-between items-center py-2 border-b last:border-b-0'
           >
-            <div className="flex-1">
-              <p className="font-medium">{ticket.seatLabel}</p>
+            <div className='flex-1'>
+              <p className='font-medium'>{ticket.seatLabel}</p>
               {orderData?.order_items && (
                 <>
                   {(() => {
-                    const mapping = ticketMappings.find(m => m.seatLabel === ticket.seatLabel)
+                    const mapping = ticketMappings.find((m) => m.seatLabel === ticket.seatLabel)
                     let oi = mapping
-                      ? orderData.order_items?.find(it => it.ticket_id === mapping.ticketId)
+                      ? orderData.order_items?.find((it) => it.ticket_id === mapping.ticketId)
                       : undefined
                     if (!oi && orderData.order_items?.length === cart.length) {
                       oi = orderData.order_items[index]
@@ -655,10 +655,10 @@ const CheckoutStripe = () => {
                         if (Number(oi.total_tax) > 0) {
                           parts.push(`Impuesto: $${oi.total_tax.toFixed(2)}`)
                         }
-                        return <p className="text-xs text-gray-600">{parts.join(' • ')}</p>
+                        return <p className='text-xs text-gray-600'>{parts.join(' • ')}</p>
                       })()
                     ) : (
-                      <p className="text-xs text-gray-600">
+                      <p className='text-xs text-gray-600'>
                         Precio: ${ticket.price_base.toFixed(2)} • Total estimado: $
                         {ticket.price_final.toFixed(2)}
                       </p>
@@ -667,12 +667,12 @@ const CheckoutStripe = () => {
                 </>
               )}
             </div>
-            <p className="font-semibold">
+            <p className='font-semibold'>
               {orderData?.order_items
                 ? (() => {
-                    const mapping = ticketMappings.find(m => m.seatLabel === ticket.seatLabel)
+                    const mapping = ticketMappings.find((m) => m.seatLabel === ticket.seatLabel)
                     let oi = mapping
-                      ? orderData.order_items?.find(it => it.ticket_id === mapping.ticketId)
+                      ? orderData.order_items?.find((it) => it.ticket_id === mapping.ticketId)
                       : undefined
                     if (!oi && orderData.order_items?.length === cart.length) {
                       oi = orderData.order_items[index]
@@ -685,7 +685,7 @@ const CheckoutStripe = () => {
             </p>
           </div>
         ))}
-        <div className="flex justify-between items-center pt-2 mt-2 border-t font-bold">
+        <div className='flex justify-between items-center pt-2 mt-2 border-t font-bold'>
           <p>Total:</p>
           <p>
             $
@@ -699,26 +699,26 @@ const CheckoutStripe = () => {
 
         {/* Desglose de costos (si hay datos de la orden) */}
         {orderData && (
-          <div className="mt-4 border-t pt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-medium">
+          <div className='mt-4 border-t pt-4 space-y-2'>
+            <div className='flex justify-between text-sm'>
+              <span className='text-gray-600'>Subtotal</span>
+              <span className='font-medium'>
                 ${Number(orderData.total_before_additions ?? 0).toFixed(2)}
               </span>
             </div>
             {Number(orderData.total_fee ?? 0) > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Fees</span>
-                <span className="font-medium">${Number(orderData.total_fee ?? 0).toFixed(2)}</span>
+              <div className='flex justify-between text-sm'>
+                <span className='text-gray-600'>Fees</span>
+                <span className='font-medium'>${Number(orderData.total_fee ?? 0).toFixed(2)}</span>
               </div>
             )}
             {Number(orderData.total_tax ?? 0) > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Impuestos</span>
-                <span className="font-medium">${Number(orderData.total_tax ?? 0).toFixed(2)}</span>
+              <div className='flex justify-between text-sm'>
+                <span className='text-gray-600'>Impuestos</span>
+                <span className='font-medium'>${Number(orderData.total_tax ?? 0).toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-base font-semibold pt-2 border-t">
+            <div className='flex justify-between text-base font-semibold pt-2 border-t'>
               <span>Total</span>
               <span>
                 ${Number(orderData.total_gross ?? 0).toFixed(2)} {orderData.currency}
@@ -730,8 +730,8 @@ const CheckoutStripe = () => {
 
       {/* Información de estado de orden */}
       {orderData && (
-        <div className="bg-blue-50 p-4 rounded-lg mb-6">
-          <h2 className="text-lg font-semibold mb-2">Estado de la Orden</h2>
+        <div className='bg-blue-50 p-4 rounded-lg mb-6'>
+          <h2 className='text-lg font-semibold mb-2'>Estado de la Orden</h2>
           <p>
             <strong>ID de Orden:</strong> {orderData.short_id}
           </p>
@@ -751,46 +751,46 @@ const CheckoutStripe = () => {
       )}
 
       {/* Formularios de asistentes */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Información de los Asistentes</h2>
+      <div className='mb-8'>
+        <h2 className='text-xl font-bold mb-4'>Información de los Asistentes</h2>
         {attendees.map((attendee, index) => (
-          <div key={index} className="border rounded-lg p-4 mb-4 space-y-4">
-            <h3 className="text-lg font-semibold">Asistente {index + 1}</h3>
+          <div key={index} className='border rounded-lg p-4 mb-4 space-y-4'>
+            <h3 className='text-lg font-semibold'>Asistente {index + 1}</h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className='grid grid-cols-2 gap-4'>
               <div>
-                <label className="block text-sm font-medium mb-2">Nombre *</label>
+                <label className='block text-sm font-medium mb-2'>Nombre *</label>
                 <input
-                  type="text"
+                  type='text'
                   required
                   value={attendee.firstName}
-                  onChange={e => handleAttendeeChange(index, 'firstName', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ingrese el nombre"
+                  onChange={(e) => handleAttendeeChange(index, 'firstName', e.target.value)}
+                  className='w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500'
+                  placeholder='Ingrese el nombre'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Apellido *</label>
+                <label className='block text-sm font-medium mb-2'>Apellido *</label>
                 <input
-                  type="text"
+                  type='text'
                   required
                   value={attendee.lastName}
-                  onChange={e => handleAttendeeChange(index, 'lastName', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ingrese el apellido"
+                  onChange={(e) => handleAttendeeChange(index, 'lastName', e.target.value)}
+                  className='w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500'
+                  placeholder='Ingrese el apellido'
                 />
               </div>
 
-              <div className="col-span-2">
-                <label className="block text-sm font-medium mb-2">Email *</label>
+              <div className='col-span-2'>
+                <label className='block text-sm font-medium mb-2'>Email *</label>
                 <input
-                  type="email"
+                  type='email'
                   required
                   value={attendee.email}
-                  onChange={e => handleAttendeeChange(index, 'email', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="ejemplo@correo.com"
+                  onChange={(e) => handleAttendeeChange(index, 'email', e.target.value)}
+                  className='w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500'
+                  placeholder='ejemplo@correo.com'
                 />
               </div>
             </div>
@@ -811,7 +811,7 @@ const CheckoutStripe = () => {
         {isProcessing ? 'Procesando...' : 'Proceder al Pago con Stripe'}
       </button>
 
-      <p className="text-sm text-gray-600 text-center mt-4">
+      <p className='text-sm text-gray-600 text-center mt-4'>
         Serás redirigido a la página segura de Stripe para completar tu pago
       </p>
     </div>

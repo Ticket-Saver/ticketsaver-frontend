@@ -101,7 +101,7 @@ export class UserTicketsService {
       status: 'ACTIVE'
     })
 
-    return response.data.filter(event => {
+    return response.data.filter((event) => {
       const eventDate = new Date(event.date)
       return eventDate > currentDate
     })
@@ -113,7 +113,7 @@ export class UserTicketsService {
       to: currentDate.toISOString()
     })
 
-    return response.data.filter(event => {
+    return response.data.filter((event) => {
       const eventDate = new Date(event.date)
       return eventDate < currentDate
     })

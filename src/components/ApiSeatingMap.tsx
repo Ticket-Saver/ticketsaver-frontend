@@ -192,6 +192,8 @@ export default function ApiSeatingMap({
               zone?: string
             }
           > = {}
+          const knownPositions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
+          const knownColors = new Set(['orange', 'cyan', 'red', 'green', 'purple', 'blue'])
           for (const [label, value] of Object.entries(rangesJson)) {
             // Handle metadata object
             if (label === 'metadata' && typeof value === 'object' && value !== null) {
@@ -231,17 +233,56 @@ export default function ApiSeatingMap({
             let rows: string[] = []
             let zone: string | undefined
             if (parts.length >= 3) {
-              position = parts[0]
-              color = parts[1]
-              // soportar etiquetas con sub-sección, p. ej.: left-purple-balcony-H
-              let rest = parts.slice(2)
-              // detectar y extraer "balcony" como zona, no como fila
-              const balconyIdx = rest.findIndex(p => p.toLowerCase() === 'balcony')
-              if (balconyIdx !== -1) {
+              const tokens = parts.map((token, idx) => ({
+                original: token,
+                lower: token.toLowerCase(),
+                index: idx
+              }))
+
+              const zoneEntry = tokens.find(t => t.lower === 'balcony')
+              if (zoneEntry) {
                 zone = 'balcony'
-                rest = rest.filter((_, i) => i !== balconyIdx)
               }
-              rows = parseRowsSpec(rest.join('-'))
+
+              const positionEntry = tokens.find(t => knownPositions.has(t.lower))
+              if (positionEntry) {
+                position = positionEntry.original
+              }
+
+              const colorEntry = tokens.find(t => knownColors.has(t.lower))
+              if (colorEntry) {
+                color = colorEntry.original
+              }
+
+              const consumedIndexes = new Set<number>()
+              if (zoneEntry) consumedIndexes.add(zoneEntry.index)
+              if (positionEntry) consumedIndexes.add(positionEntry.index)
+              if (colorEntry) consumedIndexes.add(colorEntry.index)
+
+              const leftoverTokens = tokens
+                .filter(t => !consumedIndexes.has(t.index))
+                .map(t => t.original)
+
+              if (
+                leftoverTokens.length === 0 &&
+                positionEntry &&
+                /^[A-Za-z]{1,2}$/.test(tokens[0].original)
+              ) {
+                rows = [tokens[0].original.toUpperCase()]
+              } else if (leftoverTokens.length > 0) {
+                rows = parseRowsSpec(leftoverTokens.join('-')).map(r => r.toUpperCase())
+              }
+
+              if (!rows.length && /^[A-Za-z]{1,2}$/.test(tokens[0].original)) {
+                rows = [tokens[0].original.toUpperCase()]
+              }
+
+              if (!position && knownPositions.has(tokens[1]?.lower || '')) {
+                position = tokens[1].original
+              }
+              if (!color && knownColors.has(tokens[2]?.lower || '')) {
+                color = tokens[2].original
+              }
             } else if (parts.length === 2) {
               // Treat as row-color, no section
               const rowPart = parts[0]
@@ -251,6 +292,10 @@ export default function ApiSeatingMap({
               rows = parseRowsSpec(parts[0])
             }
 
+            const normalizedLabel = label.toLowerCase()
+            if (!zone && normalizedLabel.includes('balcony')) {
+              zone = 'balcony'
+            }
             parsed[label] = { ranges: subranges, rows, position, color, zone }
           }
           if (isMounted) setRanges(parsed)
@@ -308,6 +353,22 @@ export default function ApiSeatingMap({
       if (s.is_available === true && s.is_sold_out !== true) bySection[sectionKey].available += 1
     }
     return bySection
+  }, [seats])
+
+  const rowZoneMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    seats.forEach(seat => {
+      const row = (seat.row || '').toString().toUpperCase()
+      if (!row) return
+      const section = (seat.section || '').toLowerCase()
+      const position = (seat.position || '').toLowerCase()
+      if (section.includes('balcony') || position.includes('balcony')) {
+        map[row] = 'balcony'
+      } else if (!map[row] && (section.includes('loge') || position.includes('loge'))) {
+        map[row] = 'loge'
+      }
+    })
+    return map
   }, [seats])
 
   // Attach hover listeners after SVG is injected
@@ -421,8 +482,11 @@ export default function ApiSeatingMap({
         rangeKeyToGroupKey[rangeKey] = gk
         if (!groupKeyToRangeKeys[gk]) groupKeyToRangeKeys[gk] = []
         groupKeyToRangeKeys[gk].push(rangeKey)
+        console.debug('Mapped rangeKey to groupKey', { rangeKey, groupKey: gk, zone: def.zone })
       }
     })
+    console.debug('rangeKeyToGroupKey mapping:', rangeKeyToGroupKey)
+    console.debug('groupKeyToRangeKeys mapping:', groupKeyToRangeKeys)
 
     const computeStatsForGroupKey = (groupKey: string) => {
       console.debug('Compute stats for group key', {
@@ -493,7 +557,7 @@ export default function ApiSeatingMap({
     }
 
     // Nueva función para obtener disponibilidad en tiempo real
-    const fetchRealtimeAvailability = async (groupKey: string) => {
+    const fetchRealtimeAvailability = async (groupKey: string, fallbackGroupKey?: string) => {
       try {
         const availabilityUrl = API_URLS.getSeatsAvailability(eventId, groupKey)
         const response = await fetch(availabilityUrl, {
@@ -517,7 +581,7 @@ export default function ApiSeatingMap({
       }
 
       // Fallback a cálculo local si falla la API
-      const fallback = computeStatsForGroupKey(groupKey)
+      const fallback = computeStatsForGroupKey(fallbackGroupKey || groupKey)
       if (fallback) {
         availabilityCacheRef.current[groupKey] = fallback
       }
@@ -531,17 +595,58 @@ export default function ApiSeatingMap({
       return undefined
     }
 
+    const getElementZoneFromAncestors = (element?: Element | null): string | undefined => {
+      let current: Element | null | undefined = element
+      const seen = new Set<Element>()
+      while (current && !seen.has(current)) {
+        seen.add(current)
+        const classList = (current as HTMLElement).classList
+        if (classList) {
+          for (const cls of classList) {
+            const lower = cls.toLowerCase()
+            if (lower.includes('balcony')) {
+              return 'balcony'
+            }
+            if (lower.includes('loge')) {
+              return 'loge'
+            }
+          }
+        }
+        const id = (current as HTMLElement).id || ''
+        if (id.toLowerCase().includes('balcony')) return 'balcony'
+        if (id.toLowerCase().includes('loge')) return 'loge'
+        current = current.parentElement
+      }
+      return undefined
+    }
+
     const parseElementId = (
-      rawId: string
+      rawId: string,
+      element?: Element
     ): {
       rangeKeyGuess?: string
       row?: string
       seatNumber?: number
       mode: 'section' | 'row' | 'unknown'
+      zone?: string
     } => {
       const id = rawId.trim()
       if (!id) return { mode: 'unknown' }
       const parts = id.split('-').filter(Boolean)
+      const extraTokens: string[] = []
+      if (element) {
+        const classList = (element as HTMLElement).classList
+        if (classList) {
+          classList.forEach(cls => {
+            cls
+              .split('-')
+              .filter(Boolean)
+              .forEach(token => extraTokens.push(token))
+          })
+        }
+      }
+      const allTokens = [...parts, ...extraTokens]
+      const hasBalcony = allTokens.some(token => token.toLowerCase() === 'balcony')
       const numericTokens = parts.filter(p => /^\d+$/.test(p))
       const seatNumber =
         numericTokens.length > 0 ? parseInt(numericTokens[numericTokens.length - 1], 10) : undefined
@@ -553,20 +658,38 @@ export default function ApiSeatingMap({
         // section-color-row(-seat?)
         const rowToken = getLastNonNumericToken(parts.slice(2)) || parts[2]
         const rangeKeyGuess = [parts[0], parts[1], rowToken].join('-')
-        return { rangeKeyGuess, row: rowToken.toUpperCase(), seatNumber, mode: 'section' }
+        return {
+          rangeKeyGuess,
+          row: rowToken.toUpperCase(),
+          seatNumber,
+          mode: 'section',
+          zone: hasBalcony ? 'balcony' : undefined
+        }
       }
 
       if (parts.length >= 2 && looksLikeRowToken) {
         // row-color(-seat?)
         const rowToken = parts[0]
         const rangeKeyGuess = [parts[0], parts[1]].join('-')
-        return { rangeKeyGuess, row: rowToken.toUpperCase(), seatNumber, mode: 'row' }
+        return {
+          rangeKeyGuess,
+          row: rowToken.toUpperCase(),
+          seatNumber,
+          mode: 'row',
+          zone: hasBalcony ? 'balcony' : undefined
+        }
       }
 
       if (parts.length === 1 && looksLikeRowToken) {
-        return { rangeKeyGuess: parts[0], row: parts[0].toUpperCase(), seatNumber, mode: 'row' }
+        return {
+          rangeKeyGuess: parts[0],
+          row: parts[0].toUpperCase(),
+          seatNumber,
+          mode: 'row',
+          zone: hasBalcony ? 'balcony' : undefined
+        }
       }
-      return { mode: 'unknown' }
+      return { mode: 'unknown', zone: hasBalcony ? 'balcony' : undefined }
     }
 
     const handleEnter = (key: string, ev?: MouseEvent, elForFallback?: Element) => {
@@ -576,7 +699,7 @@ export default function ApiSeatingMap({
         (elForFallback as HTMLElement | undefined)?.id ||
         ''
       ).toString()
-      const parsed = parseElementId(targetId)
+      const parsed = parseElementId(targetId, (ev?.target as Element) || elForFallback || undefined)
       console.debug('Parsed element id for hover', { targetId, parsed, key })
 
       // Seat-level hover: show A1 available / no available
@@ -603,16 +726,16 @@ export default function ApiSeatingMap({
       }
 
       // Group-level hover: if this key belongs to a position-color group, show aggregated stats
-      const groupKey = rangeKeyToGroupKey[key]
+      const groupKeyBase = rangeKeyToGroupKey[key]
       console.log(
         'Hover key:',
         key,
         'Group key:',
-        groupKey,
+        groupKeyBase,
         'Last fetched:',
         lastFetchedGroupRef.current
       )
-      if (groupKey) {
+      if (groupKeyBase) {
         // Mostrar tooltip inmediatamente en la posición actual del puntero
         if (ev && container) {
           const rect = container.getBoundingClientRect()
@@ -620,12 +743,33 @@ export default function ApiSeatingMap({
           setTooltipVisible(true)
         }
 
-        const cached = availabilityCacheRef.current[groupKey]
+        const rowZoneHint = parsed.row ? rowZoneMap[parsed.row] : undefined
+        const ancestorZone = getElementZoneFromAncestors(
+          (ev?.target as Element) || elForFallback || undefined
+        )
+        const zoneHint =
+          parsed.zone ||
+          rowZoneHint ||
+          ancestorZone ||
+          (key.toLowerCase().includes('balcony') ? 'balcony' : undefined)
+
+        if (zoneHint === 'balcony') {
+          setHoverInfo(null)
+          setTooltipVisible(false)
+          return
+        }
+
+        const effectiveGroupKey =
+          zoneHint && !groupKeyBase.endsWith(`-${zoneHint}`)
+            ? `${groupKeyBase}-${zoneHint}`
+            : groupKeyBase
+
+        const cached = availabilityCacheRef.current[effectiveGroupKey]
 
         if (cached) {
           // Si ya tenemos datos del endpoint (o fallback) en caché, los usamos siempre.
           setHoverInfo({
-            label: toTitleCaseFromKebab(groupKey),
+            label: toTitleCaseFromKebab(effectiveGroupKey),
             total: cached.total,
             available: cached.available,
             isLoadingGroup: false
@@ -633,7 +777,7 @@ export default function ApiSeatingMap({
         } else {
           // Si todavía no tenemos datos, mostrar estado "loading" en el tooltip.
           setHoverInfo({
-            label: toTitleCaseFromKebab(groupKey),
+            label: toTitleCaseFromKebab(effectiveGroupKey),
             total: 0,
             available: 0,
             isLoadingGroup: true
@@ -641,18 +785,19 @@ export default function ApiSeatingMap({
         }
 
         // Llamar al endpoint solo si el grupo ha cambiado y aún no tenemos datos cacheados.
-        if (!cached && groupKey !== lastFetchedGroupRef.current) {
-          if (lastFetchedGroupRef.current && lastFetchedGroupRef.current !== groupKey) {
-            console.log('Group changed from', lastFetchedGroupRef.current, 'to', groupKey)
+        if (!cached && effectiveGroupKey !== lastFetchedGroupRef.current) {
+          if (lastFetchedGroupRef.current && lastFetchedGroupRef.current !== effectiveGroupKey) {
+            console.log('Group changed from', lastFetchedGroupRef.current, 'to', effectiveGroupKey)
           }
-          lastFetchedGroupRef.current = groupKey
-          console.log('Fetching realtime data for new group:', groupKey)
+          lastFetchedGroupRef.current = effectiveGroupKey
+          console.log('Fetching realtime data for new group:', effectiveGroupKey)
 
-          fetchRealtimeAvailability(groupKey)
+          fetchRealtimeAvailability(effectiveGroupKey, groupKeyBase)
             .then(realtimeStats => {
               if (realtimeStats) {
+                availabilityCacheRef.current[effectiveGroupKey] = realtimeStats
                 setHoverInfo({
-                  label: toTitleCaseFromKebab(groupKey),
+                  label: toTitleCaseFromKebab(effectiveGroupKey),
                   total: realtimeStats.total,
                   available: realtimeStats.available,
                   isLoadingGroup: false
@@ -663,9 +808,9 @@ export default function ApiSeatingMap({
               console.warn('Error updating realtime availability:', error)
             })
         } else if (cached) {
-          console.log('Using cached availability for group:', groupKey, cached)
+          console.log('Using cached availability for group:', effectiveGroupKey, cached)
         } else {
-          console.log('Same group, skipping API call:', groupKey)
+          console.log('Same group, skipping API call:', effectiveGroupKey)
         }
 
         return
@@ -745,13 +890,16 @@ export default function ApiSeatingMap({
       return matches
     }
 
-    // Build a local index to map position-color-row => range key
+    // Build a local index to map position-color-[-zone]-row => range key
     const rowKeyIndex: Record<string, string> = {}
     Object.entries(ranges).forEach(([rangeKey, def]) => {
       const pos = (def.position || '').toLowerCase()
       const color = (def.color || '').toLowerCase()
+      const zone = (def.zone || '').toLowerCase()
       def.rows.forEach(r => {
-        const idx = [pos, color, r.toLowerCase()].filter(Boolean).join('-')
+        const row = r.toLowerCase()
+        // Incluir zona en el índice si existe para diferenciar balcony de main floor
+        const idx = [pos, color, zone, row].filter(Boolean).join('-')
         rowKeyIndex[idx] = rangeKey
       })
     })
@@ -770,21 +918,52 @@ export default function ApiSeatingMap({
       const lower = id.toLowerCase()
       if ((keys as Set<string>).has(lower)) return
       const parts = lower.split('-')
+      const positions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
+      const colors = new Set(['orange', 'cyan', 'red', 'green', 'purple', 'blue'])
+      
       if (parts.length >= 3) {
-        const pos = parts[0]
-        const color = parts[1]
-        // tomar la última parte NO numérica como fila (maneja ...-H-41)
-        const nonNumericFromRest = (() => {
-          for (let i = parts.length - 1; i >= 2; i--) {
-            if (!/^\d+$/.test(parts[i])) return parts[i]
+        // Caso 1: row-position-color-zone (ej: A-center-orange-balcony)
+        const rowToken = parts[0]
+        const posToken = parts[1]
+        const colorToken = parts[2]
+        const zoneToken = parts.includes('balcony') ? 'balcony' : undefined
+        
+        if (/^[a-z]{1,2}$/.test(rowToken) && positions.has(posToken) && colors.has(colorToken)) {
+          const rowLetter = rowToken
+          // Intentar con zona primero, luego sin zona
+          const keyWithZone = [posToken, colorToken, zoneToken, rowLetter].filter(Boolean).join('-')
+          const keyWithoutZone = [posToken, colorToken, rowLetter].join('-')
+          const mapped = rowKeyIndex[keyWithZone] || rowKeyIndex[keyWithoutZone]
+          if (mapped) {
+            console.debug('ID mapping (row-position-color-zone) matched', { id, keyWithZone, keyWithoutZone, mapped })
+            sectionSelectors.push([mapped, [el]])
+            idPatternBindings += 1
           }
-          return parts[2]
-        })()
-        const rowLetter = nonNumericFromRest
-        const keyPrefix = [pos, color, rowLetter].join('-')
-        const mapped = rowKeyIndex[keyPrefix]
-        if (mapped) sectionSelectors.push([mapped, [el]])
-        if (mapped) idPatternBindings += 1
+        } else {
+          // Caso 2: position-color-... (ej: center-orange-H o center-orange-balcony-H)
+          const pos = parts[0]
+          const color = parts[1]
+          if (positions.has(pos) && colors.has(color)) {
+            const zoneToken2 = parts.includes('balcony') ? 'balcony' : undefined
+            // tomar la última parte NO numérica como fila (maneja ...-H-41)
+            const nonNumericFromRest = (() => {
+              for (let i = parts.length - 1; i >= 2; i--) {
+                if (!/^\d+$/.test(parts[i]) && parts[i] !== 'balcony') return parts[i]
+              }
+              return parts[2]
+            })()
+            const rowLetter = nonNumericFromRest
+            // Intentar con zona primero, luego sin zona
+            const keyWithZone = [pos, color, zoneToken2, rowLetter].filter(Boolean).join('-')
+            const keyWithoutZone = [pos, color, rowLetter].join('-')
+            const mapped = rowKeyIndex[keyWithZone] || rowKeyIndex[keyWithoutZone]
+            if (mapped) {
+              console.debug('ID mapping (position-color-zone-row) matched', { id, keyWithZone, keyWithoutZone, mapped })
+              sectionSelectors.push([mapped, [el]])
+              idPatternBindings += 1
+            }
+          }
+        }
       }
       // NUEVO: id en formato row-color(-seat): MM-yellow-1
       if (parts.length >= 2) {
@@ -818,6 +997,7 @@ export default function ApiSeatingMap({
           {
             const pos = parts[0]
             const color = parts[1]
+            const zoneToken = parts.includes('balcony') ? 'balcony' : undefined
             // soportar posible zona intermedia (p. ej., balcony)
             let startIdx = 2
             if (parts[2] === 'balcony') {
@@ -825,33 +1005,41 @@ export default function ApiSeatingMap({
             }
             const nonNumericFromRest = (() => {
               for (let i = parts.length - 1; i >= startIdx; i--) {
-                if (!/^\d+$/.test(parts[i])) return parts[i]
+                if (!/^\d+$/.test(parts[i]) && parts[i] !== 'balcony') return parts[i]
               }
               return parts[startIdx]
             })()
             const rowLetter = nonNumericFromRest
-            const keyPrefix = [pos, color, rowLetter].join('-')
-            const mapped = rowKeyIndex[keyPrefix]
+            // Intentar con zona primero, luego sin zona
+            const keyWithZone = [pos, color, zoneToken, rowLetter].filter(Boolean).join('-')
+            const keyWithoutZone = [pos, color, rowLetter].join('-')
+            const mapped = rowKeyIndex[keyWithZone] || rowKeyIndex[keyWithoutZone]
             if (mapped) {
-              console.debug('Class mapping (pos-color-row) matched', { cls, keyPrefix, mapped })
+              console.debug('Class mapping (pos-color-zone-row) matched', { cls, keyWithZone, keyWithoutZone, mapped })
               sectionSelectors.push([mapped, [el]])
               classPatternBindings += 1
               break
             }
           }
 
-          // 2) Nuevo: row-color-position (ej.: L-cyan-rightcenter)
+          // 2) Nuevo: row-color-position(-zone) (ej.: L-cyan-rightcenter, A-orange-center-balcony)
           {
             const rowToken = parts.find(p => /^[a-z]{1,2}$/.test(p))
             const colorToken = parts.find(p => colors.has(p))
             const positionToken = parts.find(p => positions.has(p))
+            const zoneToken = parts.find(p => p === 'balcony')
             if (rowToken && colorToken && positionToken) {
-              const keyPrefix = [positionToken, colorToken, rowToken].join('-')
-              const mapped = rowKeyIndex[keyPrefix]
+              // Intentar con zona primero, luego sin zona
+              const keyWithZone = [positionToken, colorToken, zoneToken, rowToken]
+                .filter(Boolean)
+                .join('-')
+              const keyWithoutZone = [positionToken, colorToken, rowToken].join('-')
+              const mapped = rowKeyIndex[keyWithZone] || rowKeyIndex[keyWithoutZone]
               if (mapped) {
                 console.debug('Class mapping (row-color-position) matched', {
                   cls,
-                  keyPrefix,
+                  keyWithZone,
+                  keyWithoutZone,
                   mapped
                 })
                 sectionSelectors.push([mapped, [el]])
@@ -860,7 +1048,8 @@ export default function ApiSeatingMap({
               } else {
                 console.debug('Class mapping (row-color-position) not found in index', {
                   cls,
-                  keyPrefix
+                  keyWithZone,
+                  keyWithoutZone
                 })
               }
             }
@@ -1225,9 +1414,9 @@ export default function ApiSeatingMap({
                 items?: SeatItem[]
               }>(url, { headers: { Accept: 'application/json' } })
 
-              // Manejar respuesta agrupada por fila
-              let list: SeatItem[] = []
-              let groupedSeats: Record<string, SeatItem[]> = {}
+              // Manejar respuesta (agrupada o plana) y eliminar duplicados
+              let rawList: SeatItem[] = []
+              let rawGroupedSeats: Record<string, SeatItem[]> = {}
 
               if (
                 seatsData.data &&
@@ -1235,12 +1424,12 @@ export default function ApiSeatingMap({
                 !Array.isArray(seatsData.data)
               ) {
                 // Respuesta agrupada por fila: { "B": [...], "C": [...] }
-                groupedSeats = seatsData.data
-                list = Object.values(seatsData.data).flat()
+                rawGroupedSeats = seatsData.data
+                rawList = Object.values(seatsData.data).flat()
               } else {
                 // Respuesta plana (fallback) - agrupar por fila
-                list = (seatsData.data || seatsData.results || seatsData.items || []) as SeatItem[]
-                groupedSeats = list.reduce(
+                rawList = (seatsData.data || seatsData.results || seatsData.items || []) as SeatItem[]
+                rawGroupedSeats = rawList.reduce(
                   (acc, seat) => {
                     const row = seat.row || 'unknown'
                     if (!acc[row]) acc[row] = []
@@ -1251,8 +1440,28 @@ export default function ApiSeatingMap({
                 )
               }
 
-              setSelectedSeats(list)
-              setSeatsByRow(groupedSeats)
+              // Deduplicar asientos por ID (o por combinación fila-número si no hay ID)
+              const seen = new Set<string>()
+              const dedupedList: SeatItem[] = []
+              for (const seat of rawList) {
+                const key = seat.id ? seat.id.toString() : `${seat.row}-${seat.seat_number}`
+                if (seen.has(key)) continue
+                seen.add(key)
+                dedupedList.push(seat)
+              }
+
+              const dedupedGroupedSeats = dedupedList.reduce(
+                (acc, seat) => {
+                  const row = seat.row || 'unknown'
+                  if (!acc[row]) acc[row] = []
+                  acc[row].push(seat)
+                  return acc
+                },
+                {} as Record<string, SeatItem[]>
+              )
+
+              setSelectedSeats(dedupedList)
+              setSeatsByRow(dedupedGroupedSeats)
               setShowSeatModal(true)
             } catch (_e) {
               setSelectedSeats([])

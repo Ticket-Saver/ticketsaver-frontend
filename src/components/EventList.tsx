@@ -140,7 +140,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
           displayDate: firstItem.date,
           city: firstItem.location,
           route: `/dashboard/claimtickets/${firstItem.eventName}/mynftsclaim`,
-          ticketDetails: items.map(item => ({
+          ticketDetails: items.map((item) => ({
             ticket: item.Ticket,
             zone: item.Zone,
             price: item.price
@@ -150,7 +150,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
 
       // Enriquecer cada evento con la fecha/hora real desde la API pública
       const enrichedEvents: Event[] = await Promise.all(
-        groupedEvents.map(async event => {
+        groupedEvents.map(async (event) => {
           // Si no tenemos token de la API, devolvemos el evento tal cual
           if (!hieventsToken) {
             return event
@@ -222,7 +222,7 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
         })
       )
 
-      const filteredEvents = enrichedEvents.filter(event =>
+      const filteredEvents = enrichedEvents.filter((event) =>
         filterFunction(event.eventStartDate || event.date)
       )
 
@@ -239,11 +239,11 @@ const EventList: React.FC<EventListProps> = ({ filterFunction, noEventsMessage }
   }, [])
 
   return (
-    <div className="space-y-5">
+    <div className='space-y-5'>
       {!events || events.length === 0 ? (
-        <p className="text-center text-lg font-semibold">{noEventsMessage}</p>
+        <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
       ) : (
-        events.map(event => (
+        events.map((event) => (
           <EventClaim
             key={event.id}
             eventId={event.eventId}
