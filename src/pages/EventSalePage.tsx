@@ -123,8 +123,7 @@ export default function EventPage() {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false,
-        timeZoneName: 'short'
+        hour12: false
       })
     : ''
 
@@ -188,16 +187,23 @@ export default function EventPage() {
               </table>
               {/* Buy Tickets Button */}
               <div className='mt-6'>
-                <Link
-                  to={`/sale/${name}/${matchingVenue?.venue_label}/${matchingVenue?.location.city}/${date}/${label}/${deleteParam}`}
-                  className={`btn ${
-                    isSaleActive
-                      ? 'btn-active bg-blue-500 hover:bg-blue-600'
-                      : 'btn-disabled bg-gray-400'
-                  } text-white py-2 px-4 rounded w-full`}
-                >
-                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${formattedSaleStartsAt}`}
-                </Link>
+                {isSaleActive ? (
+                  <Link
+                    to={`/sale/${name}/${matchingVenue?.venue_label}/${matchingVenue?.location.city}/${date}/${label}/${deleteParam}`}
+                    className={`btn btn-active bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full`}
+                  >
+                    Buy Tickets!
+                  </Link>
+                ) : (
+                  <button
+                    type='button'
+                    className='btn-disabled bg-gray-400 text-white py-2 px-4 rounded w-full'
+                    disabled
+                    aria-disabled='true'
+                  >
+                    {`Tickets available on ${formattedSaleStartsAt}`}
+                  </button>
+                )}
               </div>
             </div>
           </div>
