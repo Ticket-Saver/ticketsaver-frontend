@@ -116,6 +116,18 @@ export default function EventPage() {
   const saleStartsAtDate = saleStartsAt ? new Date(saleStartsAt) : null
   const isSaleActive = saleStartsAtDate ? currentDate >= saleStartsAtDate : false
 
+  const formattedSaleStartsAt = saleStartsAtDate
+    ? saleStartsAtDate.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZoneName: 'short'
+      })
+    : ''
+
   return (
     <div className='bg-white'>
       <div className='bg-gray-100 relative'>
@@ -184,7 +196,7 @@ export default function EventPage() {
                       : 'btn-disabled bg-gray-400'
                   } text-white py-2 px-4 rounded w-full`}
                 >
-                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${saleStartsAt}`}
+                  {isSaleActive ? 'Buy Tickets!' : `Tickets available on ${formattedSaleStartsAt}`}
                 </Link>
               </div>
             </div>
