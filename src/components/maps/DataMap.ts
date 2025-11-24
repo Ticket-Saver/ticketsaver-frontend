@@ -92,7 +92,6 @@ export const eventData: EventData = {
   },
   las_alucines01: {
     Map: {
-      // Mapping: P1 -> Orange, P2 -> Blue, P3 -> Pink, P4 -> Green, P5 -> Purple
       zones: ['Orange', 'Blue', 'Pink', 'Green', 'Purple'],
       priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
     }

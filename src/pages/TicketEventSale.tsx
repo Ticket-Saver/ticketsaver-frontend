@@ -18,6 +18,7 @@ import { fallbackDataService } from '../services/fallbackDataService'
 import { useSessionCleanup } from '../hooks/useSessionCleanup'
 import { useSessionTimer } from '../hooks/useSessionTimer'
 import SessionTimerBanner from '../components/SessionTimerBanner'
+import { releaseAllSeatsForSession, getSessionId } from '../services/sessionCleanupService'
 
 interface Cart {
   price_base: number
@@ -497,16 +498,32 @@ export default function TicketSelection() {
 
   // ⏱️ Limpiar carrito cuando el timer expira
   useEffect(() => {
-    if (timerState.isExpired) {
-      setCart([])
-      localStorage.removeItem('local_cart')
-      timerState.resetTimer()
+    if (timerState.isExpired && cart.length > 0) {
+      const cleanupExpiredSession = async () => {
+        const sessionId = getSessionId()
 
-      if (import.meta.env.DEV) {
-        console.log('⏰ Sesión expirada - Carrito limpiado')
+        if (sessionId && label) {
+          if (import.meta.env.DEV) {
+            console.log('⏰ Timer expirado - Liberando', cart.length, 'asientos...')
+          }
+
+          // Liberar asientos en la base de datos
+          await releaseAllSeatsForSession(sessionId, label)
+        }
+
+        // Limpiar carrito del estado
+        setCart([])
+        localStorage.removeItem('local_cart')
+        timerState.resetTimer()
+
+        if (import.meta.env.DEV) {
+          console.log('✅ Sesión expirada - Carrito limpiado y asientos liberados')
+        }
       }
+
+      cleanupExpiredSession()
     }
-  }, [timerState.isExpired])
+  }, [timerState.isExpired, cart.length, label])
 
   // Sincronizar carrito con localStorage
   useEffect(() => {

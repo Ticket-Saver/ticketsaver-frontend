@@ -7,16 +7,11 @@ interface SessionTimerBannerProps {
 }
 
 /**
- * Banner visual que muestra el timer de sesión
- *
- * Estados visuales:
- * - Verde: > 3 minutos
- * - Amarillo: 1-3 minutos (warning)
- * - Rojo: < 1 minuto (critical)
- * - Gris: Expirado
+ * Banner visual simplificado que muestra el timer de sesión
+ * Sin cambios de color, solo muestra el conteo
  */
 export default function SessionTimerBanner({ timerState, onExpired }: SessionTimerBannerProps) {
-  const { formattedTime, isExpired, isWarning, isCritical, hasStarted } = timerState
+  const { formattedTime, isExpired, hasStarted } = timerState
   const [showExpiredModal, setShowExpiredModal] = useState(false)
 
   // Mostrar modal cuando expira
@@ -32,110 +27,57 @@ export default function SessionTimerBanner({ timerState, onExpired }: SessionTim
     return null
   }
 
-  // Determinar colores según estado
-  const getBannerColors = () => {
-    if (isExpired) {
-      return {
-        bg: 'bg-gray-600',
-        text: 'text-white',
-        border: 'border-gray-700',
-        icon: '⏰'
-      }
-    }
-    if (isCritical) {
-      return {
-        bg: 'bg-red-600 animate-pulse',
-        text: 'text-white',
-        border: 'border-red-700',
-        icon: '🚨'
-      }
-    }
-    if (isWarning) {
-      return {
-        bg: 'bg-yellow-500',
-        text: 'text-black',
-        border: 'border-yellow-600',
-        icon: '⚠️'
-      }
-    }
-    return {
-      bg: 'bg-green-600',
-      text: 'text-white',
-      border: 'border-green-700',
-      icon: '⏱️'
-    }
-  }
-
-  const colors = getBannerColors()
-
   return (
     <>
-      {/* Banner principal */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-50 ${colors.bg} ${colors.text} border-b-2 ${colors.border} shadow-lg`}
-      >
+      {/* Banner principal - diseño simple y limpio */}
+      <div className='fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white border-b border-gray-700 shadow-md'>
         <div className='max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between flex-wrap'>
             <div className='flex items-center'>
-              <span className='text-2xl mr-3'>{colors.icon}</span>
+              <span className='text-xl mr-3'>⏱️</span>
               <div>
-                <p className='font-bold text-lg'>
+                <p className='font-semibold'>
                   {isExpired
                     ? 'Session Expired / Sesión Expirada'
                     : 'Time to Complete Purchase / Tiempo para Completar Compra'}
                 </p>
-                {!isExpired && (
-                  <p className='text-sm opacity-90'>
-                    {isCritical
-                      ? 'Complete your purchase now! / ¡Completa tu compra ahora!'
-                      : isWarning
-                        ? 'Hurry up! / ¡Date prisa!'
-                        : 'Your seats are reserved / Tus asientos están reservados'}
-                  </p>
-                )}
               </div>
             </div>
 
-            {/* Timer display */}
-            <div className='flex items-center'>
-              <div
-                className={`text-4xl font-mono font-bold ${isExpired ? 'opacity-50' : ''} ${isCritical ? 'animate-pulse' : ''}`}
-              >
-                {isExpired ? '00:00' : formattedTime}
-              </div>
+            {/* Timer display - solo el conteo */}
+            <div className='text-3xl font-mono font-bold'>
+              {isExpired ? '00:00' : formattedTime}
             </div>
           </div>
         </div>
       </div>
 
       {/* Spacer para que el contenido no quede debajo del banner */}
-      <div className='h-20'></div>
+      <div className='h-16'></div>
 
-      {/* Modal de expiración */}
+      {/* Modal de expiración - diseño simplificado */}
       {showExpiredModal && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75'>
-          <div className='bg-white rounded-lg p-8 max-w-md mx-4 shadow-2xl'>
+          <div className='bg-white rounded-lg p-8 max-w-md mx-4 shadow-xl'>
             <div className='text-center'>
-              <div className='text-6xl mb-4'>⏰</div>
-              <h2 className='text-2xl font-bold mb-4 text-gray-900'>
+              <div className='text-5xl mb-4'>⏰</div>
+              <h2 className='text-xl font-bold mb-4 text-gray-900'>
                 Session Expired
                 <br />
                 Sesión Expirada
               </h2>
-              <p className='text-gray-700 mb-6'>
-                Your reservation time has expired. Your selected seats have been released and are
-                now available for other customers.
+              <p className='text-gray-600 mb-6 text-sm'>
+                Your reservation time has expired. Your selected seats have been released.
                 <br />
                 <br />
-                Tu tiempo de reserva ha expirado. Los asientos seleccionados han sido liberados y
-                están disponibles para otros clientes.
+                Tu tiempo de reserva ha expirado. Los asientos seleccionados han sido liberados.
               </p>
               <button
                 onClick={() => {
                   setShowExpiredModal(false)
-                  window.location.reload() // Recargar página para empezar de nuevo
+                  window.location.reload()
                 }}
-                className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full'
+                className='bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded w-full'
               >
                 Start Over / Empezar de Nuevo
               </button>
