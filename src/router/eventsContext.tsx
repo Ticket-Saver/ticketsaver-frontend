@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 // Define la interfaz para un evento
 export interface Event {
@@ -38,6 +39,14 @@ export const EventsProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        // Verificar si está en modo emergencia
+        if (fallbackDataService.isEmergencyMode()) {
+          console.warn('🚨 Modo emergencia: Usando eventos locales')
+          const localEvents = await fallbackDataService.getLocalEvents()
+          setEvents(localEvents)
+          return
+        }
+
         // Usar caché con TTL de 10 minutos para eventos
         const data = await cacheService.fetchWithCache<EventsData>(githubApiUrl, options, {
           ttl: 10 * 60 * 1000, // 10 minutos
@@ -45,7 +54,10 @@ export const EventsProvider = ({ children }: { children: any }) => {
         })
         setEvents(data)
       } catch (error) {
-        console.error('Error fetching events: ', error)
+        console.error('Error fetching events, usando fallback local: ', error)
+        // Si falla GitHub, usar datos locales como fallback
+        const localEvents = await fallbackDataService.getLocalEvents()
+        setEvents(localEvents)
       }
     }
     fetchEvents()

@@ -1,0 +1,16 @@
+{
+  "prices": {
+    "P1": {
+      "2025-11-17": {
+        "price_base": 1999,
+        "price_final": 2758
+      }
+     
+    }
+  },
+  "zones": {
+    "General Admission": {
+      "P1": {}
+    }
+  }
+}

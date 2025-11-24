@@ -6,6 +6,8 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import parseLocalDate from '../components/Utils/dateUtils'
 import { useVenues } from '../router/venuesContext'
+import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 interface Cart {
   price_base: number
@@ -82,16 +84,33 @@ export default function TicketSelectionNoSeat() {
     if (!label) return
     const fetchData = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
+        // Check emergency mode first
+        if (fallbackDataService.isEmergencyMode()) {
+          const localZonePrice = await fallbackDataService.getLocalZonePrice(label)
+          setZoneData(localZonePrice)
+          const zonePriceListData = extractLatestPrices(localZonePrice)
+          setPriceTags(zonePriceListData)
+          return
         }
-        const zonePriceData = await response.json()
+
+        // Try cache first, then GitHub
+        const zonePriceData = await cacheService.fetchWithCache(githubApiUrl, options, {
+          ttl: 5 * 60 * 1000 // 5 minutes cache
+        })
         setZoneData(zonePriceData)
         const zonePriceListData = extractLatestPrices(zonePriceData)
         setPriceTags(zonePriceListData)
       } catch (error) {
-        console.error('Error fetching zone data', error)
+        console.error('Error fetching zone data, using fallback', error)
+        // Fallback to local data
+        try {
+          const localZonePrice = await fallbackDataService.getLocalZonePrice(label)
+          setZoneData(localZonePrice)
+          const zonePriceListData = extractLatestPrices(localZonePrice)
+          setPriceTags(zonePriceListData)
+        } catch (fallbackError) {
+          console.error('Error loading fallback zone data', fallbackError)
+        }
       }
     }
     fetchData()

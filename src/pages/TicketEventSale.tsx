@@ -14,6 +14,7 @@ import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
 import { extractLatestPrices, find_price, zoneseatToPrice } from '../components/Utils/priceUtils'
 import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 interface Cart {
   price_base: number
@@ -66,6 +67,18 @@ export default function TicketSelection() {
   useEffect(() => {
     const fetchZoneData = async () => {
       try {
+        // Verificar modo emergencia
+        if (fallbackDataService.isEmergencyMode()) {
+          console.warn('🚨 Modo emergencia: Usando zone_price local')
+          const localZonePrice = await fallbackDataService.getLocalZonePrice(label!)
+          if (localZonePrice) {
+            setZoneData(localZonePrice)
+            setPriceTags(extractLatestPrices(localZonePrice))
+            setZonePriceList(extractZonePrices(localZonePrice))
+          }
+          return
+        }
+
         // Usar caché con TTL de 5 minutos para zone_price
         const data = await cacheService.fetchWithCache<any>(githubApiUrl, options, {
           ttl: 5 * 60 * 1000,
@@ -76,7 +89,14 @@ export default function TicketSelection() {
         setPriceTags(extractLatestPrices(data))
         setZonePriceList(extractZonePrices(data))
       } catch (error) {
-        console.error('Error fetching zone data:', error)
+        console.error('Error fetching zone data, usando fallback local:', error)
+        // Fallback a datos locales
+        const localZonePrice = await fallbackDataService.getLocalZonePrice(label!)
+        if (localZonePrice) {
+          setZoneData(localZonePrice)
+          setPriceTags(extractLatestPrices(localZonePrice))
+          setZonePriceList(extractZonePrices(localZonePrice))
+        }
       }
     }
 

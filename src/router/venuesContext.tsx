@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 // Define la interfaz para la ubicación de un venue
 export interface Location {
@@ -44,6 +45,14 @@ export const VenuesProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
+        // Verificar si está en modo emergencia
+        if (fallbackDataService.isEmergencyMode()) {
+          console.warn('🚨 Modo emergencia: Usando venues locales')
+          const localVenues = await fallbackDataService.getLocalVenues()
+          setVenues(localVenues)
+          return
+        }
+
         // Usar caché con TTL de 15 minutos para venues (cambian menos frecuentemente)
         const data = await cacheService.fetchWithCache<VenuesData>(githubApiUrl, options, {
           ttl: 15 * 60 * 1000, // 15 minutos
@@ -51,7 +60,10 @@ export const VenuesProvider = ({ children }: { children: ReactNode }) => {
         })
         setVenues(data)
       } catch (error) {
-        console.error('Error fetching venues: ', error)
+        console.error('Error fetching venues, usando fallback local: ', error)
+        // Si falla GitHub, usar datos locales como fallback
+        const localVenues = await fallbackDataService.getLocalVenues()
+        setVenues(localVenues)
       }
     }
     fetchVenues()
