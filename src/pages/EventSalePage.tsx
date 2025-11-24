@@ -4,6 +4,8 @@ import { extractZonePrices } from '../components/Utils/priceUtils'
 import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
 import { useVenues } from '../router/venuesContext'
 import { useEvents } from '../router/eventsContext'
+import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 export default function EventPage() {
   const navigate = useNavigate()
@@ -74,20 +76,40 @@ export default function EventPage() {
     () => `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`,
     [label]
   )
-  // Fetch de zone prices (se actualiza cada vez que carga la página)
+
+  // Fetch de zone prices con caché y fallback
   useEffect(() => {
     if (!label) return
     const fetchZonePrices = async () => {
       try {
-        const response = await fetch(customUrl, options)
-        if (!response.ok) {
-          throw new Error('response error')
+        // Verificar modo emergencia primero
+        if (fallbackDataService.isEmergencyMode()) {
+          const localZonePrice = await fallbackDataService.getLocalZonePrice(label)
+          if (localZonePrice) {
+            const zonePriceListData = extractZonePrices(localZonePrice)
+            setZonePriceList(zonePriceListData)
+          }
+          return
         }
-        const zonePrices = await response.json()
+
+        // Intentar desde caché/GitHub primero
+        const zonePrices = await cacheService.fetchWithCache(customUrl, options, {
+          ttl: 5 * 60 * 1000 // 5 minutos cache para zone prices
+        })
         const zonePriceListData = extractZonePrices(zonePrices)
         setZonePriceList(zonePriceListData)
       } catch (error) {
-        console.error('Error fetching zone prices', error)
+        console.error('Error fetching zone prices, usando fallback local:', error)
+        // Fallback a datos locales
+        try {
+          const localZonePrice = await fallbackDataService.getLocalZonePrice(label)
+          if (localZonePrice) {
+            const zonePriceListData = extractZonePrices(localZonePrice)
+            setZonePriceList(zonePriceListData)
+          }
+        } catch (fallbackError) {
+          console.error('Error cargando zone prices desde fallback:', fallbackError)
+        }
       }
     }
     fetchZonePrices()

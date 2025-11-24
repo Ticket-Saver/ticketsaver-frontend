@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { EventCard } from '../components/EventCard'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchJson, fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { fetchDescription, fetchGitHubImage } from '../components/Utils/FetchDataJson'
+import { useEvents } from '../router/eventsContext'
+import { useVenues } from '../router/venuesContext'
 
 interface Event {
   eventId: string
@@ -38,22 +40,24 @@ interface EventWithVenue extends Event {
 }
 
 export default function EventPage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [venues, setVenues] = useState<Venue[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
+  const [venuesList, setVenuesList] = useState<Venue[]>([])
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string>>({})
-
   const [eventsWithVenues, setEventsWithVenues] = useState<EventWithVenue[]>([])
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
-  const githubApiUrl2 = `${import.meta.env.VITE_GITHUB_API_URL as string}/venues.json`
-  const token = import.meta.env.VITE_GITHUB_TOKEN
 
+  // Usar contextos con caché y fallback
+  const { events } = useEvents()
+  const { venues } = useVenues()
+
+  const token = import.meta.env.VITE_GITHUB_TOKEN
   const options = {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3.raw'
     }
   }
+
   const hiddenEventLabels = [
     'ice_spice.01',
     'bossman_dlow.01',
@@ -63,84 +67,90 @@ export default function EventPage() {
     'deebaby_zro.01',
     'insane_clown_posse.01',
     'steve_aoki.01'
-  ] // Define los event_la
+  ]
 
-  const { data } = useFetchJson(githubApiUrl, options)
+  // Procesar eventos desde el contexto (ya tiene caché y fallback)
   useEffect(() => {
-    let filteredEvents: Event[] = []
+    if (!events) return
 
-    if (data) {
-      const eventsArray = Object.values(data)
-      const currentDate = new Date()
+    const eventsArray = Object.values(events)
+    const currentDate = new Date()
 
-      filteredEvents = eventsArray.filter((event) => {
-        if (event.event_deleted_at) {
-          return false
-        }
+    const filtered = eventsArray.filter((event) => {
+      if (event.event_deleted_at) {
+        return false
+      }
 
-        const endDate = new Date(event.event_date)
-        endDate.setDate(endDate.getDate() + 2)
+      const endDate = new Date(event.event_date)
+      endDate.setDate(endDate.getDate() + 2)
 
-        return endDate.getTime() > currentDate.getTime()
-      })
-    }
-    setEvents(filteredEvents)
-  }, [data])
+      return endDate.getTime() > currentDate.getTime()
+    })
 
-  const { data: data2 } = useFetchJson(githubApiUrl2, options)
+    setFilteredEvents(filtered)
+  }, [events])
 
+  // Procesar venues desde el contexto (ya tiene caché y fallback)
   useEffect(() => {
-    let filteredVenue: Venue[] = []
+    if (!venues) return
 
-    if (data2) {
-      const venuesArray = Object.values(data2)
-      filteredVenue = venuesArray
-    }
-
-    setVenues(filteredVenue)
-  }, [data2])
+    const venuesArray = Object.values(venues)
+    setVenuesList(venuesArray)
+  }, [venues])
 
   useEffect(() => {
-    const combinedData = events.map((event) => {
-      const venue = venues.find((v) => v.venue_label === event.venue_label)
+    const combinedData = filteredEvents.map((event) => {
+      const venue = venuesList.find((v) => v.venue_label === event.venue_label)
       return { ...event, venue }
     })
     setEventsWithVenues(combinedData)
-  }, [events, venues])
+  }, [filteredEvents, venuesList])
 
+  // Cargar descripciones con caché y fallback
   useEffect(() => {
     const fetchAllDescriptions = async () => {
       const descriptionsDict: Record<string, string> = {}
 
-      for (const event of events) {
-        const description = await fetchDescription(event.event_label, options)
-        descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+      for (const event of filteredEvents) {
+        try {
+          const description = await fetchDescription(event.event_label, options)
+          descriptionsDict[event.event_label] = description.slice(0, 250) + '...'
+        } catch (error) {
+          console.error(`Error loading description for ${event.event_label}`, error)
+          descriptionsDict[event.event_label] = 'Description not available'
+        }
       }
 
       setDescriptions(descriptionsDict)
     }
 
-    if (events.length > 0) {
+    if (filteredEvents.length > 0) {
       fetchAllDescriptions()
     }
-  }, [events])
+  }, [filteredEvents, options])
 
+  // Cargar imágenes con caché y fallback
   useEffect(() => {
     const fetchAllImages = async () => {
       const imagesDict: Record<string, string> = {}
 
-      for (const event of events) {
-        const image = await fetchGitHubImage(event.event_label)
-        imagesDict[event.event_label] = image
+      for (const event of filteredEvents) {
+        try {
+          const image = await fetchGitHubImage(event.event_label)
+          imagesDict[event.event_label] = image
+        } catch (error) {
+          console.error(`Error loading image for ${event.event_label}`, error)
+          imagesDict[event.event_label] = '' // Imagen vacía como fallback
+        }
       }
 
       setImages(imagesDict)
     }
 
-    if (events.length > 0) {
+    if (filteredEvents.length > 0) {
       fetchAllImages()
     }
-  }, [events])
+  }, [filteredEvents])
 
   const setSessionId = useState<string>('')[1] // State to store sessionId
 

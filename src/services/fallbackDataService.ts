@@ -3,6 +3,8 @@
  * Utiliza archivos en src/assets/events como respaldo cuando GitHub falla
  */
 
+import { localEvents, localVenues } from '../assets/events'
+
 interface FallbackConfig {
   useLocal?: boolean // Forzar uso de datos locales
   showWarning?: boolean // Mostrar advertencia cuando se use fallback
@@ -10,8 +12,6 @@ interface FallbackConfig {
 
 class FallbackDataService {
   private readonly isDevelopment = import.meta.env.DEV
-  private localEvents: any = null
-  private localVenues: any = null
 
   /**
    * Log de advertencia
@@ -23,49 +23,23 @@ class FallbackDataService {
   }
 
   /**
-   * Carga eventos locales desde el archivo
-   */
-  private async loadLocalEvents(): Promise<any> {
-    if (this.localEvents) return this.localEvents
-
-    try {
-      const response = await fetch('/src/assets/events/events.json')
-      this.localEvents = await response.json()
-      return this.localEvents
-    } catch (error) {
-      this.warn('No se pudieron cargar eventos locales')
-      return {}
-    }
-  }
-
-  /**
-   * Carga venues locales desde el archivo
-   */
-  private async loadLocalVenues(): Promise<any> {
-    if (this.localVenues) return this.localVenues
-
-    try {
-      const response = await fetch('/src/assets/events/venues.json')
-      this.localVenues = await response.json()
-      return this.localVenues
-    } catch (error) {
-      this.warn('No se pudieron cargar venues locales')
-      return {}
-    }
-  }
-
-  /**
    * Obtiene eventos desde archivos locales
    */
   async getLocalEvents(): Promise<any> {
-    return await this.loadLocalEvents()
+    if (this.isDevelopment) {
+      console.log('📦 Cargando eventos locales:', Object.keys(localEvents).length, 'eventos')
+    }
+    return localEvents
   }
 
   /**
    * Obtiene venues desde archivos locales
    */
   async getLocalVenues(): Promise<any> {
-    return await this.loadLocalVenues()
+    if (this.isDevelopment) {
+      console.log('📦 Cargando venues locales:', Object.keys(localVenues).length, 'venues')
+    }
+    return localVenues
   }
 
   /**
@@ -152,7 +126,7 @@ class FallbackDataService {
    * Verifica si un evento tiene datos locales disponibles
    */
   async hasLocalEventData(eventLabel: string): Promise<boolean> {
-    const events = await this.loadLocalEvents()
+    const events = await this.getLocalEvents()
     return eventLabel in events
   }
 
@@ -160,7 +134,7 @@ class FallbackDataService {
    * Verifica si un venue tiene datos locales disponibles
    */
   async hasLocalVenueData(venueLabel: string): Promise<boolean> {
-    const venues = await this.loadLocalVenues()
+    const venues = await this.getLocalVenues()
     return venueLabel in venues
   }
 
@@ -168,7 +142,7 @@ class FallbackDataService {
    * Obtiene un evento específico (local o remoto)
    */
   async getEvent(eventLabel: string, remoteFetcher?: () => Promise<any>): Promise<any> {
-    const events = await this.loadLocalEvents()
+    const events = await this.getLocalEvents()
     if (remoteFetcher) {
       return this.fetchWithFallback(remoteFetcher, events[eventLabel], { showWarning: true })
     }
@@ -179,7 +153,7 @@ class FallbackDataService {
    * Obtiene un venue específico (local o remoto)
    */
   async getVenue(venueLabel: string, remoteFetcher?: () => Promise<any>): Promise<any> {
-    const venues = await this.loadLocalVenues()
+    const venues = await this.getLocalVenues()
     if (remoteFetcher) {
       return this.fetchWithFallback(remoteFetcher, venues[venueLabel], { showWarning: true })
     }
@@ -190,7 +164,7 @@ class FallbackDataService {
    * Obtiene todos los eventos disponibles localmente
    */
   async getAvailableLocalEvents(): Promise<string[]> {
-    const events = await this.loadLocalEvents()
+    const events = await this.getLocalEvents()
     return Object.keys(events)
   }
 
@@ -198,7 +172,7 @@ class FallbackDataService {
    * Obtiene todos los venues disponibles localmente
    */
   async getAvailableLocalVenues(): Promise<string[]> {
-    const venues = await this.loadLocalVenues()
+    const venues = await this.getLocalVenues()
     return Object.keys(venues)
   }
 

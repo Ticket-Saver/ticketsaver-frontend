@@ -1,0 +1,207 @@
+{
+  "los_esquivel.01": {
+    "event_label": "los_esquivel.01",
+    "event_date": "2024-05-10",
+    "event_hour": "22:00",
+    "event_name": "Los Esquivel",
+    "venue_label": "noxxnightclub_tx",
+    "sale_starts_at": "2024-04-05",
+    "tricket_url": ""
+  },
+  "india_yuridia.01": {
+    "event_label": "india_yuridia.01",
+    "event_date": "2024-09-08",
+    "event_hour": "19:00",
+    "event_name": "La India Yuridia",
+    "venue_label": "ritztheatre_nj",
+    "sale_starts_at": "2024-04-05",
+    "tricket_url": ""
+  },
+  "india_yuridia.02": {
+    "event_label": "india_yuridia.02",
+    "event_date": "2024-11-17",
+    "event_hour": "20:00",
+    "event_name": "La India Yuridia",
+    "venue_label": "sanjose_ca",
+    "sale_starts_at": "2024-06-04",
+    "tricket_url": ""
+  },
+  "las_leonas.01": {
+    "event_label": "las_leonas.01",
+    "event_date": "2024-09-01",
+    "event_hour": "19:00",
+    "event_name": "Las Leonas",
+    "venue_label": "manuelartime_fl",
+    "sale_starts_at": "2024-06-22",
+    "tricket_url": ""
+  },
+  "las_leonas.02": {
+    "event_label": "las_leonas.02",
+    "event_date": "2024-09-05",
+    "event_hour": "20:30",
+    "event_name": "Las Leonas",
+    "venue_label": "unioncounty_nj",
+    "sale_starts_at": "2024-06-22",
+    "tricket_url": ""
+  },
+  "las_leonas.03": {
+    "event_label": "las_leonas.03",
+    "event_date": "2024-10-18",
+    "event_hour": "21:00",
+    "event_name": "Las Leonas",
+    "venue_label": "californiatheatre_ca",
+    "sale_starts_at": "2024-06-22",
+    "tricket_url": ""
+  },
+  "turbulence_burrita.01": {
+    "event_label": "turbulence_burrita.01",
+    "event_date": "2024-11-07",
+    "event_hour": "21:00",
+    "event_name": "Turbulence & Burrita Burrona",
+    "venue_label": "roccapulco_sf",
+    "sale_starts_at": "2024-10-10",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "turbulence_burrita.02": {
+    "event_label": "turbulence_burrita.02",
+    "event_date": "2024-11-08",
+    "event_hour": "21:00",
+    "event_name": "Turbulence & Burrita Burrona",
+    "venue_label": "capos_sj",
+    "sale_starts_at": "2024-10-10",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "turbulence_burrita.03": {
+    "event_label": "turbulence_burrita.03",
+    "event_date": "2024-11-22",
+    "event_hour": "21:00",
+    "event_name": "Turbulence & Burrita Burrona",
+    "venue_label": "stratus_phx",
+    "sale_starts_at": "2024-10-10",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "turbulence_burrita.04": {
+    "event_label": "turbulence_burrita.04",
+    "event_name": "Turbulence y Burrita Burrona",
+    "event_date": "2025-02-21",
+    "event_hour": "09:00 PM",
+    "venue_label": "joeslive_il",
+    "sale_starts_at": "2024-11-27"
+  },
+  "Secretto_PacoBarron": {
+    "event_label": "Secretto_PacoBarron",
+    "event_date": "2024-11-02",
+    "event_hour": "21:00",
+    "event_name": "Secretto + Paco Barron",
+    "venue_label": "lacatedral_mission",
+    "sale_starts_at": "2024-10-23",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "ice_spice.01": {
+    "event_label": "ice_spice.01",
+    "event_date": "3000-03-15",
+    "event_hour": "20:00",
+    "event_name": "Ice Spice",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "3000-11-07",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "bossman_dlow.01": {
+    "event_label": "bossman_dlow.01",
+    "event_date": "2025-03-19",
+    "event_hour": "20:00",
+    "event_name": "Bossman  Dlow",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2024-11-07",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "bigxthaplug.01": {
+    "event_label": "bigxthaplug.01",
+    "event_date": "2025-03-21",
+    "event_hour": "20:00",
+    "event_name": "BigXThaPlug x Mexican OT",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2024-11-07",
+    "deleted_at": "",
+    "tricket_url": ""
+  },
+  "geazy_claytons.01": {
+    "event_label": "geazy_claytons.01",
+    "event_name": "G EAZY",
+    "event_date": "2025-03-22",
+    "event_hour": "08:00 PM",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2024-12-21"
+  },
+  "deorro_claytons.01": {
+    "event_label": "deorro_claytons.01",
+    "event_name": "DEORRO",
+    "event_date": "2025-03-17",
+    "event_hour": "08:00 PM",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2024-12-21"
+  },
+  "deebaby_zro.01": {
+    "event_label": "deebaby_zro.01",
+    "event_date": "2025-03-15",
+    "event_hour": "08:00 PM",
+    "event_name": "DEEBABY & Z-RO",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2025-02-21"
+  },
+  "yeri_mua.01": {
+    "event_label": "yeri_mua.01",
+    "event_date": "2025-03-14",
+    "event_hour": "10:00 PM",
+    "event_name": "Yeri Mua",
+    "venue_label": "noxxnightclub_tx",
+    "sale_starts_at": "2030-03-04"
+  },
+  "marisela.01": {
+    "event_label": "marisela.01",
+    "event_date": "2000-09-20",
+    "event_hour": "08:00 PM",
+    "event_name": "Marisela",
+    "venue_label": "richmond_ca",
+    "sale_starts_at": "3000-05-13",
+    "deleted_at": "2025-09-01"
+  },
+  "insane_clown_posse.01": {
+    "event_label": "insane_clown_posse.01",
+    "event_date": "2025-09-13",
+    "event_hour": "08:00 PM",
+    "event_name": "Insane Clown Posse",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2025-06-21"
+  },
+  "nestor_420.01": {
+    "event_label": "nestor_420.01",
+    "event_date": "2025-08-09",
+    "event_hour": "10:00 PM",
+    "event_name": "Nestor 420 - Live",
+    "venue_label": "presiclub_tx",
+    "sale_starts_at": "2025-07-06"
+  },
+  "steve_aoki.01": {
+    "event_label": "steve_aoki.01",
+    "event_date": "2026-03-16",
+    "event_hour": "08:00 PM",
+    "event_name": "Steve Aoki",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2025-11-17"
+  },
+  "las_alucines.01": {
+    "event_label": "las_alucines.01",
+    "event_date": "2026-02-13",
+    "event_hour": "19:30",
+    "event_name": "Las Alucines",
+    "venue_label": "Copernicus_Center_IL",
+    "sale_starts_at": "2025-11-24T10:00:00-06:00"
+  }
+}
