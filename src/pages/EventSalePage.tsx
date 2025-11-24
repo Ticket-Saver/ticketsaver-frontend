@@ -32,7 +32,8 @@ export default function EventPage() {
     'yeri_mua.01',
     'insane_clown_posse.01',
     'nestor_420.01',
-    'steve_aoki.01'
+    'steve_aoki.01',
+    'las_alucines.01'
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',

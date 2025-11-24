@@ -59,7 +59,8 @@ export default function TicketSelectionNoSeat() {
     'deorro_claytons.01',
     'deebaby_zro.01',
     'nestor_420.01',
-    'steve_aoki.01'
+    'steve_aoki.01',
+    'las_alucines.01'
   ]
 
   // Cargar la imagen del evento solo cuando label cambie
