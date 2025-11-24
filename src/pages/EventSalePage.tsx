@@ -117,15 +117,15 @@ export default function EventPage() {
   const saleStartsAtDate = saleStartsAt ? new Date(saleStartsAt) : null
   const isSaleActive = saleStartsAtDate ? currentDate >= saleStartsAtDate : false
 
+  // Show only the date (no time)
   const formattedSaleStartsAt = saleStartsAtDate
-    ? saleStartsAtDate.toLocaleString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      })
+    ? saleStartsAtDate
+        .toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        })
+        .replace(',', '')
     : ''
 
   return (
