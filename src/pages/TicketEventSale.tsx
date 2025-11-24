@@ -117,6 +117,16 @@ export default function TicketSelection() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
+        // Verificar modo emergencia
+        if (fallbackDataService.isEmergencyMode()) {
+          console.warn('🚨 Modo emergencia: Usando venues local')
+          const localVenues = await fallbackDataService.getLocalVenues()
+          if (localVenues) {
+            setVenue(localVenues[venue!])
+          }
+          return
+        }
+
         // Usar caché con TTL de 15 minutos para venues
         const data = await cacheService.fetchWithCache<any>(githubApiUrl2, options, {
           ttl: 15 * 60 * 1000,
@@ -124,7 +134,21 @@ export default function TicketSelection() {
         })
         setVenue(data[venue!])
       } catch (error) {
-        console.error('Error fetching data: ', error)
+        console.error('Error fetching venues, usando fallback local:', error)
+        // Fallback a datos locales
+        try {
+          const localVenues = await fallbackDataService.getLocalVenues()
+          if (localVenues && localVenues[venue!]) {
+            setVenue(localVenues[venue!])
+            if (import.meta.env.DEV) {
+              console.log('✅ Venue cargado desde fallback local:', venue)
+            }
+          } else {
+            console.error('❌ No se encontró venue en fallback local:', venue)
+          }
+        } catch (fallbackError) {
+          console.error('❌ Error cargando fallback de venues:', fallbackError)
+        }
       }
     }
     if (venue) fetchVenues()
