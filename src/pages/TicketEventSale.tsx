@@ -15,6 +15,9 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { extractLatestPrices, find_price, zoneseatToPrice } from '../components/Utils/priceUtils'
 import { cacheService } from '../services/cacheService'
 import { fallbackDataService } from '../services/fallbackDataService'
+import { useSessionCleanup } from '../hooks/useSessionCleanup'
+import { useSessionTimer } from '../hooks/useSessionTimer'
+import SessionTimerBanner from '../components/SessionTimerBanner'
 
 interface Cart {
   price_base: number
@@ -49,6 +52,13 @@ export default function TicketSelection() {
   const [venueInfo, setVenue] = useState<any>(null)
   const [eventSelected, setEventSelected] = useState<string | ''>('las_leonas.02')
   const [, setSessionId] = useState<string>('')
+
+  // 🔒 Sistema de limpieza de sesión automática
+  // Valida localStorage al cargar y libera asientos al cerrar navegador
+  const { validatedCart, isValidating } = useSessionCleanup(label)
+
+  // ⏱️ Timer de sesión (10 minutos para completar compra)
+  const timerState = useSessionTimer(label, 10)
 
   // Load image when label changes
   useEffect(() => {
@@ -186,6 +196,15 @@ export default function TicketSelection() {
   const totalCost = cart?.reduce((acc, crr) => (acc = acc + crr.price_final), 0) || 0
 
   const handleCheckout = async () => {
+    // ⏱️ Verificar si el timer expiró
+    if (timerState.isExpired) {
+      alert(
+        'Your session has expired. Please select your seats again.\n\n' +
+          'Tu sesión ha expirado. Por favor selecciona tus asientos nuevamente.'
+      )
+      return
+    }
+
     const cartLength = (cart || []).length
     if (cartLength > 10) {
       alert(
@@ -336,6 +355,11 @@ export default function TicketSelection() {
                 }
               ]
 
+              // ⏱️ Iniciar timer si es el primer asiento
+              if (prev.length === 0 && !timerState.hasStarted) {
+                timerState.startTimer()
+              }
+
               return newCart
             })
           }
@@ -396,7 +420,18 @@ export default function TicketSelection() {
       const result = await response.json()
       const takenSeats = result.data
 
-      return takenSeats
+      // 🔧 FIX: Transformar los datos al formato correcto para Seatchart
+      // Seatchart solo necesita { row: number, col: number }
+      const formattedSeats = takenSeats.map((seat: any) => ({
+        row: seat.row,
+        col: seat.col
+      }))
+
+      if (import.meta.env.DEV) {
+        console.log('📍 Asientos tomados en', areaTitle, ':', formattedSeats.length)
+      }
+
+      return formattedSeats
     } catch (err) {
       console.error(err)
       return []
@@ -424,9 +459,32 @@ export default function TicketSelection() {
     }
   }
 
+  // 🔄 Cargar carrito validado desde localStorage
   useEffect(() => {
-    setCart(JSON.parse(localStorage.getItem('local_cart') as string))
-  }, [])
+    if (!isValidating && validatedCart !== null) {
+      // Usar el carrito validado por el hook de sesión
+      setCart(validatedCart)
+
+      if (import.meta.env.DEV && validatedCart.length > 0) {
+        console.log('✅ Carrito cargado y validado:', validatedCart.length, 'asientos')
+      }
+    }
+  }, [isValidating, validatedCart])
+
+  // ⏱️ Limpiar carrito cuando el timer expira
+  useEffect(() => {
+    if (timerState.isExpired) {
+      setCart([])
+      localStorage.removeItem('local_cart')
+      timerState.resetTimer()
+
+      if (import.meta.env.DEV) {
+        console.log('⏰ Sesión expirada - Carrito limpiado')
+      }
+    }
+  }, [timerState.isExpired])
+
+  // Sincronizar carrito con localStorage
   useEffect(() => {
     localStorage.setItem('local_cart', JSON.stringify(cart))
   }, [cart])
@@ -461,6 +519,17 @@ export default function TicketSelection() {
 
   return (
     <div className='bg-gray-100'>
+      {/* ⏱️ Banner de timer de sesión */}
+      <SessionTimerBanner
+        timerState={timerState}
+        onExpired={() => {
+          // Callback adicional cuando expira (opcional)
+          if (import.meta.env.DEV) {
+            console.log('🔔 Modal de expiración mostrado')
+          }
+        }}
+      />
+
       <div className='bg-gray-100 relative'>
         {/* Event Header */}
         <div className='absolute inset-0'>
@@ -653,8 +722,9 @@ export default function TicketSelection() {
                                 Seat: ticket.seatLabel,
                                 row: ticket.coords.row,
                                 col: ticket.coords.col,
-                                subZone: seatchartCurrentArea.title,
-                                sessionId: sessionIdCookie
+                                subZone: ticket.subZone, // 🔧 FIX: Usar ticket.subZone en vez de seatchartCurrentArea.title
+                                sessionId: sessionIdCookie,
+                                Event: label
                               }
                               lockSeats(lockingSeat)
                               onTicketClick(ticket)

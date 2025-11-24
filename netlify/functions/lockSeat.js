@@ -37,7 +37,7 @@ exports.handler = async function (event, _context) {
 
   const { data: seatData, error: seatError } = await supabase
     .from('YuridiaSeatMap')
-    .select('LockedBy')
+    .select('LockedBy, lockedAt')
     .eq('Seat', seat.Seat)
     .eq('subZone', seat.subZone)
     .eq('row', seat.row)
@@ -63,10 +63,17 @@ exports.handler = async function (event, _context) {
   const newLockedStatus = !seatData.LockedBy
 
   if (seatData && (!seatData.LockedBy || seatData.LockedBy === seat.sessionId)) {
+    // Preparar el objeto de actualización
+    const updateData = {
+      LockedStatus: newLockedStatus,
+      LockedBy: newLockedStatus ? seat.sessionId : null,
+      lockedAt: newLockedStatus ? new Date().toISOString() : null
+    }
+
     // Update the seat
     const { data, error } = await supabase
       .from('YuridiaSeatMap')
-      .update({ LockedStatus: newLockedStatus, LockedBy: newLockedStatus ? seat.sessionId : null })
+      .update(updateData)
       .eq('Seat', seat.Seat)
       .eq('subZone', seat.subZone)
       .eq('row', seat.row)
