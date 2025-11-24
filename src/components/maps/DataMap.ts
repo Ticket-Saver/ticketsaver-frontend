@@ -5,7 +5,7 @@ import OrchestraMap2 from '../../assets/maps/IndiaYuridia/ticketeraMapa3.png'
 import LogeMapPng from '../../assets/maps/IndiaYuridia/Loge.png'
 import ManuelArtTimePng from '../../assets/maps/Leonas/manuelartime_fl.svg'
 import RichmondsMapSvg from '../../assets/maps/Marisela/richmonds_ca.png'
-import CopernicusCenterSvg from '../../assets/maps/Alucines/alucines.png'
+import CopernicusCenterSvg from '../../assets/maps/Alucines/CHICAGO ALUCINES.svg'
 
 import LogeMap from './IndiaYuridia/LogeMap'
 import OrchestraMap from './IndiaYuridia/OrchestraMap'
