@@ -41,6 +41,19 @@ export default function TicketSelection() {
 
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
+  const eventsWithFees = [
+    'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
+    'deorro_claytons.01',
+    'deebaby_zro.01',
+    'yeri_mua.01',
+    'insane_clown_posse.01',
+    'nestor_420.01',
+    'steve_aoki.01',
+    'las_alucines.01'
+  ]
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>([])
   const [venueInfo, setVenue] = useState<any>(null)
@@ -486,13 +499,23 @@ export default function TicketSelection() {
                       <th className='text-left font-normal'>{zoneItem.zone}</th>
                       <th className='text-center font-normal'>Starting prices from</th>
                       <th>
-                        <a className='font-bold' style={{ fontSize: '14px' }}>
-                          {' '}
-                          $
-                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
-                            100}{' '}
-                          USD
-                        </a>
+                        {eventsWithFees.includes(label!) ? (
+                          <a className='font-bold' style={{ fontSize: '14px' }}>
+                            {' '}
+                            $
+                            {Math.min(...zoneItem.prices.map((price: any) => price.priceBase)) /
+                              100}{' '}
+                            USD + fees
+                          </a>
+                        ) : (
+                          <a className='font-bold' style={{ fontSize: '14px' }}>
+                            {' '}
+                            $
+                            {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
+                              100}{' '}
+                            USD
+                          </a>
+                        )}
                       </th>
                     </tr>
                   ))}
