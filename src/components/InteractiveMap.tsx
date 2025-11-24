@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import ImageMapper from 'react-img-mapper'
-
 import 'seatchart/dist/seatchart.min.css'
 
 interface Area {
@@ -8,6 +7,7 @@ interface Area {
   coords: number[]
   polygon?: number[][]
   preFillColor?: string | undefined
+  id?: string
   [key: string]: any
 }
 
@@ -29,61 +29,59 @@ const InteractiveMap = ({
   src,
   width
 }: InteractiveMapProps) => {
-  const [highlightedAreas, setHighlightedAreas] = useState<Area[]>([])
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
   const [updatedMap, setUpdatedMap] = useState(getDefaultMap())
-  const height = width
+
+  const ORIGINAL_WIDTH = 2094
+  const ORIGINAL_HEIGHT = 1485
+
+  const height = width * (ORIGINAL_HEIGHT / ORIGINAL_WIDTH)
 
   useEffect(() => {
     const map = { ...getDefaultMap() }
     map.areas = map.areas.map((mapArea) => {
       const newArea = { ...mapArea }
+
       newArea.coords = newArea.coords.map((coord, index) => {
-        return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height
+        return index % 2 === 0
+          ? (coord / ORIGINAL_WIDTH) * width // Coordenadas X
+          : (coord / ORIGINAL_HEIGHT) * height // Coordenadas Y
       })
 
       if (newArea.polygon) {
         newArea.polygon = newArea.polygon.map((point) => {
           return point.map((coord, index) => {
-            return index % 2 === 0 ? (coord / 1328) * width : (coord / 1328) * height
+            return index % 2 === 0
+              ? (coord / ORIGINAL_WIDTH) * width
+              : (coord / ORIGINAL_HEIGHT) * height
           })
         })
       }
 
-      if (
-        highlightedAreas.some(
-          (highlightedArea) =>
-            JSON.stringify(highlightedArea.coords) === JSON.stringify(newArea.coords)
-        )
-      ) {
-        newArea.preFillColor = 'rgba(255, 255, 0, 0.5)'
-      } else {
-        newArea.preFillColor = ''
-      }
+      newArea.preFillColor =
+        newArea.id && newArea.id === highlightedId ? 'rgba(255, 255, 0, 0.5)' : ''
+
       return newArea
     })
+
     setUpdatedMap(map)
-  }, [highlightedAreas, width, height, getDefaultMap])
+  }, [width, height, highlightedId, getDefaultMap])
 
   const handleAreaClick = (area: Area) => {
     handleClickImageZone(area)
-    setHighlightedAreas([area])
+    setHighlightedId(area.id ?? null)
   }
 
   return (
-    <div className='flex-row overflow-visible justify-center content-center '>
-      <div className='justify-center content-center items-center overline mt-4 cursor-pointer'>
-        <ImageMapper
-          src={src}
-          map={updatedMap}
-          width={width}
-          height={height}
-          onClick={handleAreaClick}
-          stayHighlighted={true}
-          stayMultiHighlighted={false}
-          toggleHighlighted={true}
-        />
-      </div>
-    </div>
+    <ImageMapper
+      src={src}
+      map={updatedMap}
+      width={width}
+      onClick={handleAreaClick}
+      stayHighlighted
+      stayMultiHighlighted={false}
+      toggleHighlighted
+    />
   )
 }
 
