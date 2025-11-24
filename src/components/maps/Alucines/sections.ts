@@ -595,8 +595,8 @@ export const COPERNICUS_SECTIONS: SeatSectionConfig[] = [
     title: 'Stage Right 2',
     name: 'Pink',
     shape: 'poly',
-    seatTypeLabel: 'Red',
-    seatCssClass: 'Red',
+    seatTypeLabel: 'Pink',
+    seatCssClass: 'Pink',
 
     coords: [1581.04, 380.18, 1580.69, 636.73, 1903.45, 636.04, 1903.8, 380.18],
     polygon: [
