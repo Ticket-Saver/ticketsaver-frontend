@@ -2,14 +2,14 @@ import { supabase } from '../utils/supabaseClient'
 
 /**
  * Función de limpieza de bloqueos expirados
- * 
+ *
  * Libera automáticamente asientos bloqueados hace más de 10 minutos
- * 
+ *
  * Uso:
  * - Puede ser llamada manualmente
  * - Puede ser programada con Netlify Scheduled Functions
  * - Puede ser ejecutada por un cron job externo
- * 
+ *
  * Endpoint: /.netlify/functions/cleanupExpiredLocks
  * Method: POST
  * Body: { Event?: string } (opcional - si no se proporciona, limpia todos los eventos)
