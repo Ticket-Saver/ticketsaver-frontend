@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { cacheService } from '../services/cacheService'
 
 // Define la interfaz para la ubicación de un venue
 export interface Location {
@@ -43,11 +44,11 @@ export const VenuesProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data: VenuesData = await response.json()
+        // Usar caché con TTL de 15 minutos para venues (cambian menos frecuentemente)
+        const data = await cacheService.fetchWithCache<VenuesData>(githubApiUrl, options, {
+          ttl: 15 * 60 * 1000, // 15 minutos
+          useLocalStorage: true
+        })
         setVenues(data)
       } catch (error) {
         console.error('Error fetching venues: ', error)

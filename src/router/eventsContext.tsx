@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { cacheService } from '../services/cacheService'
 
 // Define la interfaz para un evento
 export interface Event {
@@ -37,11 +38,11 @@ export const EventsProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data: EventsData = await response.json()
+        // Usar caché con TTL de 10 minutos para eventos
+        const data = await cacheService.fetchWithCache<EventsData>(githubApiUrl, options, {
+          ttl: 10 * 60 * 1000, // 10 minutos
+          useLocalStorage: true
+        })
         setEvents(data)
       } catch (error) {
         console.error('Error fetching events: ', error)

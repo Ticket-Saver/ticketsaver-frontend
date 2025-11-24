@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { cacheService } from '../../services/cacheService'
 
 const useFetchJson = (url: string, options?: RequestInit) => {
   const [data, setData] = useState<any[]>([])
@@ -8,11 +9,11 @@ const useFetchJson = (url: string, options?: RequestInit) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(url, options)
-        if (!response.ok) {
-          throw new Error('response error')
-        }
-        const eventData = await response.json()
+        // Usar caché con TTL de 10 minutos
+        const eventData = await cacheService.fetchWithCache<any[]>(url, options, {
+          ttl: 10 * 60 * 1000,
+          useLocalStorage: true
+        })
         setData(eventData)
       } catch (error) {
         setError(error as Error)
@@ -36,33 +37,31 @@ const fetchGitHubImage = async (label: string): Promise<string> => {
   const token = import.meta.env.VITE_GITHUB_TOKEN //
   const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/banner.png`
 
-  const response = await fetch(Url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
+  // Usar caché con TTL de 30 minutos (las imágenes no cambian frecuentemente)
+  const imageUrl = await cacheService.fetchImageWithCache(
+    Url,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3.raw'
+      }
+    },
+    {
+      ttl: 30 * 60 * 1000, // 30 minutos
+      useLocalStorage: false // Imágenes solo en memoria
     }
-  })
-
-  if (!response.ok) {
-    throw new Error(`Error al obtener la imagen: ${response.status} ${response.statusText}`)
-  }
-
-  // Convertir la respuesta en un Blob de la imagen
-  const blob = await response.blob()
-
-  // Convertir el Blob en una URL para usarla en el componente
-  const imageUrl = URL.createObjectURL(blob)
+  )
 
   return imageUrl
 }
 const fetchDescription = async (label: string, options: any): Promise<any> => {
   const Url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/description.txt`
   try {
-    const response = await fetch(Url, options)
-    if (!response.ok) {
-      throw new Error(`Error en la respuesta de GitHub: ${response.status} ${response.statusText}`)
-    }
-    const description = response.text()
+    // Usar caché con TTL de 15 minutos
+    const description = await cacheService.fetchTextWithCache(Url, options, {
+      ttl: 15 * 60 * 1000,
+      useLocalStorage: true
+    })
     return description
   } catch (error) {
     console.error('Error obteniendo los datos', error)

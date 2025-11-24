@@ -13,6 +13,7 @@ import { extractZonePrices } from '../components/Utils/priceUtils'
 import { ticketId } from '../components/TicketUtils'
 import { useAuth0 } from '@auth0/auth0-react'
 import { extractLatestPrices, find_price, zoneseatToPrice } from '../components/Utils/priceUtils'
+import { cacheService } from '../services/cacheService'
 
 interface Cart {
   price_base: number
@@ -41,19 +42,7 @@ export default function TicketSelection() {
 
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
-  const eventsWithFees = [
-    'ice_spice.01',
-    'bossman_dlow.01',
-    'bigxthaplug.01',
-    'geazy_claytons.01',
-    'deorro_claytons.01',
-    'deebaby_zro.01',
-    'yeri_mua.01',
-    'insane_clown_posse.01',
-    'nestor_420.01',
-    'steve_aoki.01',
-    'las_alucines.01'
-  ]
+  const eventsWithFees = ['las_alucines.01']
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>([])
   const [venueInfo, setVenue] = useState<any>(null)
@@ -77,9 +66,11 @@ export default function TicketSelection() {
   useEffect(() => {
     const fetchZoneData = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) throw new Error('response error')
-        const data = await response.json()
+        // Usar caché con TTL de 5 minutos para zone_price
+        const data = await cacheService.fetchWithCache<any>(githubApiUrl, options, {
+          ttl: 5 * 60 * 1000,
+          useLocalStorage: true
+        })
 
         setZoneData(data)
         setPriceTags(extractLatestPrices(data))
@@ -96,9 +87,11 @@ export default function TicketSelection() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await fetch(githubApiUrl2, options)
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-        const data = await response.json()
+        // Usar caché con TTL de 15 minutos para venues
+        const data = await cacheService.fetchWithCache<any>(githubApiUrl2, options, {
+          ttl: 15 * 60 * 1000,
+          useLocalStorage: true
+        })
         setVenue(data[venue!])
       } catch (error) {
         console.error('Error fetching data: ', error)
