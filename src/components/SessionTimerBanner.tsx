@@ -3,6 +3,7 @@ import { SessionTimerState } from '../hooks/useSessionTimer'
 
 interface SessionTimerBannerProps {
   timerState: SessionTimerState
+  eventLabel?: string // Para limpiar el localStorage correcto
   onExpired?: () => void
 }
 
@@ -10,7 +11,11 @@ interface SessionTimerBannerProps {
  * Banner visual simplificado que muestra el timer de sesión
  * Sin cambios de color, solo muestra el conteo
  */
-export default function SessionTimerBanner({ timerState, onExpired }: SessionTimerBannerProps) {
+export default function SessionTimerBanner({
+  timerState,
+  eventLabel,
+  onExpired
+}: SessionTimerBannerProps) {
   const { formattedTime, isExpired, hasStarted } = timerState
   const [showExpiredModal, setShowExpiredModal] = useState(false)
 
@@ -74,7 +79,17 @@ export default function SessionTimerBanner({ timerState, onExpired }: SessionTim
               </p>
               <button
                 onClick={() => {
+                  // 🔧 FIX: Limpiar localStorage del timer antes de recargar
+                  if (eventLabel) {
+                    const STORAGE_KEY = `session_timer_${eventLabel}`
+                    localStorage.removeItem(STORAGE_KEY)
+                  }
+                  localStorage.removeItem('local_cart')
+                  localStorage.removeItem('cart_checkout')
+
                   setShowExpiredModal(false)
+
+                  // Recargar después de limpiar
                   window.location.reload()
                 }}
                 className='bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded w-full'

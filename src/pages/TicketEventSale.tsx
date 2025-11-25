@@ -563,6 +563,7 @@ export default function TicketSelection() {
       {/* ⏱️ Banner de timer de sesión */}
       <SessionTimerBanner
         timerState={timerState}
+        eventLabel={label} // Pasar eventLabel para limpiar localStorage correcto
         onExpired={() => {
           // Callback adicional cuando expira (opcional)
           if (import.meta.env.DEV) {
