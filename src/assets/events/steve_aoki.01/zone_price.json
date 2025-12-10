@@ -4,6 +4,10 @@
       "2025-11-17": {
         "price_base": 1999,
         "price_final": 2758
+      },
+      "2025-12-10": {
+        "price_base": 2499,
+        "price_final": 3319
       }
     }
   },
