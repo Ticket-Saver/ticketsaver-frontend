@@ -6,7 +6,14 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended'
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: [
+    'dist',
+    '.eslintrc.cjs',
+    // Netlify functions/utils in JS are not part of TS projects (parserOptions.project),
+    // and would otherwise throw "TSConfig does not include this file".
+    'netlify/functions/**/*.js',
+    'netlify/utils/**/*.js'
+  ],
   parser: '@typescript-eslint/parser',
   plugins: ['react-refresh'],
   rules: {
