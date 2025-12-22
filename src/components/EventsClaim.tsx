@@ -3,52 +3,54 @@ import TicketQR from './TicketQR'
 
 // Función para traducir zonas del español al inglés
 function translateZone(zone: string | null | undefined): string {
-  if (!zone) return 'General Admission'
+  if (!zone) return ''
 
+  const zoneLower = zone.toLowerCase()
+
+  // Handle compound zones like "centro-derecha", "centro-izquierda"
   const zoneTranslations: { [key: string]: string } = {
-    centro: 'center',
-    izquierda: 'left',
-    derecha: 'right',
-    vip: 'vip',
-    general: 'general',
-    premium: 'premium'
+    centro: 'Center',
+    'centro-derecha': 'Right Center',
+    'centro-izquierda': 'Left Center',
+    izquierda: 'Left',
+    derecha: 'Right',
+    vip: 'VIP',
+    general: 'General',
+    premium: 'Premium'
   }
 
-  return zoneTranslations[zone.toLowerCase()] || zone
+  return zoneTranslations[zoneLower] || zone
+}
+
+// Función para traducir tipos de precio del español al inglés
+function translatePriceType(priceType: string | null | undefined): string {
+  if (!priceType) return ''
+
+  const priceTypeLower = priceType.toLowerCase()
+
+  const priceTypeTranslations: { [key: string]: string } = {
+    celeste: 'Cyan',
+    anaranjado: 'Orange',
+    naranja: 'Orange',
+    rojo: 'Red',
+    azul: 'Blue',
+    verde: 'Green',
+    amarillo: 'Yellow',
+    morado: 'Purple',
+    rosa: 'Pink'
+  }
+
+  return priceTypeTranslations[priceTypeLower] || priceType
 }
 
 function formatEventDate(dateStr?: string) {
   if (!dateStr) return ''
-  // Si la cadena ya parece una fecha amigable (contiene letras y no es claramente YYYY-MM-DD),
-  // la devolvemos tal cual para no romper el formato ni el timezone aplicado en otras pantallas.
-  const isPlainISODate = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
-  const hasLetters = /[a-zA-Z]/.test(dateStr)
-
-  if (hasLetters && !isPlainISODate) {
-    return dateStr
-  }
-
-  // Para cadenas tipo YYYY-MM-DD usamos una fecha en UTC y mostramos SOLO la parte de fecha,
-  // así evitamos desplazamientos de día por timezone del navegador.
-  if (isPlainISODate) {
-    const [year, month, day] = dateStr.split('-').map(Number)
-    const utcDate = new Date(Date.UTC(year, month - 1, day))
-    return utcDate.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  }
-
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return dateStr
-
-  return date.toLocaleString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
+  return date.toLocaleString(undefined, {
     year: 'numeric',
+    month: 'long',
+    day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: true
@@ -78,6 +80,7 @@ interface TicketDetail {
   section?: string | null
   seatNumber?: string | null
   price: string
+  priceType?: string | null
 }
 
 function AdditionalInfo({
@@ -107,7 +110,9 @@ function AdditionalInfo({
               {hasSeating ? (
                 // Ticket numerado con asiento
                 <p className='text-lg'>
-                  Zone: {translateZone(detail.zone)} - Seat: {detail.section}
+                  Zone: {translateZone(detail.zone)}
+                  {detail.priceType ? ` ${translatePriceType(detail.priceType)}` : ''} - Seat:{' '}
+                  {detail.section}
                   {detail.seatNumber}
                 </p>
               ) : (
@@ -155,7 +160,7 @@ export default function EveClaim({
           <div className='text-xl sm:text-3xl font-semibold'>{title}</div>
           <div className='w-full h-[1px] bg-gradient-to-r from-[#E779C1] to-[#221551] my-4'></div>
           <div className='text-lg sm:text-xl font-semibold pb-4'>{venue}</div>
-          <div className='text-lg sm:text-xl font-bold pb-4'>{formatEventDate(date)}</div>
+          <div className='text-lg sm:text-xl pb-4'>{formatEventDate(date)}</div>
           <div
             className='text-sm sm:text-lg pb-4'
             dangerouslySetInnerHTML={{ __html: description }}

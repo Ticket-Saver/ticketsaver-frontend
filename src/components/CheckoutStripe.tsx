@@ -635,7 +635,10 @@ const CheckoutStripe = () => {
             className='flex justify-between items-center py-2 border-b last:border-b-0'
           >
             <div className='flex-1'>
-              <p className='font-medium'>{ticket.seatLabel}</p>
+              {/* <p className="font-medium">{ticket.seatLabel}</p> */}
+              <p className='font-medium'>
+                {ticket.seatLabel} - {ticket.zoneName}
+              </p>
               {orderData?.order_items && (
                 <>
                   {(() => {

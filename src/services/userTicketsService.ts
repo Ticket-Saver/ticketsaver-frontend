@@ -2,31 +2,21 @@ import { API_URLS } from '../config/api'
 
 interface UserTicket {
   ticketId: string
-  zone: string
-  section: string
+  zone: string | null
+  section: string | null
+  seatNumber: string | null
   price: string
+  priceType: string | null
   status: 'ACTIVE' | 'USED' | 'CANCELLED'
 }
 
 interface UserEvent {
   eventId: string
   eventName: string
-  venue: string | null
-  venueId: string | null
-  /**
-   * Fecha/hora del evento en formato ISO (normalmente UTC, e.g. 2026-03-17T01:00:00.000000Z)
-   */
+  venue: string
+  venueId: string
   date: string
-  /**
-   * Fecha/hora de fin del evento en ISO, si está disponible.
-   */
-  endDate?: string
-  /**
-   * Timezone oficial del evento (por ejemplo "America/Chicago").
-   * Se usa para formatear la fecha/hora mostrada al usuario.
-   */
-  timezone?: string
-  location: string | null
+  location: string
   description?: string
   imageUrl?: string
   publicId?: string

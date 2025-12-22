@@ -8,35 +8,6 @@ interface UserTicketsListProps {
   noEventsMessage: string
 }
 
-const formatEventDateTime = (dateStr: string, timezone?: string) => {
-  if (!dateStr) return ''
-
-  try {
-    const date = new Date(dateStr)
-    const tz = timezone || 'UTC'
-
-    const formattedDate = new Intl.DateTimeFormat('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: tz
-    }).format(date)
-
-    const formattedTime = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: tz
-    }).format(date)
-
-    return `${formattedDate} at ${formattedTime}`
-  } catch {
-    // Si algo falla, devolvemos la cadena original para no romper la UI
-    return dateStr
-  }
-}
-
 const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEventsMessage }) => {
   const { user } = useAuth0()
   const { tickets, loading, error } = useUpcomingTickets(user?.email || '')
@@ -44,7 +15,7 @@ const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEve
   // Filter events based on the provided filter function
   const filteredEvents = useMemo(() => {
     if (!tickets) return []
-    const result = tickets.filter(event => filterFunction(event.date))
+    const result = tickets.filter((event) => filterFunction(event.date))
     // Sort by date descending (most recent first)
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }, [tickets, filterFunction])
@@ -63,10 +34,10 @@ const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEve
 
   if (loading) {
     return (
-      <div className="space-y-5">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p className="mt-2 text-gray-600">Cargando tickets...</p>
+      <div className='space-y-5'>
+        <div className='text-center'>
+          <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900'></div>
+          <p className='mt-2 text-gray-600'>Cargando tickets...</p>
         </div>
       </div>
     )
@@ -74,21 +45,21 @@ const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEve
 
   if (error) {
     return (
-      <div className="space-y-5">
-        <div className="text-center text-red-600">
-          <p className="text-lg font-semibold">Error al cargar tickets</p>
-          <p className="text-sm">{error}</p>
+      <div className='space-y-5'>
+        <div className='text-center text-red-600'>
+          <p className='text-lg font-semibold'>Error al cargar tickets</p>
+          <p className='text-sm'>{error}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-5">
+    <div className='space-y-5'>
       {!filteredEvents || filteredEvents.length === 0 ? (
-        <p className="text-center text-lg font-semibold">{noEventsMessage}</p>
+        <p className='text-center text-lg font-semibold'>{noEventsMessage}</p>
       ) : (
-        filteredEvents.map(event => (
+        filteredEvents.map((event) => (
           <EventClaim
             key={event.eventId}
             eventId={event.eventId}
@@ -97,15 +68,15 @@ const UserTicketsList: React.FC<UserTicketsListProps> = ({ filterFunction, noEve
             description={event.description || ''}
             thumbnailURL={event.imageUrl || '/default.jpg'}
             venue={mapVenueName(event.venueId, event.venue)}
-            // Mostramos una fecha amigable usando el timezone del evento
-            date={formatEventDateTime(event.date, event.timezone)}
+            date={event.date}
             route={`/dashboard/claimtickets/${event.eventName}/mynftsclaim`}
-            ticketDetails={event.tickets.map(ticket => ({
+            ticketDetails={event.tickets.map((ticket) => ({
               ticket: ticket.ticketId,
               zone: ticket.zone,
               section: ticket.section,
               seatNumber: ticket.seatNumber,
-              price: ticket.price
+              price: ticket.price,
+              priceType: ticket.priceType
             }))}
           />
         ))
