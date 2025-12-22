@@ -3,14 +3,9 @@
  * Redirige todas las peticiones a la API de ticketsaver
  */
 
-// Intentar usar fetch nativo o importar node-fetch
-let fetch
-try {
-  fetch = globalThis.fetch || require('node-fetch')
-} catch (e) {
-  // En Node 18+ fetch es global
-  fetch = globalThis.fetch
-}
+// En Netlify (Node 18+) `fetch` es global.
+// Evitamos dependencias extra (p.ej. node-fetch) para que el bundling no falle.
+const fetch = globalThis.fetch
 
 // Configuración del upstream:
 // - TICKETSAVER_API_ORIGIN: ej. https://ticketsaverapi.strangled.net
@@ -18,27 +13,21 @@ try {
 const API_ORIGIN = process.env.TICKETSAVER_API_ORIGIN || 'https://ticketsaverapi.strangled.net'
 const INSECURE_TLS = String(process.env.PROXY_INSECURE_TLS || '').toLowerCase() === 'true'
 
-// Helpers: dispatcher/agent para TLS inseguro (cuando el upstream tiene cert expirado)
-let insecureDispatcher
-let insecureHttpsAgent
-if (INSECURE_TLS && API_ORIGIN.startsWith('https://')) {
-  try {
-    // undici: usado por fetch nativo de Node 18+
-    const { Agent } = require('undici')
-    insecureDispatcher = new Agent({ connect: { rejectUnauthorized: false } })
-  } catch (e) {
-    // no-op
-  }
-  try {
-    // node-fetch: usa https.Agent
-    const https = require('https')
-    insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false })
-  } catch (e) {
-    // no-op
-  }
-}
+// TLS inseguro (emergencia): en Netlify (Node) podemos usar NODE_TLS_REJECT_UNAUTHORIZED=0.
+// Nota: esto deshabilita la verificación TLS a nivel de proceso, por eso SOLO se activa si PROXY_INSECURE_TLS=true.
+const SHOULD_DISABLE_TLS_VERIFY = INSECURE_TLS && API_ORIGIN.startsWith('https://')
 
 exports.handler = async (event, context) => {
+  if (typeof fetch !== 'function') {
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: 'Fetch no disponible en el runtime',
+        message: 'Este runtime no expone fetch global. Asegúrate de usar Node 18+ en Netlify.'
+      })
+    }
+  }
   // Headers CORS comunes
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -96,16 +85,15 @@ exports.handler = async (event, context) => {
       fetchOptions.body = event.body
     }
 
-    // TLS inseguro (SOLO si PROXY_INSECURE_TLS=true)
-    // - fetch nativo (undici) usa "dispatcher"
-    // - node-fetch usa "agent"
-    if (INSECURE_TLS) {
-      if (insecureDispatcher) fetchOptions.dispatcher = insecureDispatcher
-      if (insecureHttpsAgent) fetchOptions.agent = insecureHttpsAgent
-    }
-
     // Hacer la petición a la API externa
+    // TLS inseguro (SOLO emergencia): deshabilita verificación TLS para este fetch y luego restaura el valor previo.
+    const prevTlsEnv = process.env.NODE_TLS_REJECT_UNAUTHORIZED
+    if (SHOULD_DISABLE_TLS_VERIFY) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     const response = await fetch(url, fetchOptions)
+    if (SHOULD_DISABLE_TLS_VERIFY) {
+      if (typeof prevTlsEnv === 'undefined') delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
+      else process.env.NODE_TLS_REJECT_UNAUTHORIZED = prevTlsEnv
+    }
     const data = await response.text()
 
     // Intentar parsear como JSON
@@ -134,7 +122,9 @@ exports.handler = async (event, context) => {
     console.error('Proxy error:', error)
 
     const causeCode = error?.cause?.code
-    const isCertExpired = causeCode === 'CERT_HAS_EXPIRED' || /certificate has expired/i.test(error?.cause?.message || '')
+    const isCertExpired =
+      causeCode === 'CERT_HAS_EXPIRED' ||
+      /certificate has expired/i.test(error?.cause?.message || '')
 
     return {
       statusCode: isCertExpired ? 502 : 500,

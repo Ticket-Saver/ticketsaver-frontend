@@ -9,6 +9,8 @@ module.exports = {
   ignorePatterns: [
     'dist',
     '.eslintrc.cjs',
+    // Solidity/contracts subtree has its own ESLint config (and deps) and breaks root lint.
+    'contracts/**',
     // Netlify functions/utils in JS are not part of TS projects (parserOptions.project),
     // and would otherwise throw "TSConfig does not include this file".
     'netlify/functions/**/*.js',
