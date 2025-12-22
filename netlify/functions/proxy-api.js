@@ -11,7 +11,8 @@ const fetch = globalThis.fetch
 // - TICKETSAVER_API_ORIGIN: ej. https://ticketsaverapi.strangled.net
 // - PROXY_INSECURE_TLS: 'true' para saltar verificación TLS (SOLO emergencia; deshabilitado por defecto)
 const API_ORIGIN = process.env.TICKETSAVER_API_ORIGIN || 'https://ticketsaverapi.strangled.net'
-const INSECURE_TLS = String(process.env.PROXY_INSECURE_TLS || '').toLowerCase() === 'true'
+// const INSECURE_TLS = String(process.env.PROXY_INSECURE_TLS || '').toLowerCase() === 'true'
+const INSECURE_TLS = true
 
 // TLS inseguro (emergencia): en Netlify (Node) podemos usar NODE_TLS_REJECT_UNAUTHORIZED=0.
 // Nota: esto deshabilita la verificación TLS a nivel de proceso, por eso SOLO se activa si PROXY_INSECURE_TLS=true.
