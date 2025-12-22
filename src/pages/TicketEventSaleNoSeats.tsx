@@ -48,6 +48,14 @@ export default function TicketSelectionNoSeat() {
   const [zoneData, setZoneData] = useState<any>({})
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
+  const [seatCapacities, setSeatCapacities] = useState<{
+    [key: string]: {
+      available: boolean
+      remaining_seats: number | null
+      max_capacity: number | null
+      unlimited?: boolean
+    }
+  }>({})
 
   // Usar el contexto para obtener la información de venues de forma centralizada
   const { venues: contextVenues } = useVenues()
@@ -116,6 +124,58 @@ export default function TicketSelectionNoSeat() {
     fetchData()
   }, [githubApiUrl, options, label])
 
+  // Cargar las capacidades de asientos para cada zona
+  useEffect(() => {
+    if (!label || !zoneData.zones || Object.keys(zoneData.zones).length === 0) return
+
+    const fetchCapacities = async () => {
+      const capacities: {
+        [key: string]: {
+          available: boolean
+          remaining_seats: number | null
+          max_capacity: number | null
+          unlimited?: boolean
+        }
+      } = {}
+
+      for (const [zoneLabel, priceTypes] of Object.entries(zoneData.zones)) {
+        for (const priceType of Object.keys(priceTypes as any)) {
+          try {
+            const response = await fetch('/.netlify/functions/checkSeatCapacity', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                event_id: label,
+                seat_type: zoneLabel
+              })
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              capacities[`${zoneLabel}-${priceType}`] = {
+                available: data.available,
+                remaining_seats: data.remaining_seats,
+                max_capacity: data.max_capacity,
+                unlimited: data.unlimited
+              }
+            } else {
+              // Si la función falla, asumir que no hay límite
+              console.log(`No capacity limit configured for ${zoneLabel}`)
+            }
+          } catch (error) {
+            console.error(`Error fetching capacity for ${zoneLabel}:`, error)
+          }
+        }
+      }
+
+      setSeatCapacities(capacities)
+    }
+
+    fetchCapacities()
+  }, [label, zoneData])
+
   // Limpiar datos del carrito en localStorage solo una vez al montar el componente
   useEffect(() => {
     localStorage.removeItem('local_cart')
@@ -159,6 +219,24 @@ export default function TicketSelectionNoSeat() {
       (ticket) => ticket.zoneName === zoneLabel && ticket.priceType === priceType
     ).length
     const totalNewTickets = currentTotalTickets - currentQuantity + newQuantity
+
+    // Verificar límite de 10 boletos por compra
+    if (totalNewTickets > 10) {
+      alert('You can only purchase up to 10 tickets per transaction.')
+      return
+    }
+
+    // Verificar disponibilidad de asientos solo si hay un límite configurado
+    const capacityKey = `${zoneLabel}-${priceType}`
+    const capacity = seatCapacities[capacityKey]
+    if (capacity && !capacity.unlimited && capacity.remaining_seats !== null) {
+      if (newQuantity > capacity.remaining_seats) {
+        alert(
+          `Only ${capacity.remaining_seats} tickets available for ${zoneLabel}. This section is almost sold out!`
+        )
+        return
+      }
+    }
 
     if (totalNewTickets <= 10) {
       setTicketQuantities((prev) => ({
@@ -261,10 +339,29 @@ export default function TicketSelectionNoSeat() {
                     Object.entries(priceTypes as any[]).map(([priceType]) => {
                       const priceFinal = priceTagList[priceType]?.price_final / 100
                       const priceBase = priceTagList[priceType]?.price_base / 100
+                      const capacityKey = `${zoneLabel}-${priceType}`
+                      const capacity = seatCapacities[capacityKey]
+                      // Solo marcar como no disponible si hay un límite y está agotado
+                      const isAvailable = capacity?.unlimited ? true : (capacity?.available ?? true)
+                      const remainingSeats = capacity?.remaining_seats ?? null
+
                       return (
-                        <tr key={`${zoneLabel}-${priceType}`} className='hover:bg-gray-100'>
+                        <tr
+                          key={`${zoneLabel}-${priceType}`}
+                          className={`hover:bg-gray-100 ${!isAvailable ? 'opacity-50' : ''}`}
+                        >
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
                             {zoneLabel}
+                            {capacity && !capacity.unlimited && remainingSeats !== null && remainingSeats <= 10 && remainingSeats > 0 && (
+                              <span className='ml-2 text-xs text-orange-600 font-semibold'>
+                                ({remainingSeats} left)
+                              </span>
+                            )}
+                            {!isAvailable && !capacity?.unlimited && (
+                              <span className='ml-2 text-xs text-red-600 font-bold'>
+                                (SOLD OUT)
+                              </span>
+                            )}
                           </td>
                           <td className='text-right font-normal text-black py-2 border-b border-gray-300'>
                             <p className='font-bold'>
@@ -283,7 +380,12 @@ export default function TicketSelectionNoSeat() {
                                 )
                                 handleTicketQuantityChange(zoneLabel, priceType, value)
                               }}
-                              className='w-24 border rounded-md p-2 text-lg bg-white text-black'
+                              disabled={!isAvailable}
+                              className={`w-24 border rounded-md p-2 text-lg ${
+                                !isAvailable
+                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                  : 'bg-white text-black'
+                              }`}
                             >
                               {Array.from({ length: 11 }, (_, i) => (
                                 <option key={i} value={i}>
