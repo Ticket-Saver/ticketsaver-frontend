@@ -6,10 +6,9 @@ import { supabase } from '../utils/supabaseClient'
  * Estructura: { event_id: { seat_type: max_capacity } }
  */
 const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
-
   'steve_aoki.01': {
-    'General Admission': 100,
-  },
+    'General Admission': 100
+  }
 }
 
 interface CheckCapacityRequest {

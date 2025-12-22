@@ -342,7 +342,7 @@ export default function TicketSelectionNoSeat() {
                       const capacityKey = `${zoneLabel}-${priceType}`
                       const capacity = seatCapacities[capacityKey]
                       // Solo marcar como no disponible si hay un límite y está agotado
-                      const isAvailable = capacity?.unlimited ? true : (capacity?.available ?? true)
+                      const isAvailable = capacity?.unlimited ? true : capacity?.available ?? true
                       const remainingSeats = capacity?.remaining_seats ?? null
 
                       return (
@@ -352,11 +352,15 @@ export default function TicketSelectionNoSeat() {
                         >
                           <td className='text-left font-normal text-black py-2 border-b border-gray-300'>
                             {zoneLabel}
-                            {capacity && !capacity.unlimited && remainingSeats !== null && remainingSeats <= 10 && remainingSeats > 0 && (
-                              <span className='ml-2 text-xs text-orange-600 font-semibold'>
-                                ({remainingSeats} left)
-                              </span>
-                            )}
+                            {capacity &&
+                              !capacity.unlimited &&
+                              remainingSeats !== null &&
+                              remainingSeats <= 10 &&
+                              remainingSeats > 0 && (
+                                <span className='ml-2 text-xs text-orange-600 font-semibold'>
+                                  ({remainingSeats} left)
+                                </span>
+                              )}
                             {!isAvailable && !capacity?.unlimited && (
                               <span className='ml-2 text-xs text-red-600 font-bold'>
                                 (SOLD OUT)
