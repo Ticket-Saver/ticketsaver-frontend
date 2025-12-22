@@ -12,7 +12,7 @@ try {
   fetch = globalThis.fetch
 }
 
-const API_BASE_URL = 'https://ticketsaverapi.strangled.net'
+const API_BASE_URL = 'https://ticketsaverapi.strangled.net/api'
 
 exports.handler = async (event, context) => {
   // Headers CORS comunes
