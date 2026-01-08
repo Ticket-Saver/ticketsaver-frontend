@@ -8,6 +8,10 @@ import { supabase } from '../utils/supabaseClient'
 const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
   'steve_aoki.01': {
     'General Admission': 400
+  },
+  'shoreline_mafia.01': {
+    'General Admission': 100,
+    'vip': 100
   }
 }
 
