@@ -62,34 +62,39 @@ export default function EventPage() {
         console.log('Fetched events:', data.data)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const formattedEvents: EventWithVenue[] = data.data.map((event: any) => ({
-          eventId: event.id,
-          event_name: event.title,
-          event_label: event.map || 'general',
-          event_date: new Date(event.end_date).toISOString().split('T')[0],
-          event_hour: event.event_hour || '',
-          venue_label: 'default_venue',
-          event_deleted_at: null,
-          sale_starts_at: '',
-          tricket_url: '',
-          id: event.id,
-          images: event.images || [],
-          city: event.settings?.location_details?.city || '-',
-          description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
-          venue: {
-            venue_name: event.venue_name || 'Default Venue',
+        const formattedEvents: EventWithVenue[] = data.data.map((event: any) => {
+          const locationDetails = event.settings?.location_details || {}
+          const venueName = locationDetails.venue_name || event.venue_name || ''
+
+          return {
+            eventId: event.id,
+            event_name: event.title,
+            event_label: event.map || 'general',
+            event_date: new Date(event.end_date).toISOString().split('T')[0],
+            event_hour: event.event_hour || '',
             venue_label: 'default_venue',
-            capacity: 0,
-            seatmap: false,
-            location: {
-              city: event.settings?.location_details?.city || '-',
-              address: '',
-              country: '',
-              maps_url: '',
-              zip_code: ''
+            event_deleted_at: null,
+            sale_starts_at: '',
+            tricket_url: '',
+            id: event.id,
+            images: event.images || [],
+            city: locationDetails.city || '-',
+            description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
+            venue: {
+              venue_name: venueName || 'Default Venue',
+              venue_label: venueName || 'default_venue',
+              capacity: 0,
+              seatmap: false,
+              location: {
+                city: locationDetails.city || '-',
+                address: '',
+                country: '',
+                maps_url: '',
+                zip_code: ''
+              }
             }
           }
-        }))
+        })
 
         setEvents(formattedEvents)
       } catch (error) {
