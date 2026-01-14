@@ -83,6 +83,7 @@ export default function EventPage() {
   >(null)
   const [tipoticket, setTipoticket] = useState<string | null>(null)
   const [eventTickets, setEventTickets] = useState<EventTicket[]>([])
+  const [priceDisplayMode, setPriceDisplayMode] = useState<string>('INCLUSIVE')
 
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
   const [resolvedVenueId, setResolvedVenueId] = useState<string | null>(null)
@@ -285,6 +286,10 @@ export default function EventPage() {
           is_online_event: eventData?.is_online_event || false
         })
 
+        if (eventData?.settings?.price_display_mode) {
+          setPriceDisplayMode(eventData.settings.price_display_mode)
+        }
+
         console.log('✅ Event loaded successfully')
       } catch (error) {
         console.error('❌ Error loading event:', error)
@@ -410,13 +415,30 @@ export default function EventPage() {
                                 <div className='flex-1'>
                                   <p className='text-gray-900 font-semibold'>{ticket.title}</p>
                                   {ticket.description && (
-                                    <p className='text-sm text-gray-600'>{ticket.description}</p>
+                                    <div
+                                      className='text-sm text-gray-600'
+                                      dangerouslySetInnerHTML={{ __html: ticket.description }}
+                                    />
                                   )}
                                 </div>
                                 <div className='text-right'>
-                                  <p className='text-2xl font-bold text-blue-600'>
-                                    ${price.price_including_taxes_and_fees?.toFixed(2)}
-                                  </p>
+                                  {priceDisplayMode === 'EXCLUSIVE' ? (
+                                    <div className='flex flex-col items-end'>
+                                      <p className='text-2xl font-bold text-blue-600'>
+                                        ${price.price?.toFixed(2)}
+                                      </p>
+                                      <p className='text-xs text-gray-500'>
+                                        + Fees: $
+                                        {((price.tax_total || 0) + (price.fee_total || 0)).toFixed(
+                                          2
+                                        )}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p className='text-2xl font-bold text-blue-600'>
+                                      ${price.price_including_taxes_and_fees?.toFixed(2)}
+                                    </p>
+                                  )}
                                   {/* <p className="text-xs text-gray-500">
                                     Base: ${price.price?.toFixed(2)}
                                   </p>
