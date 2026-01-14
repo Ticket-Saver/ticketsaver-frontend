@@ -753,11 +753,7 @@ export default function ApiSeatingMap({
           ancestorZone ||
           (key.toLowerCase().includes('balcony') ? 'balcony' : undefined)
 
-        if (zoneHint === 'balcony') {
-          setHoverInfo(null)
-          setTooltipVisible(false)
-          return
-        }
+
 
         const effectiveGroupKey =
           zoneHint && !groupKeyBase.endsWith(`-${zoneHint}`)
