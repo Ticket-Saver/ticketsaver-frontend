@@ -50,7 +50,7 @@ export default defineConfig({
       // Todas las solicitudes que comiencen con /api se redirigirán
       '/api': {
         // target: 'http://127.0.0.1:8123',
-        target: 'https://ticketsaverapi.strangled.net/api',
+        target: 'https://panel.ticketsaver.net/api',
         changeOrigin: true,
         secure: false,
         // Habilitar logging para ver las URLs que se están consultando

@@ -8,9 +8,9 @@
 const fetch = globalThis.fetch
 
 // Configuración del upstream:
-// - TICKETSAVER_API_ORIGIN: ej. https://ticketsaverapi.strangled.net
+// - TICKETSAVER_API_ORIGIN: ej. https://panel.ticketsaver.net
 // - PROXY_INSECURE_TLS: 'true' para saltar verificación TLS (SOLO emergencia; deshabilitado por defecto)
-const API_ORIGIN = process.env.TICKETSAVER_API_ORIGIN || 'https://ticketsaverapi.strangled.net'
+const API_ORIGIN = process.env.TICKETSAVER_API_ORIGIN || 'https://panel.ticketsaver.net'
 // const INSECURE_TLS = String(process.env.PROXY_INSECURE_TLS || '').toLowerCase() === 'true'
 const INSECURE_TLS = true
 
