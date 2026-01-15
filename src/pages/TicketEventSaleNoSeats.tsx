@@ -71,7 +71,8 @@ export default function TicketSelectionNoSeat() {
     'nestor_420.01',
     'steve_aoki.01',
     'las_alucines.01',
-    'shoreline_mafia.01'
+    'shoreline_mafia.01',
+    'chief_keef.01'
   ]
 
   // Cargar la imagen del evento solo cuando label cambie

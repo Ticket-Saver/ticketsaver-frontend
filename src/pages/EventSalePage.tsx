@@ -36,7 +36,8 @@ export default function EventPage() {
     'nestor_420.01',
     'steve_aoki.01',
     'las_alucines.01',
-    'shoreline_mafia.01'
+    'shoreline_mafia.01',
+    'chief_keef.01'
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',

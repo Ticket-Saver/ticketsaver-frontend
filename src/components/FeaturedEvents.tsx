@@ -164,7 +164,8 @@ export default function FeaturedEvents() {
     'deebaby_zro.01',
     'insane_clown_posse.01',
     'steve_aoki.01',
-    'shoreline_mafia.01'
+    'shoreline_mafia.01',
+    'chief_keef.01'
   ]
 
   return (

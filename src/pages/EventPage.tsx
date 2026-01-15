@@ -66,7 +66,8 @@ export default function EventPage() {
     'deorro_claytons.01',
     'deebaby_zro.01',
     'insane_clown_posse.01',
-    'steve_aoki.01'
+    'steve_aoki.01',
+    'chief_keef.01'
   ]
 
   // Procesar eventos desde el contexto (ya tiene caché y fallback)
