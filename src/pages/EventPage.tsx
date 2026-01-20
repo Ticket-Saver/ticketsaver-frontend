@@ -59,6 +59,7 @@ export default function EventPage() {
   }
 
   const hiddenEventLabels = [
+    'ice_spice.01',
     'deorro_claytons.01',
     'deebaby_zro.01',
     'insane_clown_posse.01',
