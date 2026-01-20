@@ -25,19 +25,13 @@ export default function EventPage() {
 
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
   const eventsWithFees = [
-    'ice_spice.01',
-    'bossman_dlow.01',
-    'bigxthaplug.01',
-    'geazy_claytons.01',
-    'deorro_claytons.01',
-    'deebaby_zro.01',
-    'yeri_mua.01',
     'insane_clown_posse.01',
     'nestor_420.01',
     'steve_aoki.01',
     'las_alucines.01',
     'shoreline_mafia.01',
-    'chief_keef.01'
+    'chief_keef.01',
+    'offset_nardowick.01'
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',
