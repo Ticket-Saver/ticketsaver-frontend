@@ -65,6 +65,7 @@ export default function EventPage() {
     'insane_clown_posse.01',
     'steve_aoki.01',
     'chief_keef.01',
+    'shoreline_mafia.01',
     'offset_nardowick.01'
   ]
 
