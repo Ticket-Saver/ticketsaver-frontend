@@ -24,6 +24,11 @@ export default function EventPage() {
   const saleStartsAt = eventData?.sale_starts_at || ''
 
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
+
+  // IMPORTANTE: Incrementa COMPONENT_VERSION cada vez que modifiques eventsWithFees
+  // Esto forzará un hard reload del componente en los navegadores de los usuarios
+  const COMPONENT_VERSION = '1.0.0'
+
   const eventsWithFees = [
     'insane_clown_posse.01',
     'nestor_420.01',
@@ -109,7 +114,7 @@ export default function EventPage() {
       }
     }
     fetchZonePrices()
-  }, [customUrl, options, label])
+  }, [customUrl, options, label, COMPONENT_VERSION]) // Agregado COMPONENT_VERSION como dependencia
 
   // Fetch de descripción
   useEffect(() => {
