@@ -141,13 +141,9 @@ export const AppRouter = () => (
         <Route
           path='/sale/:name/:venue/:location/:date/:label/:delete?'
           element={
-            <ProtectedRoute
-              element={
-                <LayoutHeaderFooter>
-                  <SalePage />
-                </LayoutHeaderFooter>
-              }
-            />
+            <LayoutHeaderFooter>
+              <SalePage />
+            </LayoutHeaderFooter>
           }
         />
 
