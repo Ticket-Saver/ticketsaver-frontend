@@ -166,7 +166,8 @@ export default function FeaturedEvents() {
     'steve_aoki.01',
     'shoreline_mafia.01',
     'chief_keef.01',
-    'offset_nardowick.01'
+    'offset_nardowick.01',
+    'destroy_lonely.01'
   ]
 
   return (
