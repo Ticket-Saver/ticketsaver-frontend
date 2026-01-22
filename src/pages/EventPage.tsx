@@ -60,13 +60,17 @@ export default function EventPage() {
 
   const hiddenEventLabels = [
     'ice_spice.01',
+    'bossman_dlow.01',
+    'bigxthaplug.01',
+    'geazy_claytons.01',
     'deorro_claytons.01',
     'deebaby_zro.01',
     'insane_clown_posse.01',
     'steve_aoki.01',
     'chief_keef.01',
     'shoreline_mafia.01',
-    'offset_nardowick.01'
+    'offset_nardowick.01',
+    'destroy_lonely.01'
   ]
 
   // Procesar eventos desde el contexto (ya tiene caché y fallback)

@@ -27,7 +27,7 @@ export default function EventPage() {
 
   // IMPORTANTE: Incrementa COMPONENT_VERSION cada vez que modifiques eventsWithFees
   // Esto forzará un hard reload del componente en los navegadores de los usuarios
-  const COMPONENT_VERSION = '1.0.0'
+  const COMPONENT_VERSION = '1.0.1'
 
   const eventsWithFees = [
     'insane_clown_posse.01',
@@ -36,7 +36,8 @@ export default function EventPage() {
     'las_alucines.01',
     'shoreline_mafia.01',
     'chief_keef.01',
-    'offset_nardowick.01'
+    'offset_nardowick.01',
+    'destroy_lonely.01'
   ]
   const eventsDoors: { [key: string]: string } = {
     'marisela.01': '19:00hrs',
