@@ -27,7 +27,7 @@ export default function EventPage() {
 
   // IMPORTANTE: Incrementa COMPONENT_VERSION cada vez que modifiques eventsWithFees
   // Esto forzará un hard reload del componente en los navegadores de los usuarios
-  const COMPONENT_VERSION = '1.0.1'
+  const COMPONENT_VERSION = '2.0.1'
 
   const eventsWithFees = [
     'insane_clown_posse.01',
