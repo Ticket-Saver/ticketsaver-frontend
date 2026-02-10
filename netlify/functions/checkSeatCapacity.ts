@@ -10,8 +10,8 @@ const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
     'General Admission': 600
   },
   'shoreline_mafia.01': {
-    'General Admission': 100,
-    vip: 100
+    'General Admission': 200,
+    vip: 200
   },
   'chief-keef.01': {
     'General Admission': 500,
