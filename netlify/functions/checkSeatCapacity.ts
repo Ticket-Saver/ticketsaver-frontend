@@ -23,7 +23,7 @@ const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
   },
   'destroy_lonely.01': {
     'General Admission': 200,
-    vip: 200
+    vip: 400
   }
 }
 
