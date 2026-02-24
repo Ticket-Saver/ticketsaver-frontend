@@ -1252,10 +1252,18 @@ export default function ApiSeatingMap({
     const listeners: Array<() => void> = []
     for (const [key, elements] of sectionSelectors) {
       for (const el of elements) {
-        // Ensure the element actually receives pointer events
-        const prevPointer = (el as HTMLElement).style.pointerEvents
-        if (!(el as HTMLElement).style.pointerEvents)
-          (el as HTMLElement).style.pointerEvents = 'all'
+        // Ensure the element actually receives pointer events across its entire geometric area, not just its stroke
+        const prevPointer = (el as HTMLElement).style?.pointerEvents || ''
+        ;(el as SVGElement).setAttribute('pointer-events', 'all')
+        if ((el as HTMLElement).style) {
+          ;(el as HTMLElement).style.pointerEvents = 'all'
+        }
+
+        // If the path has no fill or fill="none", hover only works on the stroke line. Add a transparent fill.
+        const currentFill = (el as SVGElement).getAttribute('fill')
+        if (!currentFill || currentFill === 'none') {
+          ;(el as SVGElement).setAttribute('fill', 'transparent')
+        }
 
         // Save current visuals and use a local svg element ref
         const svgEl = el as SVGElement
@@ -1556,7 +1564,7 @@ export default function ApiSeatingMap({
 
               // Manejar respuesta (agrupada o plana) y eliminar duplicados
               let rawList: SeatItem[] = []
-              let rawGroupedSeats: Record<string, SeatItem[]> = {}
+              let groupedSeats: Record<string, SeatItem[]> = {}
 
               if (
                 seatsData.data &&
@@ -1564,7 +1572,7 @@ export default function ApiSeatingMap({
                 !Array.isArray(seatsData.data)
               ) {
                 // Respuesta agrupada por fila: { "B": [...], "C": [...] }
-                rawGroupedSeats = seatsData.data
+                groupedSeats = seatsData.data
                 rawList = Object.values(seatsData.data).flat()
               } else {
                 // Respuesta plana (fallback) - agrupar por fila
@@ -1572,15 +1580,6 @@ export default function ApiSeatingMap({
                   seatsData.results ||
                   seatsData.items ||
                   []) as SeatItem[]
-                rawGroupedSeats = rawList.reduce(
-                  (acc, seat) => {
-                    const row = seat.row || 'unknown'
-                    if (!acc[row]) acc[row] = []
-                    acc[row].push(seat)
-                    return acc
-                  },
-                  {} as Record<string, SeatItem[]>
-                )
               }
 
               // Deduplicar asientos por ID (o por combinación fila-número si no hay ID)
@@ -1647,7 +1646,7 @@ export default function ApiSeatingMap({
     return () => {
       listeners.forEach((off) => off())
     }
-  }, [svgContent, sectionStats, ranges, seats, eventId])
+  }, [svgContent, sectionStats, ranges, seats, eventId, rowZoneMap])
 
   if (loading) {
     return (

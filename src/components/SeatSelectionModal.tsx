@@ -180,48 +180,63 @@ export default function SeatSelectionModal({
 
   // Determines if a seat is a "special" wheelchair space based on metadata.
   const isSpecialSeat = (seat: SeatItem): boolean => {
-    // Check against explicit special seats.
-    // Format is "position-color-RowSeatNumber" (e.g., "103-purple-B7")
-    // Or just group string combined with seat.
-    // Try to guess a few matching string combinations since we don't have the explicit rangeKey here natively.
+    // Clean out known english color names from the test array strings to avoid translation mismatches comparing "purple" to "morado"
+    const knownColors = [
+      'orange',
+      'cyan',
+      'red',
+      'green',
+      'purple',
+      'blue',
+      'yellow',
+      'pink',
+      'brown'
+    ]
+    const createColorlessTokens = (str: string) =>
+      str
+        .toLowerCase()
+        .split('-')
+        .filter((t) => !knownColors.includes(t))
+
     const seatRowNum = `${seat.row}${seat.seat_number}`
-    const combo1 = `${seat.position}-${seat.price_range}-${seatRowNum}`
-    const combo2 = `${seat.section}-${seat.price_range}-${seatRowNum}`
-    const combo3 = `${seat.price_range}-${seat.position}-${seatRowNum}`
-    const combo4 = `${seat.price_range}-${seat.section}-${seatRowNum}`
+    const seatIdTokens = [
+      (seat.position || '').toLowerCase(),
+      (seat.section || '').toLowerCase(),
+      seat.row.toLowerCase(),
+      seatRowNum.toLowerCase(),
+      'balcony',
+      'loge'
+    ].filter(Boolean)
 
-    if (
-      specialSeats.includes(combo1) ||
-      specialSeats.includes(combo2) ||
-      specialSeats.includes(combo3) ||
-      specialSeats.includes(combo4)
-    ) {
-      return true
+    // Check special seats
+    for (const specialSeatId of specialSeats) {
+      const specialTokens = createColorlessTokens(specialSeatId)
+      // If the special string has e.g [103, b7] and our seat has [103, b, b7], we match!
+      // Must contain all the significant parts:
+      const matchesPositionOrSection = specialTokens.some(
+        (t) => t === (seat.position || '').toLowerCase() || t === (seat.section || '').toLowerCase()
+      )
+      const matchesSeatAndRow = specialTokens.some((t) => t === seatRowNum.toLowerCase())
+      if (matchesPositionOrSection && matchesSeatAndRow) return true
     }
 
-    // Check against explicit special rows.
-    // Format is typically "position-color-zone-Row" (e.g., "314-green-balcony-H")
-    const rowCombo1 = `${seat.position}-${seat.price_range}-balcony-${seat.row}`
-    const rowCombo2 = `${seat.position}-${seat.price_range}-${seat.row}`
-    const rowCombo3 = `${seat.section}-${seat.price_range}-balcony-${seat.row}`
-    const rowCombo4 = `${seat.price_range}-${seat.position}-balcony-${seat.row}`
-
-    if (
-      specialRows.includes(rowCombo1) ||
-      specialRows.includes(rowCombo2) ||
-      specialRows.includes(rowCombo3) ||
-      specialRows.includes(rowCombo4) ||
-      specialRows.includes(`${seat.position}-${seat.row}`) ||
-      specialRows.includes(`${seat.section}-${seat.row}`)
-    ) {
-      return true
+    // Check special rows
+    for (const specialRowId of specialRows) {
+      const specialTokens = createColorlessTokens(specialRowId)
+      const matchesPositionOrSection = specialTokens.some(
+        (t) => t === (seat.position || '').toLowerCase() || t === (seat.section || '').toLowerCase()
+      )
+      const matchesRow = specialTokens.some((t) => t === seat.row.toLowerCase())
+      const matchesZone = specialTokens.includes('balcony')
+        ? seatIdTokens.includes('balcony')
+        : true // rough check
+      if (matchesPositionOrSection && matchesRow && matchesZone) return true
     }
 
-    // Advanced search against parsedRanges if combo matches fail.
+    // Fallback: Advanced search against parsedRanges if combo matches fail.
     for (const [rangeKey, def] of Object.entries(parsedRanges)) {
       if (!specialRows.includes(`${rangeKey}-${seat.row}`)) continue
 
-      // If seat matches this range def:
       const seatNumStr =
         typeof seat.seat_number === 'string' ? seat.seat_number : String(seat.seat_number)
       const seatNum = parseInt(seatNumStr, 10)
