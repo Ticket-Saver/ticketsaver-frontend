@@ -193,7 +193,17 @@ export default function ApiSeatingMap({
             }
           > = {}
           const knownPositions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
-          const knownColors = new Set(['orange', 'cyan', 'red', 'green', 'purple', 'blue'])
+          const knownColors = new Set([
+            'orange',
+            'cyan',
+            'red',
+            'green',
+            'purple',
+            'blue',
+            'yellow',
+            'pink',
+            'brown'
+          ])
           for (const [label, value] of Object.entries(rangesJson)) {
             // Handle metadata object
             if (label === 'metadata' && typeof value === 'object' && value !== null) {
@@ -239,19 +249,32 @@ export default function ApiSeatingMap({
                 index: idx
               }))
 
-              const zoneEntry = tokens.find((t) => t.lower === 'balcony')
+              const zoneEntry = tokens.find((t) => ['balcony', 'loge'].includes(t.lower))
               if (zoneEntry) {
-                zone = 'balcony'
-              }
-
-              const positionEntry = tokens.find((t) => knownPositions.has(t.lower))
-              if (positionEntry) {
-                position = positionEntry.original
+                zone = zoneEntry.lower
               }
 
               const colorEntry = tokens.find((t) => knownColors.has(t.lower))
               if (colorEntry) {
                 color = colorEntry.original
+              }
+
+              let positionEntry = tokens.find((t) => knownPositions.has(t.lower))
+              if (!positionEntry) {
+                // Find custom section (e.g., '314', 'VIP') that is not color, zone, or a row letter
+                const potential = tokens.filter(
+                  (t) =>
+                    !knownColors.has(t.lower) &&
+                    !['balcony', 'loge'].includes(t.lower) &&
+                    !/^[A-Za-z]{1,2}$/.test(t.original)
+                )
+                if (potential.length > 0) {
+                  positionEntry = potential[0]
+                }
+              }
+
+              if (positionEntry) {
+                position = positionEntry.original
               }
 
               const consumedIndexes = new Set<number>()
@@ -904,6 +927,27 @@ export default function ApiSeatingMap({
       if (matches.length > 0) sectionSelectors.push([key, matches])
     }
 
+    const dynamicPositions = new Set(
+      Object.values(ranges)
+        .map((r) => r.position?.toLowerCase())
+        .filter(Boolean)
+    )
+    new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter']).forEach((p) =>
+      dynamicPositions.add(p)
+    )
+    const positions = dynamicPositions
+    const colors = new Set([
+      'orange',
+      'cyan',
+      'red',
+      'green',
+      'purple',
+      'blue',
+      'yellow',
+      'pink',
+      'brown'
+    ])
+
     // Then, map id patterns like left-purple-N to a ranges key using rowKeyIndex
     let idPatternBindings = 0
     root.querySelectorAll('[id]').forEach((el) => {
@@ -912,8 +956,6 @@ export default function ApiSeatingMap({
       const lower = id.toLowerCase()
       if ((keys as Set<string>).has(lower)) return
       const parts = lower.split('-')
-      const positions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
-      const colors = new Set(['orange', 'cyan', 'red', 'green', 'purple', 'blue'])
 
       if (parts.length >= 3) {
         // Caso 1: row-position-color-zone (ej: A-center-orange-balcony)
@@ -982,6 +1024,32 @@ export default function ApiSeatingMap({
           }
         }
       }
+
+      // Caso Grupo (sin fila): color-pos[-zone] o pos-color[-zone]
+      if (parts.length >= 2) {
+        const posToken = parts.find((p) => positions.has(p))
+        const colorToken = parts.find((p) => colors.has(p))
+        const zoneToken = parts.find((p) => ['balcony', 'loge'].includes(p))
+        if (posToken && colorToken) {
+          const gkWithZone = `${posToken}-${colorToken}${zoneToken ? `-${zoneToken}` : ''}`
+          const gkWithoutZone = `${posToken}-${colorToken}`
+          let gk = groupKeyToRangeKeys[gkWithZone]
+            ? gkWithZone
+            : groupKeyToRangeKeys[gkWithoutZone]
+              ? gkWithoutZone
+              : undefined
+          if (!gk) {
+            gk = Object.keys(groupKeyToRangeKeys).find((k) =>
+              k.startsWith(`${posToken}-${colorToken}`)
+            )
+          }
+          if (gk) {
+            console.debug('ID mapping (Group Level) matched', { id, gk })
+            sectionSelectors.push([groupKeyToRangeKeys[gk][0], [el]])
+            idPatternBindings += 1
+          }
+        }
+      }
     })
     console.debug('SeatingMap: id-pattern bindings added', { count: idPatternBindings })
 
@@ -994,9 +1062,6 @@ export default function ApiSeatingMap({
         if (!lower) continue
         const parts = lower.split('-')
         if (parts.length >= 3) {
-          const positions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
-          const colors = new Set(['orange', 'cyan', 'red', 'green', 'purple', 'blue'])
-
           // 1) Caso original: position-color-(-zone)-row
           {
             const pos = parts[0]
@@ -1061,6 +1126,34 @@ export default function ApiSeatingMap({
                   keyWithoutZone
                 })
               }
+            }
+          }
+        }
+
+        // 3) Caso Grupo (sin fila): color-pos[-zone] o pos-color[-zone] (ej. red-303 o 314-green-balcony)
+        if (parts.length >= 2) {
+          const posToken = parts.find((p) => positions.has(p))
+          const colorToken = parts.find((p) => colors.has(p))
+          const zoneToken = parts.find((p) => ['balcony', 'loge'].includes(p))
+
+          if (posToken && colorToken) {
+            const gkWithZone = `${posToken}-${colorToken}${zoneToken ? `-${zoneToken}` : ''}`
+            const gkWithoutZone = `${posToken}-${colorToken}`
+            let gk = groupKeyToRangeKeys[gkWithZone]
+              ? gkWithZone
+              : groupKeyToRangeKeys[gkWithoutZone]
+                ? gkWithoutZone
+                : undefined
+            if (!gk) {
+              gk = Object.keys(groupKeyToRangeKeys).find((k) =>
+                k.startsWith(`${posToken}-${colorToken}`)
+              )
+            }
+            if (gk) {
+              console.debug('Class mapping (Group Level) matched', { cls, gk })
+              sectionSelectors.push([groupKeyToRangeKeys[gk][0], [el]])
+              classPatternBindings += 1
+              continue // Skip to next class loop iteration implicitly since we're inside a for-of loop and using break/continue
             }
           }
         }
