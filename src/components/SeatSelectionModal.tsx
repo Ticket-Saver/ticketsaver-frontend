@@ -31,6 +31,19 @@ interface SeatSelectionModalProps {
   sectionName: string
   stageDirection?: 'north' | 'south' | 'east' | 'west'
   eventId: string
+  reversedSections?: string[]
+  specialRows?: string[]
+  specialSeats?: string[]
+  parsedRanges?: Record<
+    string,
+    {
+      ranges: Array<{ start: number; end: number }>
+      rows: string[]
+      position?: string
+      color?: string
+      zone?: string
+    }
+  >
 }
 
 export default function SeatSelectionModal({
@@ -42,7 +55,11 @@ export default function SeatSelectionModal({
   onProceed,
   sectionName,
   stageDirection = 'north',
-  eventId
+  eventId,
+  reversedSections = [],
+  specialRows = [],
+  specialSeats = [],
+  parsedRanges = {}
 }: SeatSelectionModalProps) {
   const [zoomLevel, setZoomLevel] = useState(0.8)
   const [isPanning, setIsPanning] = useState(false)
@@ -161,6 +178,73 @@ export default function SeatSelectionModal({
     }
   }
 
+  // Determines if a seat is a "special" wheelchair space based on metadata.
+  const isSpecialSeat = (seat: SeatItem): boolean => {
+    // Check against explicit special seats.
+    // Format is "position-color-RowSeatNumber" (e.g., "103-purple-B7")
+    // Or just group string combined with seat.
+    // Try to guess a few matching string combinations since we don't have the explicit rangeKey here natively.
+    const seatRowNum = `${seat.row}${seat.seat_number}`
+    const combo1 = `${seat.position}-${seat.price_range}-${seatRowNum}`
+    const combo2 = `${seat.section}-${seat.price_range}-${seatRowNum}`
+    const combo3 = `${seat.price_range}-${seat.position}-${seatRowNum}`
+    const combo4 = `${seat.price_range}-${seat.section}-${seatRowNum}`
+
+    if (
+      specialSeats.includes(combo1) ||
+      specialSeats.includes(combo2) ||
+      specialSeats.includes(combo3) ||
+      specialSeats.includes(combo4)
+    ) {
+      return true
+    }
+
+    // Check against explicit special rows.
+    // Format is typically "position-color-zone-Row" (e.g., "314-green-balcony-H")
+    const rowCombo1 = `${seat.position}-${seat.price_range}-balcony-${seat.row}`
+    const rowCombo2 = `${seat.position}-${seat.price_range}-${seat.row}`
+    const rowCombo3 = `${seat.section}-${seat.price_range}-balcony-${seat.row}`
+    const rowCombo4 = `${seat.price_range}-${seat.position}-balcony-${seat.row}`
+
+    if (
+      specialRows.includes(rowCombo1) ||
+      specialRows.includes(rowCombo2) ||
+      specialRows.includes(rowCombo3) ||
+      specialRows.includes(rowCombo4) ||
+      specialRows.includes(`${seat.position}-${seat.row}`) ||
+      specialRows.includes(`${seat.section}-${seat.row}`)
+    ) {
+      return true
+    }
+
+    // Advanced search against parsedRanges if combo matches fail.
+    for (const [rangeKey, def] of Object.entries(parsedRanges)) {
+      if (!specialRows.includes(`${rangeKey}-${seat.row}`)) continue
+
+      // If seat matches this range def:
+      const seatNumStr =
+        typeof seat.seat_number === 'string' ? seat.seat_number : String(seat.seat_number)
+      const seatNum = parseInt(seatNumStr, 10)
+      if (
+        def.rows.includes(seat.row) &&
+        def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
+      ) {
+        if (def.position === seat.position || def.position === seat.section) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  // Identify if this section should be rendered reversed (10 to 1 instead of 1 to 10).
+  const isReversed =
+    reversedSections.includes(sectionName) ||
+    allSeats.some(
+      (s) => reversedSections.includes(s.position) || reversedSections.includes(s.section || '')
+    )
+
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
       <div className='bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden'>
@@ -257,7 +341,7 @@ export default function SeatSelectionModal({
                   return rowA.localeCompare(rowB)
                 })
                 .map(([row, seats]) => {
-                  const sortedSeats = seats.sort((a, b) => {
+                  let sortedSeats = seats.sort((a, b) => {
                     const numA =
                       typeof a.seat_number === 'string'
                         ? parseInt(a.seat_number, 10)
@@ -268,6 +352,10 @@ export default function SeatSelectionModal({
                         : b.seat_number
                     return numA - numB
                   })
+
+                  if (isReversed) {
+                    sortedSeats = sortedSeats.reverse()
+                  }
 
                   return (
                     <div key={row} className='flex items-center justify-center w-full'>
@@ -297,6 +385,7 @@ export default function SeatSelectionModal({
                                 onClick={() => onSeatToggle(seatKey)}
                                 className='hover:scale-110 transition-transform'
                                 stageDirection={stageDirection}
+                                isSpecial={isSpecialSeat(seat)}
                               />
                             )
                           })}
@@ -324,6 +413,12 @@ export default function SeatSelectionModal({
               <div className='w-4 h-4 bg-yellow-500 rounded'></div>
               <span className='text-gray-700'>Your Selection</span>
             </div>
+            {(specialRows.length > 0 || specialSeats.length > 0) && (
+              <div className='flex items-center space-x-2'>
+                <div className='w-4 h-4 bg-blue-700 rounded'></div>
+                <span className='text-gray-700'>Wheelchair Accessible</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -95,6 +95,9 @@ export default function ApiSeatingMap({
   const [showSeatModal, setShowSeatModal] = useState<boolean>(false)
   const [seatsByRow, setSeatsByRow] = useState<Record<string, SeatItem[]>>({})
   const [stageDirection, setStageDirection] = useState<'north' | 'south' | 'east' | 'west'>('north')
+  const [reversedSections, setReversedSections] = useState<string[]>([])
+  const [specialRows, setSpecialRows] = useState<string[]>([])
+  const [specialSeats, setSpecialSeats] = useState<string[]>([])
   const lastFetchedGroupRef = useRef<string | null>(null)
   const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
 
@@ -207,12 +210,26 @@ export default function ApiSeatingMap({
           for (const [label, value] of Object.entries(rangesJson)) {
             // Handle metadata object
             if (label === 'metadata' && typeof value === 'object' && value !== null) {
-              const metadata = value as { stage_direction?: string }
+              const metadata = value as {
+                stage_direction?: string
+                reversed_sections?: string[]
+                special_rows?: string[]
+                special_seats?: string[]
+              }
               if (
                 metadata.stage_direction &&
                 ['north', 'south', 'east', 'west'].includes(metadata.stage_direction)
               ) {
                 setStageDirection(metadata.stage_direction as 'north' | 'south' | 'east' | 'west')
+              }
+              if (Array.isArray(metadata.reversed_sections)) {
+                setReversedSections(metadata.reversed_sections)
+              }
+              if (Array.isArray(metadata.special_rows)) {
+                setSpecialRows(metadata.special_rows)
+              }
+              if (Array.isArray(metadata.special_seats)) {
+                setSpecialSeats(metadata.special_seats)
               }
               continue
             }
@@ -1829,6 +1846,10 @@ export default function ApiSeatingMap({
         }}
         sectionName={selectedKey || ''}
         stageDirection={stageDirection}
+        reversedSections={reversedSections}
+        specialRows={specialRows}
+        specialSeats={specialSeats}
+        parsedRanges={ranges}
       />
     </div>
   )
