@@ -1351,6 +1351,12 @@ export default function ApiSeatingMap({
           }
         }
         const click = async (ev: MouseEvent) => {
+          // Prevent multiple clicks while a group is loading
+          if (isLoadingGroup) {
+            console.debug('Click ignored: already loading a group')
+            return
+          }
+
           // Determine row from id and set selection
           // IMPORTANT: If we captured the click on the <g> ('el'), use 'el.id' first instead of 'ev.target' which might be an inner path without an id.
           const targetId = (
@@ -1666,7 +1672,7 @@ export default function ApiSeatingMap({
     return () => {
       listeners.forEach((off) => off())
     }
-  }, [svgContent, sectionStats, ranges, seats, eventId, rowZoneMap])
+  }, [svgContent, sectionStats, ranges, seats, eventId, rowZoneMap, isLoadingGroup])
 
   if (loading) {
     return (
