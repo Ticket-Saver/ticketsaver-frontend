@@ -1252,24 +1252,29 @@ export default function ApiSeatingMap({
     const listeners: Array<() => void> = []
     for (const [key, elements] of sectionSelectors) {
       for (const el of elements) {
-        // Ensure the element actually receives pointer events across its entire geometric area, not just its stroke
-        const prevPointer = (el as HTMLElement).style?.pointerEvents || ''
-        ;(el as SVGElement).setAttribute('pointer-events', 'all')
-        if ((el as HTMLElement).style) {
-          ;(el as HTMLElement).style.pointerEvents = 'all'
+        // Fix inner paths that might have fill="none" overriding transparent fills, and collect target shapes
+        const targets: SVGElement[] = []
+        const fixShape = (shape: Element) => {
+          const sEl = shape as SVGElement
+          sEl.setAttribute('pointer-events', 'all')
+          if ((shape as HTMLElement).style) {
+            ;(shape as HTMLElement).style.pointerEvents = 'all'
+            ;(shape as HTMLElement).style.cursor = 'pointer'
+          }
+          const currentFill = sEl.getAttribute('fill')
+          if (!currentFill || currentFill === 'none') {
+            sEl.setAttribute('fill', 'transparent')
+          }
+          targets.push(sEl)
         }
 
-        // If the path has no fill or fill="none", hover only works on the stroke line. Add a transparent fill.
-        const currentFill = (el as SVGElement).getAttribute('fill')
-        if (!currentFill || currentFill === 'none') {
-          ;(el as SVGElement).setAttribute('fill', 'transparent')
+        if (['path', 'rect', 'circle', 'polygon', 'polyline'].includes(el.tagName.toLowerCase())) {
+          fixShape(el)
         }
+        el.querySelectorAll('path, rect, circle, polygon, polyline').forEach(fixShape)
 
-        // Save current visuals and use a local svg element ref
-        const svgEl = el as SVGElement
-        const prevStroke = svgEl.getAttribute('stroke') || ''
-        const prevStrokeWidth = svgEl.getAttribute('stroke-width') || ''
-        const prevOpacity = svgEl.getAttribute('opacity') || ''
+        // If no recognizable shapes, just use the element itself as fallback
+        if (targets.length === 0) targets.push(el as SVGElement)
 
         console.debug('Binding listeners on element', {
           key,
@@ -1280,60 +1285,56 @@ export default function ApiSeatingMap({
         // Track highlighted elements for group hover to restore on leave
         let groupApplied: Array<{
           el: SVGElement
+          prevOpacity: string
           prevStroke: string
           prevStrokeWidth: string
-          prevOpacity: string
-          prevFilter: string
         }> = []
 
         const enter = (ev: MouseEvent) => {
           console.debug('Hover enter on element', {
             elId: (el as HTMLElement).id,
-            classes: Array.from((el as HTMLElement).classList || []),
-            key,
-            groupKey: rangeKeyToGroupKey[key]
+            key
           })
-          // No aplicar cambios visuales en hover, solo tooltip
+
+          // Apply visual hover (opacity or stroke change)
+          targets.forEach((t) => {
+            if (t.getAttribute('data-ts-selected') === 'true') return
+            groupApplied.push({
+              el: t,
+              prevOpacity: t.getAttribute('opacity') || '',
+              prevStroke: t.getAttribute('stroke') || '',
+              prevStrokeWidth: t.getAttribute('stroke-width') || ''
+            })
+            t.setAttribute('opacity', '0.6')
+            // Si quieres añadir un borde extra en hover:
+            // t.setAttribute('stroke', '#ffffff')
+            // t.setAttribute('stroke-width', '2')
+          })
+
           handleEnter(key, ev, el)
         }
+
         const move = (ev: MouseEvent) => {
           if (!container) return
           const rect = container.getBoundingClientRect()
           setTooltipPos({ x: ev.clientX - rect.left, y: ev.clientY - rect.top })
         }
+
         const leave = () => {
           setHoverInfo(null)
           setTooltipVisible(false)
-          // NO resetear lastFetchedGroup aquí - solo resetear cuando realmente cambie de grupo
+
           if (groupApplied.length > 0) {
             groupApplied.forEach(
-              ({
-                el: gEl,
-                prevStroke: pS,
-                prevStrokeWidth: pW,
-                prevOpacity: pO,
-                prevFilter: pF
-              }) => {
-                // Si está seleccionado, no restaurar hover: mantener estilo de selección
+              ({ el: gEl, prevOpacity: pO, prevStroke: pS, prevStrokeWidth: pW }) => {
                 if (gEl.getAttribute('data-ts-selected') === 'true') return
-                gEl.setAttribute('stroke', pS)
-                pW ? gEl.setAttribute('stroke-width', pW) : gEl.removeAttribute('stroke-width')
+
                 pO ? gEl.setAttribute('opacity', pO) : gEl.removeAttribute('opacity')
-                pF ? gEl.setAttribute('filter', pF) : gEl.removeAttribute('filter')
+                pS ? gEl.setAttribute('stroke', pS) : gEl.removeAttribute('stroke')
+                pW ? gEl.setAttribute('stroke-width', pW) : gEl.removeAttribute('stroke-width')
               }
             )
             groupApplied = []
-          } else {
-            if (svgEl.getAttribute('data-ts-selected') !== 'true') {
-              svgEl.setAttribute('stroke', prevStroke)
-              prevStrokeWidth
-                ? svgEl.setAttribute('stroke-width', prevStrokeWidth)
-                : svgEl.removeAttribute('stroke-width')
-              prevOpacity
-                ? svgEl.setAttribute('opacity', prevOpacity)
-                : svgEl.removeAttribute('opacity')
-              svgEl.removeAttribute('filter')
-            }
           }
         }
         const click = async (ev: MouseEvent) => {
@@ -1386,7 +1387,7 @@ export default function ApiSeatingMap({
               }
             }
             if (seat) {
-              const targetSvg = (ev.target as SVGElement) || svgEl
+              const targetSvg = (ev.target as SVGElement) || (el as SVGElement)
               setSelectedSeatIds((prev) => {
                 const next = { ...prev }
                 const idStr = seat!.id.toString()
@@ -1616,17 +1617,17 @@ export default function ApiSeatingMap({
             setSelectedSeats(list)
           }
         }
-        el.addEventListener('mouseover', enter)
+        el.addEventListener('mouseenter', enter)
         el.addEventListener('mousemove', move)
-        el.addEventListener('mouseout', leave)
+        el.addEventListener('mouseleave', leave)
         el.addEventListener('click', click)
         listeners.push(() => {
-          el.removeEventListener('mouseover', enter)
+          el.removeEventListener('mouseenter', enter)
           el.removeEventListener('mousemove', move)
-          el.removeEventListener('mouseout', leave)
+          el.removeEventListener('mouseleave', leave)
           el.removeEventListener('click', click)
           const elHTMLElement = el as HTMLElement
-          elHTMLElement.style.pointerEvents = prevPointer
+          elHTMLElement.style.pointerEvents = ''
         })
       }
     }
