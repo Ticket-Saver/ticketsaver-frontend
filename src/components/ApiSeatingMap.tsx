@@ -1346,9 +1346,10 @@ export default function ApiSeatingMap({
         }
         const click = async (ev: MouseEvent) => {
           // Determine row from id and set selection
+          // IMPORTANT: If we captured the click on the <g> ('el'), use 'el.id' first instead of 'ev.target' which might be an inner path without an id.
           const targetId = (
-            (ev.target as HTMLElement)?.id ||
             (el as HTMLElement).id ||
+            (ev.target as HTMLElement)?.id ||
             ''
           ).toString()
           console.debug('Click on element', {
