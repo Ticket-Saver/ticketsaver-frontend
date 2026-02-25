@@ -96,6 +96,7 @@ export default function ApiSeatingMap({
   const [seatsByRow, setSeatsByRow] = useState<Record<string, SeatItem[]>>({})
   const [stageDirection, setStageDirection] = useState<'north' | 'south' | 'east' | 'west'>('north')
   const [reversedSections, setReversedSections] = useState<string[]>([])
+  const [frontRows, setFrontRows] = useState<string[]>([])
   const [specialRows, setSpecialRows] = useState<string[]>([])
   const [specialSeats, setSpecialSeats] = useState<string[]>([])
   const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(false)
@@ -214,6 +215,7 @@ export default function ApiSeatingMap({
               const metadata = value as {
                 stage_direction?: string
                 reversed_sections?: string[]
+                front_rows?: string[]
                 special_rows?: string[]
                 special_seats?: string[]
               }
@@ -225,6 +227,9 @@ export default function ApiSeatingMap({
               }
               if (Array.isArray(metadata.reversed_sections)) {
                 setReversedSections(metadata.reversed_sections)
+              }
+              if (Array.isArray(metadata.front_rows)) {
+                setFrontRows(metadata.front_rows)
               }
               if (Array.isArray(metadata.special_rows)) {
                 setSpecialRows(metadata.special_rows)
@@ -1861,6 +1866,7 @@ export default function ApiSeatingMap({
         sectionName={selectedKey || ''}
         stageDirection={stageDirection}
         reversedSections={reversedSections}
+        frontRows={frontRows}
         specialRows={specialRows}
         specialSeats={specialSeats}
         parsedRanges={ranges}

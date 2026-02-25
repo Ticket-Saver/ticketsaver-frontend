@@ -44,6 +44,7 @@ interface SeatSelectionModalProps {
       zone?: string
     }
   >
+  frontRows?: string[]
   isLoadingGroup?: boolean
 }
 
@@ -61,6 +62,7 @@ export default function SeatSelectionModal({
   specialRows = [],
   specialSeats = [],
   parsedRanges = {},
+  frontRows = [],
   isLoadingGroup = false
 }: SeatSelectionModalProps) {
   const [zoomLevel, setZoomLevel] = useState(0.8)
@@ -361,6 +363,32 @@ export default function SeatSelectionModal({
 
                 return Object.entries(seatsByRow)
                   .sort(([rowA], [rowB]) => {
+                    const rowATrimmed = rowA.trim()
+                    const rowBTrimmed = rowB.trim()
+
+                    // Match logic against frontRows: either exact match "AA" or "102:AA"
+                    const isFrontA = frontRows.some((fr) => {
+                      if (fr === rowATrimmed) return true
+                      if (fr.includes(':')) {
+                        const [sec, r] = fr.split(':')
+                        return sec.trim() === sectionName.trim() && r.trim() === rowATrimmed
+                      }
+                      return false
+                    })
+
+                    const isFrontB = frontRows.some((fr) => {
+                      if (fr === rowBTrimmed) return true
+                      if (fr.includes(':')) {
+                        const [sec, r] = fr.split(':')
+                        return sec.trim() === sectionName.trim() && r.trim() === rowBTrimmed
+                      }
+                      return false
+                    })
+
+                    if (isFrontA && !isFrontB) return -1
+                    if (!isFrontA && isFrontB) return 1
+
+                    // Default length + alphabetical sorting
                     const lenDiff = rowA.length - rowB.length
                     if (lenDiff !== 0) return lenDiff
                     return rowA.localeCompare(rowB)
