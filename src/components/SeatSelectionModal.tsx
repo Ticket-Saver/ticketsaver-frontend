@@ -260,9 +260,11 @@ export default function SeatSelectionModal({
       (s) => reversedSections.includes(s.position) || reversedSections.includes(s.section || '')
     )
 
+  const hasWheelchairSelected = selectedSeatItems.some(isSpecialSeat)
+
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-      <div className='bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden'>
+      <div className='bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col'>
         {/* Header */}
         <div className='flex items-center justify-between p-4 border-b'>
           <div>
@@ -438,61 +440,88 @@ export default function SeatSelectionModal({
         </div>
 
         {/* Footer */}
-        <div className='flex items-center justify-between p-4 border-t bg-gray-50'>
-          <div className='text-sm text-gray-700 space-y-1'>
-            <div>
-              Selected seats: <span className='font-semibold'>{totalSelected}</span>
-            </div>
-            <div className='text-xs text-gray-600'>
-              <span className='mr-3'>
-                Price per seat:{' '}
-                <span className='font-medium'>
-                  {perSeatPrices.length <= 1
-                    ? formatMoney(perSeatPrices[0] || 0)
-                    : `${formatMoney(perSeatPrices[0])} - ${formatMoney(perSeatPrices[perSeatPrices.length - 1])}`}
-                </span>
+        <div className='flex flex-col p-4 border-t bg-gray-50 flex-shrink-0'>
+          {hasWheelchairSelected && (
+            <div className='mb-3 text-sm text-blue-800 bg-blue-50 border border-blue-200 p-2.5 rounded flex items-start gap-2'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='shrink-0 mt-0.5'
+              >
+                <circle cx='12' cy='12' r='10' />
+                <path d='M12 16v-4' />
+                <path d='M12 8h.01' />
+              </svg>
+              <span>
+                <strong>Atención:</strong> Has seleccionado un espacio para silla de ruedas. Ten en
+                cuenta que este lugar consiste en un espacio libre asignado, y{' '}
+                <strong>no incluye una butaca física</strong>.
               </span>
-              <span className='mr-3'>
-                Fee per seat:{' '}
-                <span className='font-medium'>
-                  {perSeatFees.length <= 1
-                    ? formatMoney(perSeatFees[0] || 0)
-                    : `${formatMoney(perSeatFees[0])} - ${formatMoney(perSeatFees[perSeatFees.length - 1])}`}
-                </span>
-              </span>
-              {totalSelected > 0 && (
-                <span>
-                  Total:{' '}
-                  <span className='font-semibold text-gray-800'>{formatMoney(totalPrice)}</span>
-                  {(selectedFeeTotal > 0 || selectedTaxTotal > 0) && (
-                    <span className='text-gray-500'>
-                      {' '}
-                      (Fees: {formatMoney(selectedFeeTotal)}
-                      {selectedTaxTotal > 0 && `, Taxes: ${formatMoney(selectedTaxTotal)}`})
-                    </span>
-                  )}
-                </span>
-              )}
             </div>
-          </div>
-          <div className='flex space-x-3'>
-            <button
-              onClick={onClose}
-              className='px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50'
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onProceed}
-              disabled={totalSelected === 0}
-              className={`px-6 py-2 rounded text-white font-medium ${
-                totalSelected === 0
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700'
-              }`}
-            >
-              Continue ({totalSelected})
-            </button>
+          )}
+          <div className='flex items-center justify-between'>
+            <div className='text-sm text-gray-700 space-y-1'>
+              <div>
+                Selected seats: <span className='font-semibold'>{totalSelected}</span>
+              </div>
+              <div className='text-xs text-gray-600'>
+                <span className='mr-3'>
+                  Price per seat:{' '}
+                  <span className='font-medium'>
+                    {perSeatPrices.length <= 1
+                      ? formatMoney(perSeatPrices[0] || 0)
+                      : `${formatMoney(perSeatPrices[0])} - ${formatMoney(perSeatPrices[perSeatPrices.length - 1])}`}
+                  </span>
+                </span>
+                <span className='mr-3'>
+                  Fee per seat:{' '}
+                  <span className='font-medium'>
+                    {perSeatFees.length <= 1
+                      ? formatMoney(perSeatFees[0] || 0)
+                      : `${formatMoney(perSeatFees[0])} - ${formatMoney(perSeatFees[perSeatFees.length - 1])}`}
+                  </span>
+                </span>
+                {totalSelected > 0 && (
+                  <span>
+                    Total:{' '}
+                    <span className='font-semibold text-gray-800'>{formatMoney(totalPrice)}</span>
+                    {(selectedFeeTotal > 0 || selectedTaxTotal > 0) && (
+                      <span className='text-gray-500'>
+                        {' '}
+                        (Fees: {formatMoney(selectedFeeTotal)}
+                        {selectedTaxTotal > 0 && `, Taxes: ${formatMoney(selectedTaxTotal)}`})
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className='flex space-x-3'>
+              <button
+                onClick={onClose}
+                className='px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onProceed}
+                disabled={totalSelected === 0}
+                className={`px-6 py-2 rounded text-white font-medium ${
+                  totalSelected === 0
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
+                Continue ({totalSelected})
+              </button>
+            </div>
           </div>
         </div>
       </div>
