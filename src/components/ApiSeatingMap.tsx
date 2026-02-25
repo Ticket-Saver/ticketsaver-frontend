@@ -1256,9 +1256,9 @@ export default function ApiSeatingMap({
         const targets: SVGElement[] = []
         const fixShape = (shape: Element) => {
           const sEl = shape as SVGElement
-          sEl.setAttribute('pointer-events', 'all')
+          sEl.setAttribute('pointer-events', 'bounding-box')
           if ((shape as HTMLElement).style) {
-            ;(shape as HTMLElement).style.pointerEvents = 'all'
+            ;(shape as HTMLElement).style.pointerEvents = 'bounding-box'
             ;(shape as HTMLElement).style.cursor = 'pointer'
           }
           const currentFill = sEl.getAttribute('fill')
@@ -1266,6 +1266,13 @@ export default function ApiSeatingMap({
             sEl.setAttribute('fill', 'transparent')
           }
           targets.push(sEl)
+        }
+
+        // Apply bounding-box to the container element itself (especially for <g> groups)
+        el.setAttribute('pointer-events', 'bounding-box')
+        if ((el as HTMLElement).style) {
+          ;(el as HTMLElement).style.pointerEvents = 'bounding-box'
+          ;(el as HTMLElement).style.cursor = 'pointer'
         }
 
         if (['path', 'rect', 'circle', 'polygon', 'polyline'].includes(el.tagName.toLowerCase())) {
