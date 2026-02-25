@@ -44,6 +44,7 @@ interface SeatSelectionModalProps {
       zone?: string
     }
   >
+  isLoadingGroup?: boolean
 }
 
 export default function SeatSelectionModal({
@@ -59,7 +60,8 @@ export default function SeatSelectionModal({
   reversedSections = [],
   specialRows = [],
   specialSeats = [],
-  parsedRanges = {}
+  parsedRanges = {},
+  isLoadingGroup = false
 }: SeatSelectionModalProps) {
   const [zoomLevel, setZoomLevel] = useState(0.8)
   const [isPanning, setIsPanning] = useState(false)
@@ -346,72 +348,81 @@ export default function SeatSelectionModal({
               minHeight: 'fit-content'
             }}
           >
-            {(() => {
-              const maxSeatsPerRow = Math.max(
-                ...Object.values(seatsByRow).map((seats) => seats.length)
-              )
+            {isLoadingGroup ? (
+              <div className='flex flex-col items-center justify-center p-12 mt-12 mb-12'>
+                <span className='loading loading-spinner loading-lg text-blue-600 mb-4' />
+                <p className='text-gray-600 font-medium'>Obteniendo asientos...</p>
+              </div>
+            ) : (
+              (() => {
+                const maxSeatsPerRow = Math.max(
+                  ...Object.values(seatsByRow).map((seats) => seats.length)
+                )
 
-              return Object.entries(seatsByRow)
-                .sort(([rowA], [rowB]) => {
-                  const lenDiff = rowA.length - rowB.length
-                  if (lenDiff !== 0) return lenDiff
-                  return rowA.localeCompare(rowB)
-                })
-                .map(([row, seats]) => {
-                  let sortedSeats = seats.sort((a, b) => {
-                    const numA =
-                      typeof a.seat_number === 'string'
-                        ? parseInt(a.seat_number, 10)
-                        : a.seat_number
-                    const numB =
-                      typeof b.seat_number === 'string'
-                        ? parseInt(b.seat_number, 10)
-                        : b.seat_number
-                    return numA - numB
+                return Object.entries(seatsByRow)
+                  .sort(([rowA], [rowB]) => {
+                    const lenDiff = rowA.length - rowB.length
+                    if (lenDiff !== 0) return lenDiff
+                    return rowA.localeCompare(rowB)
                   })
+                  .map(([row, seats]) => {
+                    let sortedSeats = seats.sort((a, b) => {
+                      const numA =
+                        typeof a.seat_number === 'string'
+                          ? parseInt(a.seat_number, 10)
+                          : a.seat_number
+                      const numB =
+                        typeof b.seat_number === 'string'
+                          ? parseInt(b.seat_number, 10)
+                          : b.seat_number
+                      return numA - numB
+                    })
 
-                  if (isReversed) {
-                    sortedSeats = sortedSeats.reverse()
-                  }
+                    if (isReversed) {
+                      sortedSeats = sortedSeats.reverse()
+                    }
 
-                  return (
-                    <div key={row} className='flex items-center justify-center w-full'>
-                      {/* Row Label */}
-                      <div className='w-12 text-center font-semibold text-gray-700 mr-4'>{row}</div>
+                    return (
+                      <div key={row} className='flex items-center justify-center w-full'>
+                        {/* Row Label */}
+                        <div className='w-12 text-center font-semibold text-gray-700 mr-4'>
+                          {row}
+                        </div>
 
-                      {/* Seats Container */}
-                      <div
-                        className='flex justify-center items-center'
-                        style={{
-                          width: `${maxSeatsPerRow * 48}px`,
-                          minWidth: '200px'
-                        }}
-                      >
-                        <div className='flex space-x-1'>
-                          {sortedSeats.map((seat) => {
-                            const seatKey = seat.id.toString()
-                            const isSelected = !!selectedSeats[seatKey]
+                        {/* Seats Container */}
+                        <div
+                          className='flex justify-center items-center'
+                          style={{
+                            width: `${maxSeatsPerRow * 48}px`,
+                            minWidth: '200px'
+                          }}
+                        >
+                          <div className='flex space-x-1'>
+                            {sortedSeats.map((seat) => {
+                              const seatKey = seat.id.toString()
+                              const isSelected = !!selectedSeats[seatKey]
 
-                            return (
-                              <SeatIcon
-                                key={seat.id}
-                                isAvailable={seat.is_available && !seat.is_sold_out}
-                                isSelected={isSelected}
-                                seatNumber={seat.seat_number}
-                                row={seat.row}
-                                onClick={() => onSeatToggle(seatKey)}
-                                className='hover:scale-110 transition-transform'
-                                stageDirection={stageDirection}
-                                isSpecial={isSpecialSeat(seat)}
-                              />
-                            )
-                          })}
+                              return (
+                                <SeatIcon
+                                  key={seat.id}
+                                  isAvailable={seat.is_available && !seat.is_sold_out}
+                                  isSelected={isSelected}
+                                  seatNumber={seat.seat_number}
+                                  row={seat.row}
+                                  onClick={() => onSeatToggle(seatKey)}
+                                  className='hover:scale-110 transition-transform'
+                                  stageDirection={stageDirection}
+                                  isSpecial={isSpecialSeat(seat)}
+                                />
+                              )
+                            })}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })
-            })()}
+                    )
+                  })
+              })()
+            )}
           </div>
         </div>
 

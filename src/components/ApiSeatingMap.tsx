@@ -98,6 +98,7 @@ export default function ApiSeatingMap({
   const [reversedSections, setReversedSections] = useState<string[]>([])
   const [specialRows, setSpecialRows] = useState<string[]>([])
   const [specialSeats, setSpecialSeats] = useState<string[]>([])
+  const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(false)
   const lastFetchedGroupRef = useRef<string | null>(null)
   const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
 
@@ -1555,9 +1556,13 @@ export default function ApiSeatingMap({
             }
 
             // Fetch seats for the whole group (position-color), optionally restricted by row
+            // Fetch seats for the whole group (position-color), optionally restricted by row
             try {
               setSelectedKey(toTitleCaseFromKebab(groupKey))
               setSelectedRow(rowCandidate || null)
+              setIsLoadingGroup(true)
+              setShowSeatModal(true)
+
               const qs = new URLSearchParams()
               qs.set('group', groupKey)
               qs.set('available_only', 'false')
@@ -1613,9 +1618,10 @@ export default function ApiSeatingMap({
 
               setSelectedSeats(dedupedList)
               setSeatsByRow(dedupedGroupedSeats)
-              setShowSeatModal(true)
             } catch (_e) {
               setSelectedSeats([])
+            } finally {
+              setIsLoadingGroup(false)
             }
           } else {
             // Fallback: compute from ranges locally
@@ -1858,6 +1864,7 @@ export default function ApiSeatingMap({
         specialRows={specialRows}
         specialSeats={specialSeats}
         parsedRanges={ranges}
+        isLoadingGroup={isLoadingGroup}
       />
     </div>
   )
