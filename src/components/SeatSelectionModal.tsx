@@ -204,52 +204,37 @@ export default function SeatSelectionModal({
         .split('-')
         .filter((t) => !knownColors.includes(t))
 
-    const seatRowNum = `${seat.row}${seat.seat_number}`
-    const seatPos = (seat.position || '').toLowerCase()
-    const seatSec = (seat.section || '').toLowerCase()
+    const seatRowNum = `${seat.row}${seat.seat_number}`.toLowerCase()
+    // We need the numeric section ID (e.g. "312") – NOT the generic zone ("balcony")
+    const seatSectionNum = (seat.position || seat.section || '').toLowerCase()
+
+    const idMatchesSeat = (id: string): boolean => {
+      const tokens = createColorlessTokens(id)
+      // Find the numeric section token in the ID (e.g. "312" from "312-orange-balcony-H3")
+      const sectionToken = tokens.find((t) => /^\d+$/.test(t))
+      if (!sectionToken || sectionToken !== seatSectionNum) return false
+      // Now check the seat+row token (e.g. "h3")
+      return tokens.some((t) => t === seatRowNum)
+    }
 
     // --- New typed seat_types system ---
     if (Object.keys(seatTypes).length > 0) {
       for (const [typeKey, ids] of Object.entries(seatTypes)) {
-        for (const id of ids) {
-          const tokens = createColorlessTokens(id)
-          const matchesPositionOrSection = tokens.some((t) => t === seatPos || t === seatSec)
-          const matchesSeatAndRow = tokens.some((t) => t === seatRowNum.toLowerCase())
-          if (matchesPositionOrSection && matchesSeatAndRow) return typeKey
-        }
-      }
-      // Also check special_rows for 'wheelchair' legacy mapping when seatTypes is present
-      for (const specialRowId of specialRows) {
-        const tokens = createColorlessTokens(specialRowId)
-        const matchesPositionOrSection = tokens.some((t) => t === seatPos || t === seatSec)
-        const matchesRow = tokens.some((t) => t === seat.row.toLowerCase())
-        const seatIdTokens = [seatPos, seatSec, seat.row.toLowerCase(), 'balcony', 'loge'].filter(
-          Boolean
-        )
-        const matchesZone = tokens.includes('balcony') ? seatIdTokens.includes('balcony') : true
-        if (matchesPositionOrSection && matchesRow && matchesZone) return null // already handled above
+        if (ids.some(idMatchesSeat)) return typeKey
       }
       return null
     }
 
     // --- Legacy special_seats / special_rows fallback ---
     for (const specialSeatId of specialSeats) {
-      const specialTokens = createColorlessTokens(specialSeatId)
-      const matchesPositionOrSection = specialTokens.some((t) => t === seatPos || t === seatSec)
-      const matchesSeatAndRow = specialTokens.some((t) => t === seatRowNum.toLowerCase())
-      if (matchesPositionOrSection && matchesSeatAndRow) return 'wheelchair'
+      if (idMatchesSeat(specialSeatId)) return 'wheelchair'
     }
     for (const specialRowId of specialRows) {
-      const specialTokens = createColorlessTokens(specialRowId)
-      const matchesPositionOrSection = specialTokens.some((t) => t === seatPos || t === seatSec)
-      const matchesRow = specialTokens.some((t) => t === seat.row.toLowerCase())
-      const seatIdTokens = [seatPos, seatSec, seat.row.toLowerCase(), 'balcony', 'loge'].filter(
-        Boolean
-      )
-      const matchesZone = specialTokens.includes('balcony')
-        ? seatIdTokens.includes('balcony')
-        : true
-      if (matchesPositionOrSection && matchesRow && matchesZone) return 'wheelchair'
+      const tokens = createColorlessTokens(specialRowId)
+      const sectionToken = tokens.find((t) => /^\d+$/.test(t))
+      if (!sectionToken || sectionToken !== seatSectionNum) continue
+      const matchesRow = tokens.some((t) => t === seat.row.toLowerCase())
+      if (matchesRow) return 'wheelchair'
     }
     return null
   }

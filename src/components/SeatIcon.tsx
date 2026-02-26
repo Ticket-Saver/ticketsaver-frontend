@@ -25,7 +25,6 @@ export default function SeatIcon({
   isAvailable,
   isSelected,
   seatNumber,
-  row,
   onClick,
   className = '',
   stageDirection = 'north',
@@ -163,7 +162,8 @@ export default function SeatIcon({
         style={{
           display: 'block',
           transform: `rotate(${getRotation()}deg)`,
-          transformOrigin: 'center'
+          transformOrigin: 'center',
+          pointerEvents: 'none' // ← all clicks go to the parent div
         }}
       >
         {isTyped ? (
@@ -183,7 +183,8 @@ export default function SeatIcon({
             fontSize: '10px',
             fontWeight: 'bold',
             color: isSelected ? '#1f2937' : '#ffffff',
-            textShadow: isSelected ? 'none' : '1px 1px 2px rgba(0,0,0,0.8)'
+            textShadow: isSelected ? 'none' : '1px 1px 2px rgba(0,0,0,0.8)',
+            pointerEvents: 'none'
           }}
         >
           {seatNumber}
