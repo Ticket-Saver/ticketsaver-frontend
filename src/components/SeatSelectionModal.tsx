@@ -447,43 +447,35 @@ export default function SeatSelectionModal({
 
         {/* Legend */}
         <div className='px-6 py-3 bg-gray-50 border-t'>
-          <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700'>
-            <div className='flex items-center space-x-2'>
+          <div className='flex items-center gap-4 text-sm text-gray-700 overflow-x-auto pb-1 scrollbar-thin'>
+            <div className='flex items-center space-x-2 shrink-0'>
               <div className='w-4 h-4 rounded' style={{ backgroundColor: '#3b82f6' }}></div>
               <span>Disponible</span>
             </div>
-            <div className='flex items-center space-x-2'>
+            <div className='flex items-center space-x-2 shrink-0'>
               <div className='w-4 h-4 rounded' style={{ backgroundColor: '#6b7280' }}></div>
               <span>Ocupado</span>
             </div>
-            <div className='flex items-center space-x-2'>
+            <div className='flex items-center space-x-2 shrink-0'>
               <div className='w-4 h-4 rounded' style={{ backgroundColor: '#fbbf24' }}></div>
               <span>Tu selección</span>
             </div>
-            {typesInSection.has('companion') && (
-              <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#7C3AED' }}></div>
-                <span>Asiento Acompañante</span>
-              </div>
-            )}
-            {typesInSection.has('wheelchair') && (
-              <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#1D4ED8' }}></div>
-                <span>Espacio Silla de Ruedas ♿</span>
-              </div>
-            )}
-            {typesInSection.has('limited_mobility') && (
-              <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#0D9488' }}></div>
-                <span>Movilidad Reducida</span>
-              </div>
-            )}
-            {typesInSection.has('sight_hearing') && (
-              <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#D97706' }}></div>
-                <span>Discapacidad Visual/Auditiva</span>
-              </div>
-            )}
+            <div className='flex items-center space-x-2 shrink-0'>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#7C3AED' }}></div>
+              <span>Acompañante</span>
+            </div>
+            <div className='flex items-center space-x-2 shrink-0'>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#1D4ED8' }}></div>
+              <span>Silla de Ruedas ♿</span>
+            </div>
+            <div className='flex items-center space-x-2 shrink-0'>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#0D9488' }}></div>
+              <span>Movilidad Reducida</span>
+            </div>
+            <div className='flex items-center space-x-2 shrink-0'>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#D97706' }}></div>
+              <span>Visual/Auditiva</span>
+            </div>
           </div>
         </div>
 
