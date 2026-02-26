@@ -46,6 +46,7 @@ interface SeatSelectionModalProps {
   >
   frontRows?: string[]
   isLoadingGroup?: boolean
+  seatTypes?: Record<string, string[]>
 }
 
 export default function SeatSelectionModal({
@@ -63,7 +64,8 @@ export default function SeatSelectionModal({
   specialSeats = [],
   parsedRanges = {},
   frontRows = [],
-  isLoadingGroup = false
+  isLoadingGroup = false,
+  seatTypes = {}
 }: SeatSelectionModalProps) {
   const [zoomLevel, setZoomLevel] = useState(0.8)
   const [isPanning, setIsPanning] = useState(false)
@@ -182,9 +184,9 @@ export default function SeatSelectionModal({
     }
   }
 
-  // Determines if a seat is a "special" wheelchair space based on metadata.
-  const isSpecialSeat = (seat: SeatItem): boolean => {
-    // Clean out known english color names from the test array strings to avoid translation mismatches comparing "purple" to "morado"
+  // Returns the seat type key ('companion'|'wheelchair'|'limited_mobility'|'sight_hearing') or null.
+  // When seat_types is available (new format), it takes precedence over legacy special_seats.
+  const getSeatType = (seat: SeatItem): string | null => {
     const knownColors = [
       'orange',
       'cyan',
@@ -203,68 +205,73 @@ export default function SeatSelectionModal({
         .filter((t) => !knownColors.includes(t))
 
     const seatRowNum = `${seat.row}${seat.seat_number}`
-    const seatIdTokens = [
-      (seat.position || '').toLowerCase(),
-      (seat.section || '').toLowerCase(),
-      seat.row.toLowerCase(),
-      seatRowNum.toLowerCase(),
-      'balcony',
-      'loge'
-    ].filter(Boolean)
+    const seatPos = (seat.position || '').toLowerCase()
+    const seatSec = (seat.section || '').toLowerCase()
 
-    // Check special seats
-    for (const specialSeatId of specialSeats) {
-      const specialTokens = createColorlessTokens(specialSeatId)
-      // If the special string has e.g [103, b7] and our seat has [103, b, b7], we match!
-      // Must contain all the significant parts:
-      const matchesPositionOrSection = specialTokens.some(
-        (t) => t === (seat.position || '').toLowerCase() || t === (seat.section || '').toLowerCase()
-      )
-      const matchesSeatAndRow = specialTokens.some((t) => t === seatRowNum.toLowerCase())
-      if (matchesPositionOrSection && matchesSeatAndRow) return true
-    }
-
-    // Check special rows
-    for (const specialRowId of specialRows) {
-      const specialTokens = createColorlessTokens(specialRowId)
-      const matchesPositionOrSection = specialTokens.some(
-        (t) => t === (seat.position || '').toLowerCase() || t === (seat.section || '').toLowerCase()
-      )
-      const matchesRow = specialTokens.some((t) => t === seat.row.toLowerCase())
-      const matchesZone = specialTokens.includes('balcony')
-        ? seatIdTokens.includes('balcony')
-        : true // rough check
-      if (matchesPositionOrSection && matchesRow && matchesZone) return true
-    }
-
-    // Fallback: Advanced search against parsedRanges if combo matches fail.
-    for (const [rangeKey, def] of Object.entries(parsedRanges)) {
-      if (!specialRows.includes(`${rangeKey}-${seat.row}`)) continue
-
-      const seatNumStr =
-        typeof seat.seat_number === 'string' ? seat.seat_number : String(seat.seat_number)
-      const seatNum = parseInt(seatNumStr, 10)
-      if (
-        def.rows.includes(seat.row) &&
-        def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
-      ) {
-        if (def.position === seat.position || def.position === seat.section) {
-          return true
+    // --- New typed seat_types system ---
+    if (Object.keys(seatTypes).length > 0) {
+      for (const [typeKey, ids] of Object.entries(seatTypes)) {
+        for (const id of ids) {
+          const tokens = createColorlessTokens(id)
+          const matchesPositionOrSection = tokens.some((t) => t === seatPos || t === seatSec)
+          const matchesSeatAndRow = tokens.some((t) => t === seatRowNum.toLowerCase())
+          if (matchesPositionOrSection && matchesSeatAndRow) return typeKey
         }
       }
+      // Also check special_rows for 'wheelchair' legacy mapping when seatTypes is present
+      for (const specialRowId of specialRows) {
+        const tokens = createColorlessTokens(specialRowId)
+        const matchesPositionOrSection = tokens.some((t) => t === seatPos || t === seatSec)
+        const matchesRow = tokens.some((t) => t === seat.row.toLowerCase())
+        const seatIdTokens = [seatPos, seatSec, seat.row.toLowerCase(), 'balcony', 'loge'].filter(
+          Boolean
+        )
+        const matchesZone = tokens.includes('balcony') ? seatIdTokens.includes('balcony') : true
+        if (matchesPositionOrSection && matchesRow && matchesZone) return null // already handled above
+      }
+      return null
     }
 
-    return false
+    // --- Legacy special_seats / special_rows fallback ---
+    for (const specialSeatId of specialSeats) {
+      const specialTokens = createColorlessTokens(specialSeatId)
+      const matchesPositionOrSection = specialTokens.some((t) => t === seatPos || t === seatSec)
+      const matchesSeatAndRow = specialTokens.some((t) => t === seatRowNum.toLowerCase())
+      if (matchesPositionOrSection && matchesSeatAndRow) return 'wheelchair'
+    }
+    for (const specialRowId of specialRows) {
+      const specialTokens = createColorlessTokens(specialRowId)
+      const matchesPositionOrSection = specialTokens.some((t) => t === seatPos || t === seatSec)
+      const matchesRow = specialTokens.some((t) => t === seat.row.toLowerCase())
+      const seatIdTokens = [seatPos, seatSec, seat.row.toLowerCase(), 'balcony', 'loge'].filter(
+        Boolean
+      )
+      const matchesZone = specialTokens.includes('balcony')
+        ? seatIdTokens.includes('balcony')
+        : true
+      if (matchesPositionOrSection && matchesRow && matchesZone) return 'wheelchair'
+    }
+    return null
   }
 
-  // Identify if this section should be rendered reversed (10 to 1 instead of 1 to 10).
   const isReversed =
     reversedSections.includes(sectionName) ||
     allSeats.some(
       (s) => reversedSections.includes(s.position) || reversedSections.includes(s.section || '')
     )
 
-  const hasWheelchairSelected = selectedSeatItems.some(isSpecialSeat)
+  // Determine which special types are present in this section (for the legend)
+  const typesInSection = new Set<string>()
+  allSeats.forEach((s) => {
+    const t = getSeatType(s)
+    if (t) typesInSection.add(t)
+  })
+
+  const selectedTypes = new Set<string>()
+  selectedSeatItems.forEach((s) => {
+    const t = getSeatType(s)
+    if (t) selectedTypes.add(t)
+  })
 
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
@@ -357,10 +364,6 @@ export default function SeatSelectionModal({
               </div>
             ) : (
               (() => {
-                const maxSeatsPerRow = Math.max(
-                  ...Object.values(seatsByRow).map((seats) => seats.length)
-                )
-
                 return Object.entries(seatsByRow)
                   .sort(([rowA], [rowB]) => {
                     const rowATrimmed = rowA.trim()
@@ -411,24 +414,19 @@ export default function SeatSelectionModal({
                     }
 
                     return (
-                      <div key={row} className='flex items-center justify-center w-full'>
-                        {/* Row Label */}
-                        <div className='w-12 text-center font-semibold text-gray-700 mr-4'>
+                      <div key={row} className='flex items-center justify-center w-max mx-auto'>
+                        {/* Row Label (Left) */}
+                        <div className='w-12 shrink-0 text-right font-semibold text-gray-700 mr-3 md:mr-4'>
                           {row}
                         </div>
 
                         {/* Seats Container */}
-                        <div
-                          className='flex justify-center items-center'
-                          style={{
-                            width: `${maxSeatsPerRow * 48}px`,
-                            minWidth: '200px'
-                          }}
-                        >
+                        <div className='flex justify-center items-center shrink-0'>
                           <div className='flex space-x-1'>
                             {sortedSeats.map((seat) => {
                               const seatKey = seat.id.toString()
                               const isSelected = !!selectedSeats[seatKey]
+                              const seatType = getSeatType(seat)
 
                               return (
                                 <SeatIcon
@@ -440,11 +438,19 @@ export default function SeatSelectionModal({
                                   onClick={() => onSeatToggle(seatKey)}
                                   className='hover:scale-110 transition-transform'
                                   stageDirection={stageDirection}
-                                  isSpecial={isSpecialSeat(seat)}
+                                  seatType={seatType}
                                 />
                               )
                             })}
                           </div>
+                        </div>
+
+                        {/* Invisible balancer (Right) to keep seats perfectly centered */}
+                        <div
+                          className='w-12 shrink-0 ml-3 md:ml-4 opacity-0 pointer-events-none'
+                          aria-hidden='true'
+                        >
+                          {row}
                         </div>
                       </div>
                     )
@@ -456,23 +462,41 @@ export default function SeatSelectionModal({
 
         {/* Legend */}
         <div className='px-6 py-3 bg-gray-50 border-t'>
-          <div className='flex items-center justify-center space-x-6 text-sm text-gray-700'>
+          <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700'>
             <div className='flex items-center space-x-2'>
-              <div className='w-4 h-4 bg-blue-500 rounded'></div>
-              <span className='text-gray-700'>Available</span>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#3b82f6' }}></div>
+              <span>Disponible</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <div className='w-4 h-4 bg-gray-500 rounded'></div>
-              <span className='text-gray-700'>Occupied</span>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#6b7280' }}></div>
+              <span>Ocupado</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <div className='w-4 h-4 bg-yellow-500 rounded'></div>
-              <span className='text-gray-700'>Your Selection</span>
+              <div className='w-4 h-4 rounded' style={{ backgroundColor: '#fbbf24' }}></div>
+              <span>Tu selección</span>
             </div>
-            {(specialRows.length > 0 || specialSeats.length > 0) && (
+            {typesInSection.has('companion') && (
               <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 bg-blue-700 rounded'></div>
-                <span className='text-gray-700'>Wheelchair Accessible</span>
+                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#7C3AED' }}></div>
+                <span>Asiento Acompañante</span>
+              </div>
+            )}
+            {typesInSection.has('wheelchair') && (
+              <div className='flex items-center space-x-2'>
+                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#1D4ED8' }}></div>
+                <span>Espacio Silla de Ruedas ♿</span>
+              </div>
+            )}
+            {typesInSection.has('limited_mobility') && (
+              <div className='flex items-center space-x-2'>
+                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#0D9488' }}></div>
+                <span>Movilidad Reducida</span>
+              </div>
+            )}
+            {typesInSection.has('sight_hearing') && (
+              <div className='flex items-center space-x-2'>
+                <div className='w-4 h-4 rounded' style={{ backgroundColor: '#D97706' }}></div>
+                <span>Discapacidad Visual/Auditiva</span>
               </div>
             )}
           </div>
@@ -480,7 +504,7 @@ export default function SeatSelectionModal({
 
         {/* Footer */}
         <div className='flex flex-col p-4 border-t bg-gray-50 flex-shrink-0'>
-          {hasWheelchairSelected && (
+          {selectedTypes.has('wheelchair') && (
             <div className='mb-3 text-sm text-blue-800 bg-blue-50 border border-blue-200 p-2.5 rounded flex items-start gap-2'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -499,9 +523,80 @@ export default function SeatSelectionModal({
                 <path d='M12 8h.01' />
               </svg>
               <span>
-                <strong>Atención:</strong> Has seleccionado un espacio para silla de ruedas. Ten en
-                cuenta que este lugar consiste en un espacio libre asignado, y{' '}
-                <strong>no incluye una butaca física</strong>.
+                <strong>Atención — Silla de Ruedas:</strong> Este espacio no incluye una butaca
+                física. Es un espacio libre asignado para silla de ruedas ♿.
+              </span>
+            </div>
+          )}
+          {selectedTypes.has('companion') && (
+            <div className='mb-3 text-sm text-purple-800 bg-purple-50 border border-purple-200 p-2.5 rounded flex items-start gap-2'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='shrink-0 mt-0.5'
+              >
+                <path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' />
+                <circle cx='9' cy='7' r='4' />
+                <path d='M23 21v-2a4 4 0 0 0-3-3.87' />
+                <path d='M16 3.13a4 4 0 0 1 0 7.75' />
+              </svg>
+              <span>
+                <strong>Asiento Acompañante:</strong> Este asiento está designado para acompañantes
+                de personas con movilidad reducida.
+              </span>
+            </div>
+          )}
+          {selectedTypes.has('limited_mobility') && (
+            <div className='mb-3 text-sm text-teal-800 bg-teal-50 border border-teal-200 p-2.5 rounded flex items-start gap-2'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='shrink-0 mt-0.5'
+              >
+                <circle cx='12' cy='12' r='10' />
+                <path d='M12 16v-4' />
+                <path d='M12 8h.01' />
+              </svg>
+              <span>
+                <strong>Movilidad Reducida:</strong> Asiento con butaca física, habilitado para
+                personas con movilidad reducida (sin silla de ruedas).
+              </span>
+            </div>
+          )}
+          {selectedTypes.has('sight_hearing') && (
+            <div className='mb-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 p-2.5 rounded flex items-start gap-2'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='shrink-0 mt-0.5'
+              >
+                <path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z' />
+                <circle cx='12' cy='12' r='3' />
+              </svg>
+              <span>
+                <strong>Discapacidad Visual/Auditiva:</strong> Asiento designado para personas con
+                discapacidad visual o auditiva.
               </span>
             </div>
           )}

@@ -99,6 +99,7 @@ export default function ApiSeatingMap({
   const [frontRows, setFrontRows] = useState<string[]>([])
   const [specialRows, setSpecialRows] = useState<string[]>([])
   const [specialSeats, setSpecialSeats] = useState<string[]>([])
+  const [seatTypes, setSeatTypes] = useState<Record<string, string[]>>({})
   const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(false)
   const lastFetchedGroupRef = useRef<string | null>(null)
   const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
@@ -218,6 +219,7 @@ export default function ApiSeatingMap({
                 front_rows?: string[]
                 special_rows?: string[]
                 special_seats?: string[]
+                seat_types?: Record<string, string[]>
               }
               if (
                 metadata.stage_direction &&
@@ -236,6 +238,9 @@ export default function ApiSeatingMap({
               }
               if (Array.isArray(metadata.special_seats)) {
                 setSpecialSeats(metadata.special_seats)
+              }
+              if (metadata.seat_types && typeof metadata.seat_types === 'object') {
+                setSeatTypes(metadata.seat_types)
               }
               continue
             }
@@ -1875,6 +1880,7 @@ export default function ApiSeatingMap({
         frontRows={frontRows}
         specialRows={specialRows}
         specialSeats={specialSeats}
+        seatTypes={seatTypes}
         parsedRanges={ranges}
         isLoadingGroup={isLoadingGroup}
       />
