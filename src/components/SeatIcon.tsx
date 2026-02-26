@@ -67,13 +67,18 @@ export default function SeatIcon({
 
   // ── SVG icon paths for each special type ─────────────────────────────────────
 
-  // Companion: two-person silhouette (group icon)
+  // Companion: two people icon (clearly centered in 83×63 viewBox)
   const CompanionIcon = () => (
     <g>
       <circle cx='41.5' cy='31.5' r='28' fill='#ffffff' stroke={color} strokeWidth='3' />
-      {/* Two people outline */}
-      <g fill={color} transform='translate(12, 12) scale(0.72)'>
-        <path d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' />
+      {/* Two person silhouettes, centered */}
+      <g fill={color}>
+        {/* Left person */}
+        <circle cx='33' cy='20' r='5' />
+        <path d='M24 42 C24 34 42 34 42 42 L42 46 L24 46 Z' />
+        {/* Right person */}
+        <circle cx='50' cy='20' r='5' />
+        <path d='M41 42 C41 34 59 34 59 42 L59 46 L41 46 Z' />
       </g>
     </g>
   )
@@ -90,35 +95,33 @@ export default function SeatIcon({
     </g>
   )
 
-  // Limited Mobility: person walking with cane
+  // Limited Mobility: person with cane, centered
   const LimitedMobilityIcon = () => (
     <g>
       <circle cx='41.5' cy='31.5' r='28' fill='#ffffff' stroke={color} strokeWidth='3' />
-      <g fill={color} transform='translate(22, 8) scale(0.75)'>
-        <circle cx='12' cy='4' r='2' />
+      {/* Walking person + cane */}
+      <g fill={color} stroke='none'>
+        {/* Head */}
+        <circle cx='41.5' cy='16' r='4.5' />
         {/* Body */}
-        <path d='M13 8.5l-1 4 2 2-2 7h2l2-7-2-2 .5-2.5C15.5 11.5 17 13 17 13v3h2v-3.5c0-1.1-.9-2-2-2l-2.5-1.5 1-1z' />
+        <path d='M38 22 L36 34 L32 42 L36 42 L39 36 L41.5 30 L44 36 L47 42 L51 42 L47 34 L45 22 Z' />
         {/* Cane */}
-        <line x1='8' y1='14' x2='8' y2='22' stroke={color} strokeWidth='2' strokeLinecap='round' />
-        <line x1='8' y1='22' x2='11' y2='22' stroke={color} strokeWidth='2' strokeLinecap='round' />
+        <rect x='34' y='32' width='2.5' height='13' rx='1.25' />
+        <rect x='29' y='43' width='8' height='2.5' rx='1.25' />
       </g>
     </g>
   )
 
-  // Sight/Hearing: eye icon
+  // Sight/Hearing: eye icon, centered in viewBox
   const SightHearingIcon = () => (
     <g>
       <circle cx='41.5' cy='31.5' r='28' fill='#ffffff' stroke={color} strokeWidth='3' />
-      <g
-        fill='none'
-        stroke={color}
-        strokeWidth='2.5'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-        transform='translate(13, 19)'
-      >
-        <path d='M1 12.5s4.5-9 15-9 15 9 15 9-4.5 9-15 9-15-9-15-9z' />
-        <circle cx='16' cy='12.5' r='4' fill={color} />
+      <g fill='none' stroke={color} strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+        {/* Eye outline */}
+        <path d='M17 31.5 C22 22 61 22 66 31.5 C61 41 22 41 17 31.5 Z' />
+        {/* Pupil */}
+        <circle cx='41.5' cy='31.5' r='5.5' fill={color} stroke='none' />
+        <circle cx='41.5' cy='31.5' r='2' fill='#ffffff' stroke='none' />
       </g>
     </g>
   )
