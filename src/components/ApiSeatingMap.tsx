@@ -103,6 +103,10 @@ export default function ApiSeatingMap({
   const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(false)
   const lastFetchedGroupRef = useRef<string | null>(null)
   const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
+  const availabilityPromiseCacheRef = useRef<
+    Record<string, Promise<{ total: number; available: number } | null>>
+  >({})
+  const pendingClickRef = useRef<boolean>(false)
 
   const toTitleCaseFromKebab = (value: string): string => {
     return value
@@ -607,36 +611,45 @@ export default function ApiSeatingMap({
       return { total, available }
     }
 
-    // Nueva función para obtener disponibilidad en tiempo real
-    const fetchRealtimeAvailability = async (groupKey: string, fallbackGroupKey?: string) => {
-      try {
-        const availabilityUrl = API_URLS.getSeatsAvailability(eventId, groupKey)
-        const response = await fetch(availabilityUrl, {
-          headers: {
-            Accept: 'application/json'
-          }
-        })
+    // Nueva función para obtener disponibilidad en tiempo real (con deduplicación de promesas)
+    const fetchRealtimeAvailability = (groupKey: string, fallbackGroupKey?: string) => {
+      if (availabilityPromiseCacheRef.current[groupKey]) {
+        return availabilityPromiseCacheRef.current[groupKey]
+      }
 
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Realtime availability data:', data)
-          const stats = {
-            total: data.total || 0,
-            available: data.available || 0
+      const reqPromise = (async () => {
+        try {
+          const availabilityUrl = API_URLS.getSeatsAvailability(eventId, groupKey)
+          const response = await fetch(availabilityUrl, {
+            headers: {
+              Accept: 'application/json'
+            }
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            console.log('Realtime availability data:', data)
+            const stats = {
+              total: data.total || 0,
+              available: data.available || 0
+            }
+            availabilityCacheRef.current[groupKey] = stats
+            return stats
           }
-          availabilityCacheRef.current[groupKey] = stats
-          return stats
+        } catch (error) {
+          console.warn('Error fetching realtime availability:', error)
         }
-      } catch (error) {
-        console.warn('Error fetching realtime availability:', error)
-      }
 
-      // Fallback a cálculo local si falla la API
-      const fallback = computeStatsForGroupKey(fallbackGroupKey || groupKey)
-      if (fallback) {
-        availabilityCacheRef.current[groupKey] = fallback
-      }
-      return fallback
+        // Fallback a cálculo local si falla la API
+        const fallback = computeStatsForGroupKey(fallbackGroupKey || groupKey)
+        if (fallback) {
+          availabilityCacheRef.current[groupKey] = fallback
+        }
+        return fallback
+      })()
+
+      availabilityPromiseCacheRef.current[groupKey] = reqPromise
+      return reqPromise
     }
 
     const getLastNonNumericToken = (tokens: string[]): string | undefined => {
@@ -1355,13 +1368,7 @@ export default function ApiSeatingMap({
             groupApplied = []
           }
         }
-        const click = async (ev: MouseEvent) => {
-          // Prevent multiple clicks while a group is loading
-          if (isLoadingGroup) {
-            console.debug('Click ignored: already loading a group')
-            return
-          }
-
+        const doClick = async (ev: MouseEvent) => {
           // Determine row from id and set selection
           // IMPORTANT: If we captured the click on the <g> ('el'), use 'el.id' first instead of 'ev.target' which might be an inner path without an id.
           const targetId = (
@@ -1594,7 +1601,6 @@ export default function ApiSeatingMap({
 
               // Manejar respuesta (agrupada o plana) y eliminar duplicados
               let rawList: SeatItem[] = []
-              let groupedSeats: Record<string, SeatItem[]> = {}
 
               if (
                 seatsData.data &&
@@ -1602,7 +1608,6 @@ export default function ApiSeatingMap({
                 !Array.isArray(seatsData.data)
               ) {
                 // Respuesta agrupada por fila: { "B": [...], "C": [...] }
-                groupedSeats = seatsData.data
                 rawList = Object.values(seatsData.data).flat()
               } else {
                 // Respuesta plana (fallback) - agrupar por fila
@@ -1647,6 +1652,20 @@ export default function ApiSeatingMap({
             setSelectedSeats(list)
           }
         }
+
+        const click = async (ev: MouseEvent) => {
+          if (isLoadingGroup || pendingClickRef.current) {
+            console.debug('Click ignored: already loading a group or click pending')
+            return
+          }
+          pendingClickRef.current = true
+          try {
+            await doClick(ev)
+          } finally {
+            pendingClickRef.current = false
+          }
+        }
+
         el.addEventListener('mouseenter', enter)
         el.addEventListener('mousemove', move)
         el.addEventListener('mouseleave', leave)
