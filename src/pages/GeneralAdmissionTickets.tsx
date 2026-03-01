@@ -288,6 +288,15 @@ export default function GeneralAdmissionTickets({
 
       if (!orderResponse.ok) {
         const errorData = await orderResponse.json().catch(() => ({}))
+
+        // Manejar errores de validación de Laravel (ej: Sold out)
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstErrorList = Object.values(errorData.errors)[0] as string[]
+          if (firstErrorList && firstErrorList.length > 0) {
+            throw new Error(firstErrorList[0])
+          }
+        }
+
         throw new Error(errorData.message || 'Error creating order')
       }
 
@@ -372,6 +381,15 @@ export default function GeneralAdmissionTickets({
 
       if (!updateOrderResponse.ok) {
         const errorData = await updateOrderResponse.json().catch(() => ({}))
+
+        // Manejar errores de validación de Laravel
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstErrorList = Object.values(errorData.errors)[0] as string[]
+          if (firstErrorList && firstErrorList.length > 0) {
+            throw new Error(firstErrorList[0])
+          }
+        }
+
         throw new Error(errorData.message || 'Error updating order attendees')
       }
 
@@ -408,6 +426,15 @@ export default function GeneralAdmissionTickets({
 
       if (!paymentResponse.ok) {
         const errorData = await paymentResponse.json().catch(() => ({}))
+
+        // Manejar errores de validación de Laravel
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstErrorList = Object.values(errorData.errors)[0] as string[]
+          if (firstErrorList && firstErrorList.length > 0) {
+            throw new Error(firstErrorList[0])
+          }
+        }
+
         throw new Error(errorData.message || 'Error creating payment session')
       }
 

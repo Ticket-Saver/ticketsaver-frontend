@@ -235,6 +235,15 @@ const CheckoutStripe = () => {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           console.error('Error response:', errorData) // Para debug
+
+          // Manejar errores de validación de Laravel (ej: Sold out)
+          if (errorData.errors && typeof errorData.errors === 'object') {
+            const firstErrorList = Object.values(errorData.errors)[0] as string[]
+            if (firstErrorList && firstErrorList.length > 0) {
+              throw new Error(firstErrorList[0])
+            }
+          }
+
           throw new Error(errorData.message || 'Error creando la orden')
         }
 
@@ -255,7 +264,7 @@ const CheckoutStripe = () => {
         console.log('Orden creada:', orderResponse.data)
       } catch (err) {
         console.error('Error creando orden:', err)
-        setError('Error creando la orden inicial')
+        setError(err instanceof Error ? err.message : 'Error creando la orden inicial')
       } finally {
         setIsCreatingOrder(false)
       }
@@ -470,6 +479,15 @@ const CheckoutStripe = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+
+        // Manejar errores de validación de Laravel
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstErrorList = Object.values(errorData.errors)[0] as string[]
+          if (firstErrorList && firstErrorList.length > 0) {
+            throw new Error(firstErrorList[0])
+          }
+        }
+
         throw new Error(errorData.message || 'Error actualizando la orden')
       }
 
@@ -524,6 +542,15 @@ const CheckoutStripe = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+
+        // Manejar errores de validación de Laravel
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstErrorList = Object.values(errorData.errors)[0] as string[]
+          if (firstErrorList && firstErrorList.length > 0) {
+            throw new Error(firstErrorList[0])
+          }
+        }
+
         throw new Error(errorData.message || 'Error creando sesión de pago')
       }
 

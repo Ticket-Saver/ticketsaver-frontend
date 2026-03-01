@@ -78,6 +78,8 @@ export default function EventPage() {
       }
     | {
         has_availability: boolean
+        min_price?: number
+        max_price?: number
       }
     | null
   >(null)
@@ -393,9 +395,15 @@ export default function EventPage() {
                       <h2 className='text-xl font-bold text-gray-900 mb-6'>Ticket Prices</h2>
                     ) : (
                       availability &&
-                      'available' in availability &&
-                      typeof availability.available === 'number' && (
-                        <h2 className='text-xl font-bold text-gray-900 mb-6'>Availability</h2>
+                      (('available' in availability &&
+                        typeof availability.available === 'number') ||
+                        ('min_price' in availability &&
+                          typeof availability.min_price === 'number')) && (
+                        <h2 className='text-xl font-bold text-gray-900 mb-6'>
+                          {'min_price' in availability && typeof availability.min_price === 'number'
+                            ? 'Ticket Prices'
+                            : 'Availability'}
+                        </h2>
                       )
                     )}
 
@@ -451,16 +459,30 @@ export default function EventPage() {
                             )
                           })}
                         </div>
-                      ) : (
-                        /* Mostrar números solo si availability tiene la estructura completa */
-                        availability &&
+                      ) : /* Mostrar números solo si availability tiene la estructura completa, o mostrar precios si están disponibles */
+                      availability &&
                         'available' in availability &&
-                        typeof availability.available === 'number' && (
+                        typeof availability.available === 'number' ? (
+                        <div className='space-y-2'>
+                          <div className='flex justify-between items-center py-2 border-b border-gray-100'>
+                            <p className='text-gray-700'>Available</p>
+                            <span className='text-xl font-bold text-green-700'>
+                              {availability.available}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        availability &&
+                        'min_price' in availability &&
+                        typeof availability.min_price === 'number' && (
                           <div className='space-y-2'>
                             <div className='flex justify-between items-center py-2 border-b border-gray-100'>
-                              <p className='text-gray-700'>Available</p>
-                              <span className='text-xl font-bold text-green-700'>
-                                {availability.available}
+                              <p className='text-gray-700'>Price Range</p>
+                              <span className='text-xl font-bold text-blue-600'>
+                                {availability.max_price !== undefined &&
+                                availability.min_price !== availability.max_price
+                                  ? `From $${availability.min_price.toFixed(2)} to $${availability.max_price.toFixed(2)}`
+                                  : `$${availability.min_price.toFixed(2)}`}
                               </span>
                             </div>
                           </div>
