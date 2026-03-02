@@ -477,7 +477,6 @@ export default function EventPage() {
                         typeof availability.min_price === 'number' && (
                           <div className='space-y-2'>
                             <div className='flex justify-between items-center py-2 border-b border-gray-100'>
-                              <p className='text-gray-700'>Price Range</p>
                               <span className='text-xl font-bold text-blue-600'>
                                 {availability.max_price !== undefined &&
                                 availability.min_price !== availability.max_price
