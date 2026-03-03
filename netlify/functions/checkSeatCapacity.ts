@@ -18,8 +18,8 @@ const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
     vip: 700
   },
   'offset_nardowick.01': {
-    'General Admission': 100,
-    VIP: 100
+    'General Admission': 299,
+    VIP: 299
   },
   'destroy_lonely.01': {
     'General Admission': 400,
