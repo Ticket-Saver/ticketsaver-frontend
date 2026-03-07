@@ -51,17 +51,23 @@ async function reserveSeats(cart, eventInfo) {
     seatsByZone[zone] = (seatsByZone[zone] || 0) + 1
   }
 
+  console.log(`[reserveSeats] event_id="${eventInfo.id}", seatsByZone:`, JSON.stringify(seatsByZone))
+
   const successfulReservations = []
 
   for (const [zone, quantity] of Object.entries(seatsByZone)) {
+    console.log(`[reserveSeats] Calling reserve_seats RPC — event_id="${eventInfo.id}", seat_type="${zone}", quantity=${quantity}`)
+
     const { data, error } = await supabase.rpc('reserve_seats', {
       p_event_id: eventInfo.id,
       p_seat_type: zone,
       p_quantity: quantity
     })
 
+    console.log(`[reserveSeats] RPC response for zone "${zone}" — data:`, JSON.stringify(data), 'error:', error ? JSON.stringify(error) : 'none')
+
     if (error) {
-      console.error(`RPC error reserving seats for zone ${zone}:`, error)
+      console.error(`[reserveSeats] RPC error reserving seats for zone ${zone}:`, error.message, error.details, error.hint)
       // Rollback reservas exitosas anteriores
       await rollbackReservations(successfulReservations, eventInfo.id)
       return {
@@ -71,6 +77,7 @@ async function reserveSeats(cart, eventInfo) {
     }
 
     if (data && !data.success && !data.unlimited) {
+      console.log(`[reserveSeats] Not enough seats for zone "${zone}" — remaining: ${data.remaining}, requested: ${quantity}`)
       // No hay suficientes asientos — rollback reservas exitosas anteriores
       await rollbackReservations(successfulReservations, eventInfo.id)
       return {
@@ -85,10 +92,16 @@ async function reserveSeats(cart, eventInfo) {
 
     // Registrar reserva exitosa para posible rollback
     if (data && data.success && !data.unlimited) {
+      console.log(`[reserveSeats] Successfully reserved ${quantity} seats for zone "${zone}" — new sold_seats: ${data.sold_seats}, remaining: ${data.remaining}`)
       successfulReservations.push({ zone, quantity })
+    }
+
+    if (data && data.unlimited) {
+      console.log(`[reserveSeats] Zone "${zone}" is unlimited, no reservation needed`)
     }
   }
 
+  console.log(`[reserveSeats] All reservations complete. Total reserved zones:`, successfulReservations.length)
   return null // Todas las reservas exitosas
 }
 
@@ -96,15 +109,17 @@ async function reserveSeats(cart, eventInfo) {
  * Rollback: libera asientos que fueron reservados exitosamente antes de un fallo.
  */
 async function rollbackReservations(reservations, eventId) {
+  console.log(`[rollbackReservations] Rolling back ${reservations.length} reservations for event_id="${eventId}"`)
   for (const { zone, quantity } of reservations) {
     try {
-      await supabase.rpc('release_seats', {
+      const { data, error } = await supabase.rpc('release_seats', {
         p_event_id: eventId,
         p_seat_type: zone,
         p_quantity: quantity
       })
+      console.log(`[rollbackReservations] Released zone "${zone}" qty=${quantity} — data:`, JSON.stringify(data), 'error:', error ? JSON.stringify(error) : 'none')
     } catch (err) {
-      console.error(`Error rolling back reservation for zone ${zone}:`, err)
+      console.error(`[rollbackReservations] Error rolling back reservation for zone ${zone}:`, err)
     }
   }
 }
@@ -123,9 +138,16 @@ exports.handler = async function (event, _context) {
       const check = await checkForTakenSeats(cart, eventInfo)
       if (check) return check
 
+      console.log(`[checkoutSession] Starting seat reservation for event "${eventInfo.id}", cart size: ${cart.length}`)
+
       // Reservar asientos atómicamente ANTES de crear la sesión de Stripe
       const reserveError = await reserveSeats(cart, eventInfo)
-      if (reserveError) return reserveError
+      if (reserveError) {
+        console.log(`[checkoutSession] Reservation failed, returning error`)
+        return reserveError
+      }
+
+      console.log(`[checkoutSession] Reservation successful, creating Stripe session`)
 
       const EventMetadata = cart.map((ticket) => ({
         seat: ticket.seatLabel,
@@ -143,6 +165,8 @@ exports.handler = async function (event, _context) {
         seatsByZone[zone] = (seatsByZone[zone] || 0) + 1
       }
       const serializedReservations = JSON.stringify(seatsByZone)
+
+      console.log(`[checkoutSession] serializedReservations:`, serializedReservations)
 
       const customerId = await findCustomer(customer)
 
