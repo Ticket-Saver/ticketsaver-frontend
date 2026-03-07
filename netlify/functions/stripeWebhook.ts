@@ -22,18 +22,31 @@ interface Metadata {
 async function releaseReservedSeats(eventLabel: string, reservedSeatsJson: string) {
   try {
     const reservedSeats: { [zone: string]: number } = JSON.parse(reservedSeatsJson)
-    console.log(`[releaseReservedSeats] Parsed reservations for event "${eventLabel}":`, JSON.stringify(reservedSeats))
+    console.log(
+      `[releaseReservedSeats] Parsed reservations for event "${eventLabel}":`,
+      JSON.stringify(reservedSeats)
+    )
     for (const [zone, quantity] of Object.entries(reservedSeats)) {
-      console.log(`[releaseReservedSeats] Calling release_seats RPC — event_id="${eventLabel}", seat_type="${zone}", quantity=${quantity}`)
+      console.log(
+        `[releaseReservedSeats] Calling release_seats RPC — event_id="${eventLabel}", seat_type="${zone}", quantity=${quantity}`
+      )
       const { data, error } = await supabase.rpc('release_seats', {
         p_event_id: eventLabel,
         p_seat_type: zone,
         p_quantity: quantity
       })
       if (error) {
-        console.error(`[releaseReservedSeats] RPC error for zone "${zone}":`, error.message, error.details, error.hint)
+        console.error(
+          `[releaseReservedSeats] RPC error for zone "${zone}":`,
+          error.message,
+          error.details,
+          error.hint
+        )
       } else {
-        console.log(`[releaseReservedSeats] Success for zone "${zone}" — result:`, JSON.stringify(data))
+        console.log(
+          `[releaseReservedSeats] Success for zone "${zone}" — result:`,
+          JSON.stringify(data)
+        )
       }
     }
   } catch (err) {
@@ -59,7 +72,9 @@ export const handler: Handler = async (event, _context) => {
       const event_label = metadata!.event_label
       const customer_email = metadata!.client_email
       const purchaseDate = new Date(eventObject.created * 1000).toISOString()
-      console.log(`[stripeWebhook] invoice.payment_succeeded — event_label: ${event_label}, customer: ${customer_email}`)
+      console.log(
+        `[stripeWebhook] invoice.payment_succeeded — event_label: ${event_label}, customer: ${customer_email}`
+      )
       console.log(`[stripeWebhook] Invoice metadata:`, JSON.stringify(metadata))
 
       for (const item of items) {
@@ -97,7 +112,9 @@ export const handler: Handler = async (event, _context) => {
 
       // sold_seats ya fue incrementado atómicamente en checkoutSession via reserve_seats RPC.
       // No necesitamos incrementar aquí.
-      console.log(`[stripeWebhook] Payment processed for event "${event_label}" — sold_seats already incremented at checkout time via reserve_seats RPC`)
+      console.log(
+        `[stripeWebhook] Payment processed for event "${event_label}" — sold_seats already incremented at checkout time via reserve_seats RPC`
+      )
 
       return { statusCode: 200, body: JSON.stringify({ message: 'Webhook handled successfully' }) }
     } else if (stripeEvent.type === 'checkout.session.expired') {
@@ -105,7 +122,9 @@ export const handler: Handler = async (event, _context) => {
       const session = stripeEvent.data.object as Stripe.Checkout.Session
       const eventLabel = session.metadata?.event_label
       const reservedSeats = session.metadata?.reserved_seats
-      console.log(`[stripeWebhook] checkout.session.expired — event_label: ${eventLabel}, reserved_seats: ${reservedSeats}, session_id: ${session.id}`)
+      console.log(
+        `[stripeWebhook] checkout.session.expired — event_label: ${eventLabel}, reserved_seats: ${reservedSeats}, session_id: ${session.id}`
+      )
 
       if (eventLabel && reservedSeats) {
         console.log(`Checkout session expired for event ${eventLabel}, releasing reserved seats`)
@@ -121,7 +140,9 @@ export const handler: Handler = async (event, _context) => {
       const paymentIntent = stripeEvent.data.object as Stripe.PaymentIntent
       const eventLabel = paymentIntent.metadata?.event_label
       const reservedSeats = paymentIntent.metadata?.reserved_seats
-      console.log(`[stripeWebhook] payment_intent.payment_failed — event_label: ${eventLabel}, reserved_seats: ${reservedSeats}, pi_id: ${paymentIntent.id}`)
+      console.log(
+        `[stripeWebhook] payment_intent.payment_failed — event_label: ${eventLabel}, reserved_seats: ${reservedSeats}, pi_id: ${paymentIntent.id}`
+      )
 
       if (eventLabel && reservedSeats) {
         console.log(`Payment failed for event ${eventLabel}, releasing reserved seats`)

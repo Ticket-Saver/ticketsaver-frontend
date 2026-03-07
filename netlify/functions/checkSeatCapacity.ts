@@ -45,7 +45,12 @@ export const handler: Handler = async (event, _context) => {
     const { event_id, seat_type, requested_quantity } = body
 
     if (!event_id || !seat_type) {
-      console.log('[checkSeatCapacity] Missing params — event_id:', event_id, 'seat_type:', seat_type)
+      console.log(
+        '[checkSeatCapacity] Missing params — event_id:',
+        event_id,
+        'seat_type:',
+        seat_type
+      )
       return {
         statusCode: 400,
         body: JSON.stringify({
@@ -54,7 +59,9 @@ export const handler: Handler = async (event, _context) => {
       }
     }
 
-    console.log(`[checkSeatCapacity] Checking capacity for event_id="${event_id}", seat_type="${seat_type}"`)
+    console.log(
+      `[checkSeatCapacity] Checking capacity for event_id="${event_id}", seat_type="${seat_type}"`
+    )
 
     // Consultar sold_seats y max_capacity directamente desde la DB
     const { data, error } = await supabase
@@ -74,11 +81,18 @@ export const handler: Handler = async (event, _context) => {
       }
     }
 
-    console.log(`[checkSeatCapacity] DB query result — data:`, JSON.stringify(data), 'error:', error ? `${error.code}: ${error.message}` : 'none')
+    console.log(
+      `[checkSeatCapacity] DB query result — data:`,
+      JSON.stringify(data),
+      'error:',
+      error ? `${error.code}: ${error.message}` : 'none'
+    )
 
     // Si no existe registro para este evento/seat_type, tratar como ilimitado
     if (!data) {
-      console.log(`[checkSeatCapacity] No row found for event_id="${event_id}", seat_type="${seat_type}" → treating as unlimited`)
+      console.log(
+        `[checkSeatCapacity] No row found for event_id="${event_id}", seat_type="${seat_type}" → treating as unlimited`
+      )
       return {
         statusCode: 200,
         headers: {
@@ -104,7 +118,9 @@ export const handler: Handler = async (event, _context) => {
 
     // Si max_capacity es null, tratar como ilimitado
     if (maxCapacity === null || maxCapacity === undefined) {
-      console.log(`[checkSeatCapacity] max_capacity is null for event_id="${event_id}", seat_type="${seat_type}" → treating as unlimited (sold_seats=${soldSeats})`)
+      console.log(
+        `[checkSeatCapacity] max_capacity is null for event_id="${event_id}", seat_type="${seat_type}" → treating as unlimited (sold_seats=${soldSeats})`
+      )
       return {
         statusCode: 200,
         headers: {
@@ -128,7 +144,9 @@ export const handler: Handler = async (event, _context) => {
     const remainingSeats = maxCapacity - soldSeats
     const available = remainingSeats > 0
 
-    console.log(`[checkSeatCapacity] Result — sold_seats=${soldSeats}, max_capacity=${maxCapacity}, remaining=${remainingSeats}, available=${available}`)
+    console.log(
+      `[checkSeatCapacity] Result — sold_seats=${soldSeats}, max_capacity=${maxCapacity}, remaining=${remainingSeats}, available=${available}`
+    )
 
     const response: CapacityResponse = {
       available,
