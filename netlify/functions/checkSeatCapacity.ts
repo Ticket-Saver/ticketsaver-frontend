@@ -1,36 +1,6 @@
 import { Handler } from '@netlify/functions'
 import { supabase } from '../utils/supabaseClient'
 
-/**
- * Capacidades máximas por evento y sección
- * Estructura: { event_id: { seat_type: max_capacity } }
- */
-const EVENT_CAPACITIES: Record<string, Record<string, number>> = {
-  'steve_aoki.01': {
-    'General Admission': 900
-  },
-  'shoreline_mafia.01': {
-    'General Admission': 400,
-    vip: 400
-  },
-  'chief-keef.01': {
-    'General Admission': 786,
-    vip: 828
-  },
-  'offset_nardowick.01': {
-    'General Admission': 299,
-    VIP: 299
-  },
-  'destroy_lonely.01': {
-    'General Admission': 400,
-    vip: 400
-  },
-  'chief_keef.01': {
-    'General Admission': 786,
-    vip: 828
-  }
-}
-
 interface CheckCapacityRequest {
   event_id: string
   seat_type: string
@@ -40,15 +10,29 @@ interface CheckCapacityRequest {
 interface CapacityResponse {
   available: boolean
   sold_seats: number
-  max_capacity: number
-  remaining_seats: number
+  max_capacity: number | null
+  remaining_seats: number | null
   can_fulfill_request?: boolean
   event_id: string
   seat_type: string
+  unlimited?: boolean
 }
 
 export const handler: Handler = async (event, _context) => {
-  // Solo permitir POST requests
+  // Permitir preflight CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    }
+  }
+
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -60,7 +44,6 @@ export const handler: Handler = async (event, _context) => {
     const body: CheckCapacityRequest = JSON.parse(event.body || '{}')
     const { event_id, seat_type, requested_quantity } = body
 
-    // Validar parámetros requeridos
     if (!event_id || !seat_type) {
       return {
         statusCode: 400,
@@ -70,62 +53,15 @@ export const handler: Handler = async (event, _context) => {
       }
     }
 
-    // Verificar si el evento existe en las capacidades configuradas
-    // Si no existe, significa que no tiene límite establecido
-    if (!EVENT_CAPACITIES[event_id]) {
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        },
-        body: JSON.stringify({
-          available: true,
-          sold_seats: 0,
-          max_capacity: null,
-          remaining_seats: null,
-          event_id,
-          seat_type,
-          unlimited: true
-        })
-      }
-    }
-
-    // Verificar si el seat_type existe para este evento
-    const maxCapacity = EVENT_CAPACITIES[event_id][seat_type]
-    if (maxCapacity === undefined) {
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        },
-        body: JSON.stringify({
-          available: true,
-          sold_seats: 0,
-          max_capacity: null,
-          remaining_seats: null,
-          event_id,
-          seat_type,
-          unlimited: true
-        })
-      }
-    }
-
-    // Consultar los asientos vendidos actuales desde Supabase
+    // Consultar sold_seats y max_capacity directamente desde la DB
     const { data, error } = await supabase
       .from('eventseatstatus')
-      .select('sold_seats')
+      .select('sold_seats, max_capacity')
       .eq('event_id', event_id)
       .eq('seat_type', seat_type)
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 es el código cuando no se encuentra registro
       console.error('Error fetching seat status from Supabase:', error)
       return {
         statusCode: 500,
@@ -135,8 +71,53 @@ export const handler: Handler = async (event, _context) => {
       }
     }
 
-    // Si no hay datos, asumir que no se han vendido asientos aún
-    const soldSeats = data?.sold_seats || 0
+    // Si no existe registro para este evento/seat_type, tratar como ilimitado
+    if (!data) {
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS'
+        },
+        body: JSON.stringify({
+          available: true,
+          sold_seats: 0,
+          max_capacity: null,
+          remaining_seats: null,
+          event_id,
+          seat_type,
+          unlimited: true
+        })
+      }
+    }
+
+    const soldSeats = data.sold_seats || 0
+    const maxCapacity = data.max_capacity
+
+    // Si max_capacity es null, tratar como ilimitado
+    if (maxCapacity === null || maxCapacity === undefined) {
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS'
+        },
+        body: JSON.stringify({
+          available: true,
+          sold_seats: soldSeats,
+          max_capacity: null,
+          remaining_seats: null,
+          event_id,
+          seat_type,
+          unlimited: true
+        })
+      }
+    }
+
     const remainingSeats = maxCapacity - soldSeats
     const available = remainingSeats > 0
 
@@ -149,7 +130,6 @@ export const handler: Handler = async (event, _context) => {
       seat_type
     }
 
-    // Si se proporcionó requested_quantity, verificar si se puede cumplir
     if (requested_quantity !== undefined) {
       response.can_fulfill_request = remainingSeats >= requested_quantity
     }

@@ -16,6 +16,29 @@ interface Metadata {
   client_name: string
 }
 
+/**
+ * Libera asientos reservados cuando una sesión de checkout expira o el pago falla.
+ */
+async function releaseReservedSeats(eventLabel: string, reservedSeatsJson: string) {
+  try {
+    const reservedSeats: { [zone: string]: number } = JSON.parse(reservedSeatsJson)
+    for (const [zone, quantity] of Object.entries(reservedSeats)) {
+      const { data, error } = await supabase.rpc('release_seats', {
+        p_event_id: eventLabel,
+        p_seat_type: zone,
+        p_quantity: quantity
+      })
+      if (error) {
+        console.error(`Error releasing seats for zone ${zone}:`, error)
+      } else {
+        console.log(`Released ${quantity} seats for zone ${zone}, event ${eventLabel}:`, data)
+      }
+    }
+  } catch (err) {
+    console.error('Error parsing reserved_seats metadata:', err)
+  }
+}
+
 export const handler: Handler = async (event, _context) => {
   try {
     const stripeEvent = stripe.webhooks.constructEvent(
@@ -31,10 +54,8 @@ export const handler: Handler = async (event, _context) => {
 
       const event_label = metadata!.event_label
       const customer_email = metadata!.client_email
-      const purchaseDate = new Date(eventObject.created * 1000).toISOString() // Convierte la fecha a ISO formato
+      const purchaseDate = new Date(eventObject.created * 1000).toISOString()
       console.log(`event label: ${event_label}`)
-
-      let totalSeatsSoldBySubZone: { [key: string]: number } = {} // Para llevar el total vendido por cada subZone
 
       for (const item of items) {
         const description = item.description
@@ -67,56 +88,42 @@ export const handler: Handler = async (event, _context) => {
             }
           }
         }
-        const quantity = item.quantity || 1
-        totalSeatsSoldBySubZone[subZone] = (totalSeatsSoldBySubZone[subZone] || 0) + quantity
       }
 
-      for (const [subZone, seatsSold] of Object.entries(totalSeatsSoldBySubZone)) {
-        const { data: currentData, error } = await supabase
-          .from('eventseatstatus')
-          .select('sold_seats')
-          .eq('event_id', event_label)
-          .eq('seat_type', subZone)
-          .single()
-
-        if (error) {
-          console.error(`Error al obtener sold_seats para subZone ${subZone}:`, error)
-          return {
-            statusCode: 500,
-            body: JSON.stringify({ error: `Error fetching sold_seats for subZone ${subZone}` })
-          }
-        }
-
-        const newSoldSeats = (currentData?.sold_seats || 0) + seatsSold
-
-        const { error: statusError } = await supabase
-          .from('eventseatstatus')
-          .update({
-            sold_seats: newSoldSeats,
-            updated_at: new Date().toISOString()
-          })
-          .eq('event_id', event_label)
-          .eq('seat_type', subZone)
-
-        if (statusError) {
-          console.error(
-            `Error en la actualización de EventSeatStatus para subZone ${subZone}:`,
-            statusError
-          )
-          return {
-            statusCode: 500,
-            body: JSON.stringify({
-              error: `Error en la actualización de EventSeatStatus para subZone ${subZone}`
-            })
-          }
-        }
-
-        console.log(
-          `EventSeatStatus actualizado: ${seatsSold} asientos vendidos para el evento ${event_label}, subZone ${subZone}`
-        )
-      }
+      // sold_seats ya fue incrementado atómicamente en checkoutSession via reserve_seats RPC.
+      // No necesitamos incrementar aquí.
 
       return { statusCode: 200, body: JSON.stringify({ message: 'Webhook handled successfully' }) }
+    } else if (stripeEvent.type === 'checkout.session.expired') {
+      // La sesión de checkout expiró sin pago — liberar los asientos reservados
+      const session = stripeEvent.data.object as Stripe.Checkout.Session
+      const eventLabel = session.metadata?.event_label
+      const reservedSeats = session.metadata?.reserved_seats
+
+      if (eventLabel && reservedSeats) {
+        console.log(`Checkout session expired for event ${eventLabel}, releasing reserved seats`)
+        await releaseReservedSeats(eventLabel, reservedSeats)
+      }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Expired session handled, seats released' })
+      }
+    } else if (stripeEvent.type === 'payment_intent.payment_failed') {
+      // El pago falló — liberar los asientos reservados
+      const paymentIntent = stripeEvent.data.object as Stripe.PaymentIntent
+      const eventLabel = paymentIntent.metadata?.event_label
+      const reservedSeats = paymentIntent.metadata?.reserved_seats
+
+      if (eventLabel && reservedSeats) {
+        console.log(`Payment failed for event ${eventLabel}, releasing reserved seats`)
+        await releaseReservedSeats(eventLabel, reservedSeats)
+      }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Failed payment handled, seats released' })
+      }
     } else {
       return { statusCode: 400, body: 'Event type not handled' }
     }

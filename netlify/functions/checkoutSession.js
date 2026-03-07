@@ -37,6 +37,78 @@ async function checkForTakenSeats(cart, eventInfo) {
   return null
 }
 
+/**
+ * Reserva asientos atómicamente usando la función RPC de Supabase.
+ * Agrupa los tickets del carrito por subZone y llama a reserve_seats para cada grupo.
+ * Retorna un objeto de error si la reserva falla, o null si todo está bien.
+ * También retorna la lista de reservas exitosas para poder hacer rollback si falla a medio camino.
+ */
+async function reserveSeats(cart, eventInfo) {
+  // Agrupar tickets por subZone
+  const seatsByZone = {}
+  for (const ticket of cart) {
+    const zone = ticket.subZone
+    seatsByZone[zone] = (seatsByZone[zone] || 0) + 1
+  }
+
+  const successfulReservations = []
+
+  for (const [zone, quantity] of Object.entries(seatsByZone)) {
+    const { data, error } = await supabase.rpc('reserve_seats', {
+      p_event_id: eventInfo.id,
+      p_seat_type: zone,
+      p_quantity: quantity
+    })
+
+    if (error) {
+      console.error(`RPC error reserving seats for zone ${zone}:`, error)
+      // Rollback reservas exitosas anteriores
+      await rollbackReservations(successfulReservations, eventInfo.id)
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: `Error reserving seats for zone ${zone}` })
+      }
+    }
+
+    if (data && !data.success && !data.unlimited) {
+      // No hay suficientes asientos — rollback reservas exitosas anteriores
+      await rollbackReservations(successfulReservations, eventInfo.id)
+      return {
+        statusCode: 409,
+        body: JSON.stringify({
+          error: `Not enough seats available for ${zone}. Only ${data.remaining} remaining.`,
+          remaining: data.remaining,
+          zone
+        })
+      }
+    }
+
+    // Registrar reserva exitosa para posible rollback
+    if (data && data.success && !data.unlimited) {
+      successfulReservations.push({ zone, quantity })
+    }
+  }
+
+  return null // Todas las reservas exitosas
+}
+
+/**
+ * Rollback: libera asientos que fueron reservados exitosamente antes de un fallo.
+ */
+async function rollbackReservations(reservations, eventId) {
+  for (const { zone, quantity } of reservations) {
+    try {
+      await supabase.rpc('release_seats', {
+        p_event_id: eventId,
+        p_seat_type: zone,
+        p_quantity: quantity
+      })
+    } catch (err) {
+      console.error(`Error rolling back reservation for zone ${zone}:`, err)
+    }
+  }
+}
+
 exports.handler = async function (event, _context) {
   if (event.httpMethod == 'POST') {
     try {
@@ -51,6 +123,10 @@ exports.handler = async function (event, _context) {
       const check = await checkForTakenSeats(cart, eventInfo)
       if (check) return check
 
+      // Reservar asientos atómicamente ANTES de crear la sesión de Stripe
+      const reserveError = await reserveSeats(cart, eventInfo)
+      if (reserveError) return reserveError
+
       const EventMetadata = cart.map((ticket) => ({
         seat: ticket.seatLabel,
         price_type: ticket.priceType,
@@ -59,6 +135,14 @@ exports.handler = async function (event, _context) {
       }))
 
       const serializedTicketMetadata = serializeTicketMetadata(EventMetadata)
+
+      // Serializar las zonas reservadas para poder liberar si expira la sesión
+      const seatsByZone = {}
+      for (const ticket of cart) {
+        const zone = ticket.subZone
+        seatsByZone[zone] = (seatsByZone[zone] || 0) + 1
+      }
+      const serializedReservations = JSON.stringify(seatsByZone)
 
       const customerId = await findCustomer(customer)
 
@@ -87,6 +171,7 @@ exports.handler = async function (event, _context) {
         line_items: lineItems,
         mode: 'payment',
         return_url: `${domainUrl}/return?session_id={CHECKOUT_SESSION_ID}`,
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // Expira en 30 min
 
         customer: customerId,
         invoice_creation: {
@@ -112,8 +197,13 @@ exports.handler = async function (event, _context) {
         payment_intent_data: {
           metadata: {
             event_label: eventInfo.id,
-            tm: serializedTicketMetadata
+            tm: serializedTicketMetadata,
+            reserved_seats: serializedReservations
           }
+        },
+        metadata: {
+          event_label: eventInfo.id,
+          reserved_seats: serializedReservations
         }
       })
 
