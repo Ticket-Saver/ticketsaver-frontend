@@ -66,21 +66,24 @@ export default function CoverCarousel() {
           } flex justify-center items-center transition-opacity duration-500`}
           onClick={() => console.log('click a', slide.id)}
         >
-          <div className='w-full relative'>
+          <div className='w-full relative bg-black flex justify-center overflow-hidden'>
+            <div
+              className='absolute inset-0 bg-cover bg-center bg-no-repeat blur-xl opacity-40 scale-110'
+              style={{ backgroundImage: `url(${slide.imageUrl})` }}
+            />
             <img
               src={slide.imageUrl}
               alt={`Slide ${slide.id}`}
-              className='w-full overflow-hidden object-cover'
-              style={{
-                height: slide.id === 2 || slide.id === 3 ? '60vh' : '50vh',
-                width: slide.id === 2 || slide.id === 3 ? '100%' : '100%'
-              }}
+              className='object-contain relative z-10'
+              style={{ height: '60vh', maxWidth: '100%' }}
             />
-            <div className='absolute bottom-4 left-0 w-full flex justify-center'>
-              <div className='bg-black bg-opacity-50 rounded-lg py-2 px-4'>
-                <h1 className='text-white text-4xl font-bold'>{slide.caption}</h1>
+            {slide.caption && (
+              <div className='absolute bottom-4 left-0 w-full flex justify-center z-20'>
+                <div className='bg-black bg-opacity-70 rounded-lg py-2 px-4 backdrop-blur-sm shadow-xl'>
+                  <h1 className='text-white text-4xl font-bold'>{slide.caption}</h1>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       ))}
