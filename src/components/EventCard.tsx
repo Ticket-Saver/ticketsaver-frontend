@@ -61,11 +61,8 @@ export function EventCard({
           <h2 className='text-lg font-semibold mb-2'>{title}</h2>
         </div>
         <h1 className='inline-block text-sm sm:text-base'>{address || city}</h1>
-        <div className='inline-block space-y-2 space-x-2'>
-          <h2 className='badge badge-outline '>
-            {' '}
-            {isSmallScreen ? truncateText(venue, 27) : venue}
-          </h2>
+        <div className='flex flex-wrap gap-2 mt-3'>
+          <h2 className='badge badge-outline'>{isSmallScreen ? truncateText(venue, 27) : venue}</h2>
           <h2 className='badge badge-outline'>{date}</h2>
           {isUpcoming && ticketSalesStartDate && (
             <h2 className='badge badge-warning'>

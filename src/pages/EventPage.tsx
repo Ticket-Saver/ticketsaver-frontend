@@ -128,7 +128,7 @@ export default function EventPage() {
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
             Don't miss out! Buy now before tickets sell out!.
           </p>
-          {hasUpcomingEvents && (
+          {/* {hasUpcomingEvents && (
             <div className='inline-flex items-center gap-2 bg-warning/20 border border-warning text-warning-content px-6 py-3 rounded-2xl mb-8 animate-bounce transition-all duration-300 shadow-sm'>
               <span className='relative flex h-3 w-3'>
                 <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75'></span>
@@ -138,7 +138,7 @@ export default function EventPage() {
                 Some tickets are not on sale yet – Stay tuned!
               </p>
             </div>
-          )}
+          )} */}
         </div>
         <div
           className={`grid ${events.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
