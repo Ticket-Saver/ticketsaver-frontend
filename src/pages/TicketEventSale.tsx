@@ -66,6 +66,8 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
   }
 
   const [imageUrl, setImageUrl] = useState<string | null>(bannerImageUrl || null)
+  const [salesStartDate, setSalesStartDate] = useState<string | null>(null)
+  const isUpcoming = salesStartDate ? new Date(salesStartDate) > new Date() : false
   const [zonePriceList, setZonePriceList] = useState<any[]>([])
   const [priceTagList, setPriceTags] = useState<any>([])
   const [zoneData, setZoneData] = useState<any>([])
@@ -143,8 +145,31 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
         console.error('Error fetching data: ', error)
       }
     }
-    if (venue) fetchVenues()
-  }, [githubApiUrl2, venue])
+
+    const fetchEventData = async () => {
+      try {
+        const response = await fetch(`${API_URLS.PUBLIC_EVENTS}${venue}/`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token2}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (response.ok) {
+          const result = await response.json()
+          const eventData = result.data || result
+          setSalesStartDate(eventData.ticket_sales_start_date || null)
+        }
+      } catch (error) {
+        console.error('Error fetching event data:', error)
+      }
+    }
+
+    if (venue) {
+      fetchVenues()
+      fetchEventData()
+    }
+  }, [githubApiUrl2, venue, token2])
 
   useEffect(() => {
     // Limpia el localStorage al montar el componente
@@ -539,38 +564,50 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
                 <h2 className='text-4xl mb-4 bg-black bg-opacity-50 text-neutral-content rounded-lg px-10 py-2 inline-block max-w-full text-left mx-auto'></h2>
               )}
             </div>
-            <div className='ml-auto sm:w-full md:w-96 text-black bg-white rounded-lg shadow-sm p-6'>
-              <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
-              {/* Static Table */}
-              <table className='w-full gap-y-2'>
-                <thead>
-                  <tr>
-                    <th className='text-left'>Type</th>
-                    <th className='text-center'></th>
+            {isUpcoming ? (
+              <div className='ml-auto sm:w-full md:w-96 text-yellow-700 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg shadow-sm p-6'>
+                <p className='font-bold text-2xl mb-2'>Upcoming Event</p>
+                <p className='text-lg'>
+                  Ticket sales will open on: <br />
+                  <span className='font-semibold text-black'>
+                    {new Date(salesStartDate!).toLocaleString()}
+                  </span>
+                </p>
+              </div>
+            ) : (
+              <div className='ml-auto sm:w-full md:w-96 text-black bg-white rounded-lg shadow-sm p-6'>
+                <h2 className='text-lg font-bold mb-6'>Ticket Prices</h2>
+                {/* Static Table */}
+                <table className='w-full gap-y-2'>
+                  <thead>
+                    <tr>
+                      <th className='text-left'>Type</th>
+                      <th className='text-center'></th>
 
-                    <th className='text-right'>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Static ticket data */}
-                  {zonePriceList.map((zoneItem) => (
-                    <tr key={zoneItem.zone}>
-                      <th className='text-left font-normal'>{zoneItem.zone}</th>
-                      <th className='text-center font-normal'>Starting prices from</th>
-                      <th>
-                        <a className='font-bold' style={{ fontSize: '14px' }}>
-                          {' '}
-                          $
-                          {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
-                            100}{' '}
-                          USD
-                        </a>
-                      </th>
+                      <th className='text-right'>Price</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {/* Static ticket data */}
+                    {zonePriceList.map((zoneItem) => (
+                      <tr key={zoneItem.zone}>
+                        <th className='text-left font-normal'>{zoneItem.zone}</th>
+                        <th className='text-center font-normal'>Starting prices from</th>
+                        <th>
+                          <a className='font-bold' style={{ fontSize: '14px' }}>
+                            {' '}
+                            $
+                            {Math.min(...zoneItem.prices.map((price: any) => price.priceFinal)) /
+                              100}{' '}
+                            USD
+                          </a>
+                        </th>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -723,9 +760,9 @@ export default function TicketSelection({ routeParams }: TicketEventSaleProps) {
                   {/* Proceed to Checkout Button */}
                   <div className='flex justify-center'>
                     <button
-                      className='bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4'
+                      className={`bg-green-500 w-1/3 hover:bg-green-600 text-white py-2 px-4 rounded mt-4 ${isUpcoming ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleCheckout()}
-                      disabled={!cart || cart.length == 0 || cart.length > 10}
+                      disabled={!cart || cart.length == 0 || cart.length > 10 || isUpcoming}
                     >
                       Proceed to Checkout
                     </button>

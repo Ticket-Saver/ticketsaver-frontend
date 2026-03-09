@@ -65,6 +65,8 @@ export default function EventPage() {
   const [galleryImages, setGalleryImages] = useState<Array<{ url: string; file_name: string }>>([])
   const [hour, setHour] = useState<string>('')
   const [eventStartDate, setEventStartDate] = useState<string | null>(null)
+  const [salesStartDate, setSalesStartDate] = useState<string | null>(null)
+  const isUpcoming = salesStartDate ? new Date(salesStartDate) > new Date() : false
   const [eventTimeZone, setEventTimeZone] = useState<string | null>(null)
 
   const [isOnlineEvent, setIsOnlineEvent] = useState<boolean>(false)
@@ -175,6 +177,11 @@ export default function EventPage() {
 
         // Extraer availability
         setAvailability(eventData?.availability || null)
+
+        // Extraer fecha/hora de inicio de venta (UTC)
+        if (eventData?.ticket_sales_start_date) {
+          setSalesStartDate(eventData.ticket_sales_start_date)
+        }
 
         // Extraer fecha y hora del evento usando siempre la timezone del evento
         if (eventData?.start_date) {
@@ -488,6 +495,18 @@ export default function EventPage() {
                         )
                       )}
 
+                      {isUpcoming && (
+                        <div className='bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-lg shadow-sm mb-4'>
+                          <p className='text-yellow-700 font-bold'>Upcoming Event</p>
+                          <p className='text-yellow-600 text-sm'>
+                            Ticket sales will open on: <br />
+                            <span className='font-semibold text-gray-900'>
+                              {new Date(salesStartDate!).toLocaleString()}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+
                       <div className='flex justify-center'>
                         {
                           // Determinar si el botón debe estar habilitado
@@ -495,18 +514,19 @@ export default function EventPage() {
                         }
                         {(() => {
                           const isDisabled =
-                            availability &&
-                            'has_availability' in availability &&
-                            availability.has_availability === false
+                            (availability &&
+                              'has_availability' in availability &&
+                              availability.has_availability === false) ||
+                            isUpcoming
 
                           const buttonClasses = isDisabled
-                            ? 'px-8 py-3 rounded-lg text-center font-semibold transition-all bg-gray-400 cursor-not-allowed text-white'
-                            : 'px-8 py-3 rounded-lg text-center font-semibold transition-all bg-blue-600 hover:bg-blue-700 text-white'
+                            ? 'px-8 py-3 rounded-lg text-center font-semibold transition-all bg-gray-400 cursor-not-allowed text-white w-full'
+                            : 'px-8 py-3 rounded-lg text-center font-semibold transition-all bg-blue-600 hover:bg-blue-700 text-white w-full'
 
                           if (isDisabled) {
                             return (
                               <button disabled className={buttonClasses}>
-                                Sold Out
+                                {isUpcoming ? 'Coming Soon' : 'Sold Out'}
                               </button>
                             )
                           }

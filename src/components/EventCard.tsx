@@ -10,6 +10,7 @@ export interface EventCardConfig {
   venue?: string
   city?: string
   address?: string
+  ticketSalesStartDate?: string | null
 }
 
 export function EventCard({
@@ -21,9 +22,11 @@ export function EventCard({
   color = 'bg-neutral',
   fontColor = 'text-neutral-content',
   venue = '',
-  address = ''
+  address = '',
+  ticketSalesStartDate = null
 }: EventCardConfig) {
   const isSmallScreen = useIsSmallScreen()
+  const isUpcoming = ticketSalesStartDate ? new Date(ticketSalesStartDate) > new Date() : false
 
   return (
     <div
@@ -55,6 +58,17 @@ export function EventCard({
             {isSmallScreen ? truncateText(venue, 27) : venue}
           </h2>
           <h2 className='badge badge-outline'>{date}</h2>
+          {isUpcoming && ticketSalesStartDate && (
+            <h2 className='badge badge-warning'>
+              Sales start:{' '}
+              {new Date(ticketSalesStartDate).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </h2>
+          )}
         </div>
         <p className='text-sm sm:text-base line-clamp-3'>{description}</p>
       </div>

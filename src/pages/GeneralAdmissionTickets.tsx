@@ -69,6 +69,8 @@ export default function GeneralAdmissionTickets({
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<{ [key: number]: string }>({})
+  const [salesStartDate, setSalesStartDate] = useState<string | null>(null)
+  const isUpcoming = salesStartDate ? new Date(salesStartDate) > new Date() : false
 
   const token = import.meta.env.TOKEN_HIEVENTS
 
@@ -129,6 +131,8 @@ export default function GeneralAdmissionTickets({
 
         const eventData = result.data || result
         const ticketsArray = eventData.tickets || []
+
+        setSalesStartDate(eventData.ticket_sales_start_date || null)
 
         // Filtrar solo tickets disponibles
         const availableTickets = ticketsArray.filter((ticket: Ticket) => ticket.is_available)
@@ -537,7 +541,19 @@ export default function GeneralAdmissionTickets({
 
         {/* Tickets List */}
         <div className='space-y-4'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-4'>Select Your Tickets</h2>
+          {isUpcoming ? (
+            <div className='bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-6 mb-6 rounded-lg shadow-sm'>
+              <p className='font-bold text-2xl mb-2'>Upcoming Event</p>
+              <p className='text-lg'>
+                Ticket sales will open on:{' '}
+                <span className='font-semibold'>{new Date(salesStartDate!).toLocaleString()}</span>
+              </p>
+            </div>
+          ) : (
+            <>
+              <h2 className='text-2xl font-bold text-gray-900 mb-4'>Select Your Tickets</h2>
+            </>
+          )}
 
           {tickets.map((ticket) => {
             const price = ticket.prices[0]
@@ -636,9 +652,9 @@ export default function GeneralAdmissionTickets({
 
               <button
                 onClick={handleCheckout}
-                disabled={isProcessing}
+                disabled={isProcessing || isUpcoming}
                 className={`mt-4 md:mt-0 w-full md:w-auto px-8 py-3 rounded-lg font-semibold transition-colors ${
-                  isProcessing
+                  isProcessing || isUpcoming
                     ? 'bg-gray-400 cursor-not-allowed text-white'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}

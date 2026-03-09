@@ -66,6 +66,8 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
   }>({})
   const [venueInfo] = useState<{ venue_name?: string } | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(bannerImageUrl || null)
+  const [salesStartDate, setSalesStartDate] = useState<string | null>(null)
+  const isUpcoming = salesStartDate ? new Date(salesStartDate) > new Date() : false
   const [ticketQuantities, setTicketQuantities] = useState<{ [key: string]: number }>({})
   const navigate = useNavigate()
   const token2 = import.meta.env.VITE_TOKEN_HIEVENTS
@@ -248,12 +250,58 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
       }
     }
 
+    const fetchEventData = async () => {
+      try {
+        const response = await fetch(`${API_URLS.PUBLIC_EVENTS}${venue}/`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token2}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (response.ok) {
+          const result = await response.json()
+          const eventData = result.data || result
+          setSalesStartDate(eventData.ticket_sales_start_date || null)
+        }
+      } catch (error) {
+        console.error('Error fetching event data:', error)
+      }
+    }
+
     if (!seatingMap && venue && venue !== 'undefined') {
       fetchData()
+      fetchEventData()
     } else {
       console.log('DEBUG - No se puede hacer fetchData porque venue es:', venue)
     }
   }, [seatingMap, venue, hieventsUrl, token2, githubApiUrl, token, label])
+
+  // Cargar datos del evento específicos para el seating map
+  useEffect(() => {
+    const fetchEventData = async () => {
+      if (!venue || venue === 'undefined') return
+      try {
+        const response = await fetch(`${API_URLS.PUBLIC_EVENTS}${venue}/`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token2}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (response.ok) {
+          const result = await response.json()
+          const eventData = result.data || result
+          setSalesStartDate(eventData.ticket_sales_start_date || null)
+        }
+      } catch (error) {
+        console.error('Error fetching event data:', error)
+      }
+    }
+    if (seatingMap) {
+      fetchEventData()
+    }
+  }, [seatingMap, venue, token2])
 
   useEffect(() => {
     localStorage.removeItem('local_cart')
@@ -365,6 +413,14 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
                 <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
                   {effectiveDate}
                 </p>
+                {isUpcoming && (
+                  <div className='bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md max-w-sm mt-2'>
+                    <p className='text-yellow-700 font-bold'>Upcoming Event</p>
+                    <p className='text-yellow-600 text-sm'>
+                      Sales start: {new Date(salesStartDate!).toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -451,6 +507,14 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
               <p className='text-1xl mb-6 bg-black bg-opacity-50 rounded-lg px-10 py-2'>
                 {effectiveDate}
               </p>
+              {isUpcoming && (
+                <div className='bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md max-w-sm mt-2'>
+                  <p className='text-yellow-700 font-bold'>Upcoming Event</p>
+                  <p className='text-yellow-600 text-sm'>
+                    Sales start: {new Date(salesStartDate!).toLocaleString()}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -530,8 +594,9 @@ export default function TicketSelectionNoSeat({ routeParams }: TicketEventSaleNo
               <div className='text-right'>
                 <Link to='/checkout'>
                   <button
-                    className='bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300'
+                    className={`bg-green-600 text-white mt-6 font-bold py-3 px-6 rounded-md hover:bg-green-700 transition duration-300 ${isUpcoming ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleCheckout}
+                    disabled={isUpcoming}
                   >
                     Continue to Checkout
                   </button>

@@ -34,6 +34,7 @@ interface EventWithVenue {
   city: string
   id: string
   description: string
+  ticket_sales_start_date: string | null
 }
 
 export default function EventPage() {
@@ -80,6 +81,7 @@ export default function EventPage() {
             images: event.images || [],
             city: locationDetails.city || '-',
             description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
+            ticket_sales_start_date: event.ticket_sales_start_date || null,
             venue: {
               venue_name: venueName || 'Default Venue',
               venue_label: venueName || 'default_venue',
@@ -146,6 +148,7 @@ export default function EventPage() {
                     .toLocaleDateString('en-GB', optionsDate)
                     .replace(',', '')}
                   city={event.venue?.location.city || event.city}
+                  ticketSalesStartDate={event.ticket_sales_start_date}
                 />
               </Link>
             </div>
