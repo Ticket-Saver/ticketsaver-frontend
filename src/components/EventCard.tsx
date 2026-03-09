@@ -11,6 +11,7 @@ export interface EventCardConfig {
   city?: string
   address?: string
   ticketSalesStartDate?: string | null
+  timezone?: string
 }
 
 export function EventCard({
@@ -23,7 +24,8 @@ export function EventCard({
   fontColor = 'text-neutral-content',
   venue = '',
   address = '',
-  ticketSalesStartDate = null
+  ticketSalesStartDate = null,
+  timezone = 'UTC'
 }: EventCardConfig) {
   const isSmallScreen = useIsSmallScreen()
   const isUpcoming = ticketSalesStartDate ? new Date(ticketSalesStartDate) > new Date() : false
@@ -32,7 +34,7 @@ export function EventCard({
     <div
       className={`card ${color} ${fontColor} shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-lg cursor-pointer w-full max-w-md mx-auto`}
     >
-      <figure className='w-full'>
+      <figure className='w-full relative'>
         {thumbnailURL === 'none' ? (
           <img
             src='ticketsaver.png'
@@ -45,6 +47,13 @@ export function EventCard({
             alt='Event'
             className='w-full h-56 sm:h-60 object-cover mx-auto'
           />
+        )}
+        {isUpcoming && (
+          <div className='absolute inset-0 bg-black/60 flex items-center justify-center'>
+            <div className='bg-warning text-warning-content px-4 py-2 rounded-full font-bold text-lg transform -rotate-12 shadow-lg border-2 border-warning-content animate-pulse'>
+              COMING SOON
+            </div>
+          </div>
         )}
       </figure>
       <div className='card-body px-4 py-6'>
@@ -61,12 +70,13 @@ export function EventCard({
           {isUpcoming && ticketSalesStartDate && (
             <h2 className='badge badge-warning'>
               Sales start:{' '}
-              {new Date(ticketSalesStartDate).toLocaleDateString('en-GB', {
+              {new Intl.DateTimeFormat('en-GB', {
                 day: '2-digit',
                 month: 'short',
                 hour: '2-digit',
-                minute: '2-digit'
-              })}
+                minute: '2-digit',
+                timeZone: timezone
+              }).format(new Date(ticketSalesStartDate))}
             </h2>
           )}
         </div>

@@ -35,6 +35,7 @@ interface EventWithVenue {
   id: string
   description: string
   ticket_sales_start_date: string | null
+  timezone: string
 }
 
 export default function EventPage() {
@@ -82,6 +83,7 @@ export default function EventPage() {
             city: locationDetails.city || '-',
             description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
             ticket_sales_start_date: event.ticket_sales_start_date || null,
+            timezone: event.timezone || event.settings?.timezone || 'UTC',
             venue: {
               venue_name: venueName || 'Default Venue',
               venue_label: venueName || 'default_venue',
@@ -149,6 +151,7 @@ export default function EventPage() {
                     .replace(',', '')}
                   city={event.venue?.location.city || event.city}
                   ticketSalesStartDate={event.ticket_sales_start_date}
+                  timezone={event.timezone}
                 />
               </Link>
             </div>

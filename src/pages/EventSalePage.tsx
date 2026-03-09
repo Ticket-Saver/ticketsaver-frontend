@@ -501,7 +501,14 @@ export default function EventPage() {
                           <p className='text-yellow-600 text-sm'>
                             Ticket sales will open on: <br />
                             <span className='font-semibold text-gray-900'>
-                              {new Date(salesStartDate!).toLocaleString()}
+                              {new Intl.DateTimeFormat('en-GB', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                timeZone: eventTimeZone || 'UTC'
+                              }).format(new Date(salesStartDate!))}
                             </span>
                           </p>
                         </div>
