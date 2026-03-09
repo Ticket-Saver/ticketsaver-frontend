@@ -38,6 +38,8 @@ interface EventWithVenue extends Event {
   city: string
   id: string
   description: string
+  ticket_sales_start_date: string | null
+  timezone: string
 }
 
 export default function FeaturedEvents() {
@@ -76,27 +78,6 @@ export default function FeaturedEvents() {
         console.log('Fetched events:', data.data)
 
         const formattedEvents: EventWithVenue[] = data.data.map((event: any) => {
-          // Usar siempre la fecha de inicio del evento para mostrar y para la URL.
-          // Si por alguna razón no existe start_date, caemos a end_date.
-          // Convertimos usando el timezone del evento para evitar desfases de día (UTC vs hora local).
-          const rawDate: string | undefined = event.start_date || event.end_date
-          let eventDate = ''
-
-          if (rawDate) {
-            const dateObject = new Date(rawDate)
-            const timeZone = event.timezone || event.settings?.timezone || 'UTC'
-
-            // 'en-CA' da formato YYYY-MM-DD, ideal para mantener el mismo formato en la URL.
-            const formatter = new Intl.DateTimeFormat('en-CA', {
-              timeZone,
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            })
-
-            eventDate = formatter.format(dateObject)
-          }
-
           const locationDetails = event.settings?.location_details || {}
           const venueName = locationDetails.venue_name || event.venue_name || ''
 
@@ -104,7 +85,7 @@ export default function FeaturedEvents() {
             eventId: event.id,
             event_name: event.title,
             event_label: event.map || 'general',
-            event_date: eventDate,
+            event_date: new Date(event.end_date).toISOString().split('T')[0],
             event_hour: event.event_hour || '',
             venue_label: 'default_venue',
             event_deleted_at: null,
@@ -114,17 +95,19 @@ export default function FeaturedEvents() {
             images: event.images || [],
             city: locationDetails.city || '-',
             description: event.description?.replace(/<\/?[^>]+(>|$)/g, '') || '',
+            ticket_sales_start_date: event.ticket_sales_start_date || null,
+            timezone: event.timezone || event.settings?.timezone || 'UTC',
             venue: {
-              venue_name: venueName,
+              venue_name: venueName || 'Default Venue',
               venue_label: venueName || 'default_venue',
               capacity: 0,
               seatmap: false,
               location: {
                 city: locationDetails.city || '-',
-                address: locationDetails.address_line_1 || '',
-                country: locationDetails.country || '',
-                maps_url: event.settings?.maps_url || '',
-                zip_code: locationDetails.zip_or_postal_code || ''
+                address: '',
+                country: '',
+                maps_url: '',
+                zip_code: ''
               }
             }
           }
@@ -138,7 +121,7 @@ export default function FeaturedEvents() {
     }
 
     fetchEventsFromAPI()
-  }, [token2])
+  }, [token2, hieventsUrl])
 
   // Fetch de descripciones desde GitHub
   const { data: githubData } = useFetchJson(githubApiUrl, options)
@@ -162,6 +145,10 @@ export default function FeaturedEvents() {
     timeZone: 'UTC'
   }
 
+  const hasUpcomingEvents = events.some(
+    (event) => event.ticket_sales_start_date && new Date(event.ticket_sales_start_date) > new Date()
+  )
+
   return (
     <section className='py-10 md:py-16 bg-base-300'>
       <div className='container'>
@@ -170,6 +157,17 @@ export default function FeaturedEvents() {
           <p className='text-lg sm:text-2xl mb-6 md:mb-14'>
             Don't miss out! Buy now before tickets sell out!!
           </p>
+          {/* {hasUpcomingEvents && (
+            <div className='inline-flex items-center gap-2 bg-warning/20 border border-warning text-warning-content px-6 py-3 rounded-2xl mb-8 animate-bounce transition-all duration-300 shadow-sm'>
+              <span className='relative flex h-3 w-3'>
+                <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75'></span>
+                <span className='relative inline-flex rounded-full h-3 w-3 bg-warning'></span>
+              </span>
+              <p className='text-sm sm:text-lg font-bold uppercase tracking-wider'>
+                Some tickets are not on sale yet – Stay tuned!
+              </p>
+            </div>
+          )} */}
         </div>
         <div
           className={`grid ${events.length === 1 ? 'grid-cols-1 place-items-center' : 'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2'} gap-6 lg:gap-8 xl:gap-10 place-items-center items-center`}
@@ -182,15 +180,18 @@ export default function FeaturedEvents() {
                 por lo que solo lo incluimos cuando realmente existe un valor.
               */}
               {(() => {
-                const deleteSegment = event.event_deleted_at ? `/${event.event_deleted_at}` : ''
                 const encodedName = encodeURIComponent(event.event_name)
-                const eventUrl = `/event/${encodedName}/${event.id}/${event.event_date}/${event.event_label}${deleteSegment}`
+                const eventUrl = `/event/${encodedName}/${event.id}/${event.event_date}/${event.event_label}/${event.event_deleted_at}`
+
+                console.log(
+                  `Rendering EventCard for ${event.event_name}. Sales start: ${event.ticket_sales_start_date}`
+                )
 
                 return (
                   <Link style={{ width: '100%' }} to={eventUrl}>
                     <EventCard
                       key={index}
-                      id={event.eventId}
+                      id={event.id}
                       eventId={event.eventId}
                       title={event.event_name}
                       description={descriptions[event.event_label] || event.description}
@@ -204,7 +205,8 @@ export default function FeaturedEvents() {
                         .toLocaleDateString('en-GB', optionsDate)
                         .replace(',', '')}
                       city={event.venue?.location.city || event.city}
-                      address={[event.venue?.location.address].filter(Boolean).join(', ')}
+                      ticketSalesStartDate={event.ticket_sales_start_date}
+                      timezone={event.timezone}
                     />
                   </Link>
                 )
