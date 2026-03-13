@@ -85,7 +85,7 @@ export default function FeaturedEvents() {
             eventId: event.id,
             event_name: event.title,
             event_label: event.map || 'general',
-            event_date: new Date(event.end_date).toISOString().split('T')[0],
+            event_date: event.start_date.split(' ')[0],
             event_hour: event.event_hour || '',
             venue_label: 'default_venue',
             event_deleted_at: null,
