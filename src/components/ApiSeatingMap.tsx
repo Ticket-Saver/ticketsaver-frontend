@@ -154,11 +154,10 @@ export default function ApiSeatingMap({
             if (import.meta.env.DEV && (u.hostname === '127.0.0.1' || u.hostname === 'localhost')) {
               return `/api${u.pathname}${u.search}`
             }
-            // if (u.hostname === 'ticketsaverapi.strangled.net') {
-            //   // Remove /api prefix if it exists to avoid double prefixing
-            //   const cleanPath = u.pathname.startsWith('/api') ? u.pathname.substring(4) : u.pathname
-            //   return `/api${cleanPath}${u.search}`
-            // }
+            if (u.hostname === 'panel.ticketsaver.net' || u.hostname === 'ticketsaverapi.strangled.net') {
+              const cleanPath = u.pathname.startsWith('/api/') ? u.pathname.substring(5) : (u.pathname.startsWith('/') ? u.pathname.substring(1) : u.pathname)
+              return `${API_URLS.API}${cleanPath}${u.search}`
+            }
             return raw
           } catch {
             return raw
