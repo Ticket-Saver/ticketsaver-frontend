@@ -85,7 +85,7 @@ export default function FeaturedEvents() {
             eventId: event.id,
             event_name: event.title,
             event_label: event.map || 'general',
-            event_date: event.start_date.split(' ')[0],
+            event_date: event.start_date,
             event_hour: event.event_hour || '',
             venue_label: 'default_venue',
             event_deleted_at: null,
@@ -141,8 +141,7 @@ export default function FeaturedEvents() {
   const optionsDate: Intl.DateTimeFormatOptions = {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC'
+    year: 'numeric'
   }
 
   const hasUpcomingEvents = events.some(
@@ -202,7 +201,7 @@ export default function FeaturedEvents() {
                       }
                       venue={event.venue?.venue_name || event.venue_label}
                       date={new Date(event.event_date)
-                        .toLocaleDateString('en-GB', optionsDate)
+                        .toLocaleDateString('en-GB', { ...optionsDate, timeZone: event.timezone })
                         .replace(',', '')}
                       city={event.venue?.location.city || event.city}
                       ticketSalesStartDate={event.ticket_sales_start_date}
