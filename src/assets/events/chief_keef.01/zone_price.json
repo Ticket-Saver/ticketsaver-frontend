@@ -1,0 +1,48 @@
+{
+  "prices": {
+    "P1": {
+      "2026-01-15": {
+        "price_base": 3999,
+        "price_final": 5000
+      },
+      "2026-01-27": {
+        "price_base": 4999,
+        "price_final": 6121
+      },
+      "2026-03-02": {
+        "price_base": 5999,
+        "price_final": 7239
+      },
+      "2026-03-07": {
+        "price_base": 6999,
+        "price_final": 8360
+      }
+    },
+    "P2": {
+      "2026-01-15": {
+        "price_base": 5999,
+        "price_final": 7239
+      },
+      "2026-01-29": {
+        "price_base": 6999,
+        "price_final": 8362
+      },
+      "2026-03-02": {
+        "price_base": 7999,
+        "price_final": 9479
+      },
+      "2026-03-07": {
+        "price_base": 8999,
+        "price_final": 10602
+      }
+    }
+  },
+  "zones": {
+    "General Admission": {
+      "P1": {}
+    },
+    "vip": {
+      "P2": {}
+    }
+  }
+}

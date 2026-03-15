@@ -103,11 +103,11 @@
   },
   "ice_spice.01": {
     "event_label": "ice_spice.01",
-    "event_date": "3000-03-15",
+    "event_date": "2023-03-15",
     "event_hour": "20:00",
     "event_name": "Ice Spice",
     "venue_label": "claytonbar_tx",
-    "sale_starts_at": "3000-11-07",
+    "sale_starts_at": "2023-11-07",
     "deleted_at": "",
     "tricket_url": ""
   },
@@ -203,5 +203,46 @@
     "event_name": "Las Alucines",
     "venue_label": "Copernicus_Center_IL",
     "sale_starts_at": "2025-11-24T10:00:00-06:00"
+  },
+  "shoreline_mafia.01": {
+    "event_label": "shoreline_mafia.01",
+    "event_date": "2026-03-18",
+    "event_name": "Shoreline Mafia - Springbreak 2026",
+    "event_hour": "08:00 PM",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2026-01-08"
+  },
+  "chief_keef.01": {
+    "event_label": "chief_keef.01",
+    "event_date": "2026-03-14",
+    "event_hour": "08:00 PM",
+    "event_name": "Chief Keef - Springbreak 2026",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2026-01-16"
+  },
+  "offset_nardowick.01": {
+    "event_label": "offset_nardowick.01",
+    "event_date": "2026-03-21",
+    "event_hour": "08:00 PM",
+    "event_name": "Offset x Nardo Wick - Spring Break 2026",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2026-01-17"
+  },
+  "destroy_lonely.01": {
+    "event_label": "destroy_lonely.01",
+    "event_date": "2026-03-20",
+    "event_hour": "08:00 PM",
+    "event_name": "Destroy Lonely - Spring Break 2026",
+    "venue_label": "claytonbar_tx",
+    "sale_starts_at": "2026-01-22"
+  },
+  "las_alucines.02": {
+    "event_label": "las_alucines.02",
+    "event_date": "2026-05-05",
+    "event_hour": "19:30",
+    "event_name": "Las Alucines",
+    "venue_label": "sanjose_ca",
+    "sale_starts_at": "2026-03-13",
+    "tricket_url": "https://alucines.ticketsaver.net/event/Las%20Alucines/24/2026-05-06/san_jose/null"
   }
 }
