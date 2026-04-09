@@ -627,6 +627,26 @@ export default function ApiSeatingMap({
       return undefined
     }
 
+    const getSectionPrice = (secKey: string) => {
+      const match = seats.find((s) => s.section === secKey || s.position === secKey || s.seat_key === secKey || s.seat_key_alt === secKey)
+      return match ? match.price_including_taxes_and_fees ?? match.price : undefined
+    }
+
+    const getRangePrice = (rangeKey: string, rowCandidate?: string) => {
+      const def = ranges[rangeKey]
+      if (!def) return undefined
+      for (const s of seats) {
+        const row = (s.row || '').toString().toUpperCase()
+        if (rowCandidate && row !== rowCandidate.toUpperCase()) continue
+        if (!def.rows.includes(row)) continue
+        const seatNum = typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
+        if (def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)) {
+          return s.price_including_taxes_and_fees ?? s.price
+        }
+      }
+      return undefined
+    }
+
     const formatGroupLabel = (key: string) => {
       const parts = key.split('-')
       const position = parts[0]
@@ -926,9 +946,10 @@ export default function ApiSeatingMap({
       if (rangeStats) {
         const displayLabel = rowCandidate || key
         setHoverInfo({
-          label: displayLabel,
+          label: formatGroupLabel(displayLabel),
           total: rangeStats.total,
-          available: rangeStats.available
+          available: rangeStats.available,
+          price: getRangePrice(key, rowCandidate)
         })
         if (ev && container) {
           const rect = container.getBoundingClientRect()
@@ -940,7 +961,12 @@ export default function ApiSeatingMap({
       const stats = sectionStats[key]
       if (stats) {
         const displayLabel = rowCandidate || key
-        setHoverInfo({ label: displayLabel, total: stats.total, available: stats.available })
+        setHoverInfo({
+          label: formatGroupLabel(displayLabel),
+          total: stats.total,
+          available: stats.available,
+          price: getSectionPrice(key)
+        })
         if (ev && container) {
           const rect = container.getBoundingClientRect()
           setTooltipPos({ x: ev.clientX - rect.left, y: ev.clientY - rect.top })
