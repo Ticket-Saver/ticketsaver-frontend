@@ -21,6 +21,7 @@ interface SeatItem {
   seat_number: string | number
   price_range: string
   price: number
+  price_including_taxes_and_fees?: number
   is_available: boolean
   is_sold_out: boolean
   seat_key: string
@@ -83,6 +84,7 @@ export default function ApiSeatingMap({
     label: string
     total: number
     available: number
+    price?: number
     isSeatLevel?: boolean
     isLoadingGroup?: boolean
   } | null>(null)
@@ -610,6 +612,46 @@ export default function ApiSeatingMap({
       return { total, available }
     }
 
+    const getGroupPrice = (gKey: string) => {
+      const rKeys = groupKeyToRangeKeys[gKey]
+      if (!rKeys || rKeys.length === 0) return undefined
+      for (const s of seats) {
+        const row = (s.row || '').toString().toUpperCase()
+        const seatNum = typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
+        const match = rKeys.some((k) => {
+          const def = ranges[k]
+          return def && def.rows.includes(row) && def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
+        })
+        if (match) return s.price_including_taxes_and_fees ?? s.price
+      }
+      return undefined
+    }
+
+    const formatGroupLabel = (key: string) => {
+      const parts = key.split('-')
+      const position = parts[0]
+      let isBalcony = parts.includes('balcony')
+      let isLoge = parts.includes('loge')
+      let posFormatted = position
+      if (/^\d+$/.test(position)) {
+        posFormatted = `Section ${position}`
+      } else {
+        if (position === 'leftcenter') posFormatted = 'Left Center'
+        else if (position === 'rightcenter') posFormatted = 'Right Center'
+        else posFormatted = position.charAt(0).toUpperCase() + position.slice(1)
+        if (!posFormatted.toLowerCase().includes('section') && posFormatted !== 'Balcony' && posFormatted !== 'Loge') {
+           posFormatted = `Section ${posFormatted}`
+        }
+      }
+      if (isBalcony && !posFormatted.toLowerCase().includes('balcony')) {
+        return `${posFormatted} Balcony`
+      }
+      if (isLoge && !posFormatted.toLowerCase().includes('loge')) {
+        return `${posFormatted} Loge`
+      }
+      return posFormatted
+    }
+
     // Nueva función para obtener disponibilidad en tiempo real (con deduplicación de promesas)
     const fetchRealtimeAvailability = (groupKey: string, fallbackGroupKey?: string) => {
       if (availabilityPromiseCacheRef.current[groupKey]) {
@@ -822,21 +864,25 @@ export default function ApiSeatingMap({
             : groupKeyBase
 
         const cached = availabilityCacheRef.current[effectiveGroupKey]
+        const groupPrice = getGroupPrice(groupKeyBase)
+        const formattedLabel = formatGroupLabel(effectiveGroupKey)
 
         if (cached) {
           // Si ya tenemos datos del endpoint (o fallback) en caché, los usamos siempre.
           setHoverInfo({
-            label: toTitleCaseFromKebab(effectiveGroupKey),
+            label: formattedLabel,
             total: cached.total,
             available: cached.available,
+            price: groupPrice,
             isLoadingGroup: false
           })
         } else {
           // Si todavía no tenemos datos, mostrar estado "loading" en el tooltip.
           setHoverInfo({
-            label: toTitleCaseFromKebab(effectiveGroupKey),
+            label: formattedLabel,
             total: 0,
             available: 0,
+            price: groupPrice,
             isLoadingGroup: true
           })
         }
@@ -854,9 +900,10 @@ export default function ApiSeatingMap({
               if (realtimeStats) {
                 availabilityCacheRef.current[effectiveGroupKey] = realtimeStats
                 setHoverInfo({
-                  label: toTitleCaseFromKebab(effectiveGroupKey),
+                  label: formattedLabel,
                   total: realtimeStats.total,
                   available: realtimeStats.available,
+                  price: realtimeStats.price ?? groupPrice,
                   isLoadingGroup: false
                 })
               }
@@ -1744,7 +1791,7 @@ export default function ApiSeatingMap({
               ? `${hoverInfo.label} ${hoverInfo.available === 1 ? 'available' : 'no available'}`
               : hoverInfo.isLoadingGroup
                 ? `${hoverInfo.label}: loading...`
-                : `${hoverInfo.label}: ${hoverInfo.available}/${hoverInfo.total} available`}
+                : `${hoverInfo.label}: ${hoverInfo.price != null ? '$' + hoverInfo.price : hoverInfo.available + '/' + hoverInfo.total + ' available'}`}
           </div>
         )}
         {Object.keys(selectedSeatIds).length > 0 && (
