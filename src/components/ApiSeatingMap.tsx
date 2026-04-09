@@ -104,9 +104,9 @@ export default function ApiSeatingMap({
   const [seatTypes, setSeatTypes] = useState<Record<string, string[]>>({})
   const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(false)
   const lastFetchedGroupRef = useRef<string | null>(null)
-  const availabilityCacheRef = useRef<Record<string, { total: number; available: number }>>({})
+  const availabilityCacheRef = useRef<Record<string, { total: number; available: number; price?: number }>>({})
   const availabilityPromiseCacheRef = useRef<
-    Record<string, Promise<{ total: number; available: number } | null>>
+    Record<string, Promise<{ total: number; available: number; price?: number } | null>>
   >({})
   const pendingClickRef = useRef<boolean>(false)
 
@@ -692,7 +692,8 @@ export default function ApiSeatingMap({
             console.log('Realtime availability data:', data)
             const stats = {
               total: data.total || 0,
-              available: data.available || 0
+              available: data.available || 0,
+              price: data.price
             }
             availabilityCacheRef.current[groupKey] = stats
             return stats
@@ -893,7 +894,7 @@ export default function ApiSeatingMap({
             label: formattedLabel,
             total: cached.total,
             available: cached.available,
-            price: groupPrice,
+            price: cached.price ?? groupPrice,
             isLoadingGroup: false
           })
         } else {
