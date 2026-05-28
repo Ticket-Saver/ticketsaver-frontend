@@ -37,8 +37,8 @@
 .bannerBottomFade {
   background: linear-gradient(
     to top,
-    rgba(14, 8, 32, 0.92) 0%,
-    rgba(14, 8, 32, 0.5) 50%,
+    rgba(10, 10, 12, 0.92) 0%,
+    rgba(10, 10, 12, 0.5) 50%,
     transparent 100%
   );
 }
@@ -46,7 +46,7 @@
 .bannerTopFade {
   background: linear-gradient(
     to bottom,
-    rgba(14, 8, 32, 0.7) 0%,
+    rgba(10, 10, 12, 0.7) 0%,
     transparent 100%
   );
 }
@@ -55,8 +55,8 @@
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(14, 8, 32, 0.4) 70%,
-    rgba(14, 8, 32, 0.85) 100%
+    rgba(10, 10, 12, 0.4) 70%,
+    rgba(10, 10, 12, 0.85) 100%
   );
 }
 

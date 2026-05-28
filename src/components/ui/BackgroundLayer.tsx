@@ -7,7 +7,7 @@ interface BackgroundLayerProps {
   palette?: MeshPalette
   intensity?: number
   paused?: boolean
-  /** Opacidad del mesh (default 0.7 — deja respirar al brand-ink). */
+  /** Opacidad del mesh (default 0.35 — violeta sutil sobre el fondo carbón). */
   meshOpacity?: number
   /**
    * URL de cover blureado encima del mesh (usado por banners full-bleed
@@ -34,7 +34,7 @@ export default function BackgroundLayer({
   palette = 'violet',
   intensity = 1,
   paused = false,
-  meshOpacity = 0.7,
+  meshOpacity = 0.35,
   coverImage,
   coverBlur = 60,
   coverOpacity = 0.45,
@@ -63,7 +63,7 @@ export default function BackgroundLayer({
   return (
     <div
       aria-hidden='true'
-      className={cn('bg-brand-ink', className)}
+      className={cn('bg-[#0A0A0C]', className)}
       style={layerStyle}
     >
       <MeshBackground

@@ -30,7 +30,7 @@ export default function VenueMap({ venueName, city, mapsUrl }: VenueMapProps) {
         />
         <div
           className='absolute left-3 top-3 px-2.5 py-1.5 rounded-glass-sm border border-white/[0.14] text-white text-[11.5px] font-medium flex items-center gap-1.5 backdrop-blur-glass'
-          style={{ background: 'rgba(14,8,32,0.75)' }}
+          style={{ background: 'rgba(10,10,12,0.75)' }}
         >
           <PinIcon />
           {venueName}

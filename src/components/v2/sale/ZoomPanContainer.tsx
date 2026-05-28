@@ -90,7 +90,7 @@ const ZoomButton = ({ label, onClick, children }: ZoomButtonProps) => (
     data-no-pan
     onClick={onClick}
     className='grid h-8 w-8 place-items-center rounded-glass-sm border border-white/15 text-white hover:bg-white/[0.18] transition backdrop-blur-glass'
-    style={{ background: 'rgba(14,8,32,0.55)' }}
+    style={{ background: 'rgba(10,10,12,0.55)' }}
   >
     {children}
   </button>

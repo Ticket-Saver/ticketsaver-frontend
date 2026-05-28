@@ -19,8 +19,9 @@ interface MeshBackgroundProps {
    */
   palette?: MeshPalette
   paused?: boolean
-  /** 0–1 multiplier applied to the canvas. Default 0.7 so the dark
-   *  surface underneath shows through and the page feels dark-first. */
+  /** 0–1 multiplier applied to the canvas. Default 0.35 so the charcoal
+   *  surface underneath dominates and the violet mesh reads as a subtle
+   *  ambient accent, not the page background. */
   opacity?: number
   className?: string
   fallbackClassName?: string
@@ -59,7 +60,7 @@ export default function MeshBackground({
   intensity = 1,
   palette,
   paused = false,
-  opacity = 0.7,
+  opacity = 0.35,
   className,
   fallbackClassName
 }: MeshBackgroundProps) {
@@ -143,7 +144,7 @@ export default function MeshBackground({
         position: 'absolute',
         inset: 0,
         overflow: 'hidden',
-        background: '#0E0820',
+        background: '#0A0A0C',
         pointerEvents: 'none'
       }}
     >

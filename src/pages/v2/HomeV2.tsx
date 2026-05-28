@@ -72,7 +72,7 @@ export default function HomeV2() {
   return (
     <LayoutV2 meshSeed={3}>
       <div className='pt-6 lg:pt-10 pb-10 space-y-8 lg:space-y-12'>
-        <header className='px-5 lg:px-10 max-w-6xl mx-auto w-full'>
+        <header className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full'>
           <p className='font-display text-[11px] uppercase tracking-[0.16em] font-semibold text-brand-hi'>
             {greetingDate}
           </p>
@@ -92,7 +92,7 @@ export default function HomeV2() {
           </p>
         </header>
 
-        <div className='px-5 lg:px-10 max-w-6xl mx-auto w-full'>
+        <div className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full'>
           <CategoryChips active='All' onChange={handleCategory} />
         </div>
 
@@ -102,10 +102,15 @@ export default function HomeV2() {
           <EmptyState />
         ) : (
           <>
-            <HeroEvent events={hero.slice(0, 5)} autoPlayMs={9000} />
+            <HeroEvent
+              events={hero.slice(0, 5)}
+              autoPlayMs={9000}
+              className='mx-auto w-full max-w-[1280px]'
+            />
 
             {trending.length > 0 && (
               <EventCarousel
+                className='mx-auto w-full max-w-[1280px]'
                 title='Trending now'
                 subtitle='Picks selling fast across cities'
                 events={trending}
@@ -117,6 +122,7 @@ export default function HomeV2() {
 
             {thisWeekRow.length > 0 && (
               <EventCarousel
+                className='mx-auto w-full max-w-[1280px]'
                 title='This week'
                 subtitle='Next 7 days, all categories'
                 events={thisWeekRow}
@@ -128,6 +134,7 @@ export default function HomeV2() {
 
             {featuredRow.length > 0 && (
               <EventCarousel
+                className='mx-auto w-full max-w-[1280px]'
                 title={`${featuredCategory} highlights`}
                 subtitle='Curated by what you love'
                 events={featuredRow}
@@ -161,10 +168,21 @@ const PRINCIPLES = [
 ]
 
 const PrinciplesPanel = () => (
-  <section className='px-5 lg:px-10 max-w-6xl mx-auto w-full pt-4'>
-    <div className='grid gap-3 sm:grid-cols-3'>
-      {PRINCIPLES.map((p) => (
-        <GlassCard key={p.title} depth='sm' radius='md' className='p-5'>
+  <section className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full pt-8 lg:pt-14'>
+    <div className='flex items-center gap-4 mb-6 lg:mb-8'>
+      <span className='font-display text-[11px] uppercase tracking-[0.18em] font-semibold text-brand-hi'>
+        Why TicketSaver
+      </span>
+      <span className='h-px flex-1 bg-white/10' />
+    </div>
+    <div className='grid gap-4 sm:grid-cols-3'>
+      {PRINCIPLES.map((p, i) => (
+        <GlassCard key={p.title} depth='sm' radius='lg' className='p-6 lg:p-7'>
+          <div className='grid h-9 w-9 place-items-center rounded-glass-sm bg-brand-hi/10 mb-4'>
+            <span className='font-display text-[13px] font-bold text-brand-hi'>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+          </div>
           <div className='font-display text-base font-semibold tracking-tight text-white'>
             {p.title}
           </div>
@@ -178,7 +196,7 @@ const PrinciplesPanel = () => (
 )
 
 const LoadingState = () => (
-  <div className='px-5 lg:px-10 max-w-6xl mx-auto w-full'>
+  <div className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full'>
     <div className='h-[420px] sm:h-[460px] lg:h-[520px] rounded-glass-lg bg-white/[0.04] border border-white/[0.08] animate-pulse' />
     <div className='mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3'>
       {Array.from({ length: 4 }).map((_, i) => (
@@ -192,7 +210,7 @@ const LoadingState = () => (
 )
 
 const EmptyState = () => (
-  <div className='px-5 lg:px-10 max-w-6xl mx-auto w-full'>
+  <div className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full'>
     <GlassCard depth='md' radius='lg' className='p-8 text-center'>
       <div className='font-display text-lg font-semibold text-white'>
         No upcoming events

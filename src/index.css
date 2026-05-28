@@ -6,6 +6,11 @@
 @import './styles/tokens.css';
 @import './styles/custom.css';
 
+/* Fondo base de toda la web — carbón oscuro (dark-first, sin modo claro). */
+body {
+  background-color: #0a0a0c;
+}
+
 /* v2 utilities */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

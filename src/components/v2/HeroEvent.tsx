@@ -72,7 +72,7 @@ export default function HeroEvent({
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className='px-5 lg:px-10'>
+      <div className='relative px-5 lg:px-10'>
         <div
           ref={scrollerRef}
           onScroll={onScroll}
@@ -90,6 +90,27 @@ export default function HeroEvent({
             </div>
           ))}
         </div>
+
+        {events.length > 1 && (
+          <>
+            <button
+              type='button'
+              aria-label='Previous event'
+              onClick={() => goTo(active - 1)}
+              className='hidden md:grid absolute left-7 lg:left-14 top-1/2 -translate-y-1/2 z-10 h-11 w-11 place-items-center rounded-pill border border-white/15 bg-black/40 text-white/85 backdrop-blur-glass hover:bg-black/60 hover:text-white transition'
+            >
+              <ChevLeft />
+            </button>
+            <button
+              type='button'
+              aria-label='Next event'
+              onClick={() => goTo(active + 1)}
+              className='hidden md:grid absolute right-7 lg:right-14 top-1/2 -translate-y-1/2 z-10 h-11 w-11 place-items-center rounded-pill border border-white/15 bg-black/40 text-white/85 backdrop-blur-glass hover:bg-black/60 hover:text-white transition'
+            >
+              <ChevRight />
+            </button>
+          </>
+        )}
       </div>
 
       {events.length > 1 && (
@@ -205,6 +226,18 @@ const HeroSlide = ({ event }: HeroSlideProps) => {
     </article>
   )
 }
+
+const ChevLeft = () => (
+  <svg width='14' height='14' viewBox='0 0 12 12' fill='none' aria-hidden>
+    <path
+      d='m7.5 2.5-3.5 3.5 3.5 3.5'
+      stroke='currentColor'
+      strokeWidth='1.8'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+  </svg>
+)
 
 const ChevRight = () => (
   <svg width='14' height='14' viewBox='0 0 12 12' fill='none' aria-hidden>
