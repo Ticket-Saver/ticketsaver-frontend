@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TicketSaver · Clickable Prototype (Dark)</title>
+<style>
+  html, body { margin:0; padding:0; background:#000; font-family:Inter, system-ui, sans-serif; color:#fff; height:100%; overflow:hidden; }
+  * { box-sizing:border-box; }
+  @keyframes pulse { 0%, 100% { opacity:1 } 50% { opacity:0.5 } }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  .screen-wrap { animation: fadeIn 0.25s ease-out; }
+  @media (max-width: 380px) { #app { font-size: 14px } }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body data-screen-label="TicketSaver Prototype · Dark">
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Event data shared with original prototype -->
+<script src="ts-events.js"></script>
+<!-- DARK mesh — grayscale charcoal palette -->
+<script src="ts-mesh-dark.js"></script>
+
+<!-- Device frame + event cover art are unchanged (covers stay colorful intentionally) -->
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="ts-cover.jsx"></script>
+
+<!-- DARK variants of every screen -->
+<script type="text/babel" src="ts-home-dark.jsx"></script>
+<script type="text/babel" src="ts-screens-dark.jsx"></script>
+<script type="text/babel" src="ts-event-detail-dark.jsx"></script>
+<script type="text/babel" src="ts-purchase-flow-dark.jsx"></script>
+<script type="text/babel" src="ts-info-pages-dark.jsx"></script>
+<script type="text/babel" src="ts-legal-pages-dark.jsx"></script>
+<script type="text/babel" src="ts-desktop-shop-dark.jsx"></script>
+<script type="text/babel" src="ts-desktop-info-dark.jsx"></script>
+<script type="text/babel" src="ts-queue-dark.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+function Prototype(){
+  const [mode, setMode]     = useState('mobile');
+  const [screen, setScreen] = useState('home');
+  const [cartOpen, setCart] = useState(false);
+
+  useEffect(() => {
+    window.tsNav = (route) => {
+      const map = {
+        'home':'home', 'event':'event', 'eventDetail':'event',
+        'section':'section', 'sectionSelect':'section',
+        'seats':'seats', 'seatPicker':'seats',
+        'ticket':'ticket', 'received':'ticket',
+        'mytickets':'mytickets', 'tickets':'mytickets',
+        'about':'about', 'contact':'contact',
+        'faqs':'faqs', 'help':'faqs',
+        'terms':'terms', 'privacy':'privacy', 'cart':'cart',
+        'queue':'queue', 'waitingRoom':'queue',
+      };
+      const next = map[route] || route;
+      if (next === 'cart') { setCart(true); return; }
+      setCart(false);
+      setScreen(next);
+    };
+    return () => { delete window.tsNav; };
+  }, []);
+
+  const navTo = (r) => window.tsNav(r);
+
+  const renderMobile = () => {
+    let inner;
+    switch (screen) {
+      case 'home':      inner = <window.HomeFull/>; break;
+      case 'event':     inner = <window.EventDetail/>; break;
+      case 'section':   inner = <MobileSectionSelect onNav={navTo}/>; break;
+      case 'seats':     inner = <MobileSeatSelect onNav={navTo}/>; break;
+      case 'ticket':    inner = <window.TicketReceived/>; break;
+      case 'mytickets': inner = <window.MyTickets/>; break;
+      case 'about':     inner = <window.AboutPage/>; break;
+      case 'contact':   inner = <window.ContactPage/>; break;
+      case 'faqs':      inner = <window.FaqsPage/>; break;
+      case 'terms':     inner = <window.TermsPage/>; break;
+      case 'privacy':   inner = <window.PrivacyPage/>; break;
+      case 'queue':     inner = <window.QueueMobile/>; break;
+      default:          inner = <window.HomeFull/>;
+    }
+    return (
+      <div style={{ width:'100%', height:'100%', display:'grid', placeItems:'center', background:'radial-gradient(ellipse at center, #18181b 0%, #050507 100%)' }}>
+        <div style={{ position:'relative' }}>
+          <window.IOSDevice width={390} height={844} dark={true} statusBar="dark" title={undefined}>
+            <div key={screen} className="screen-wrap" style={{ width:'100%', height:'100%' }}>{inner}</div>
+          </window.IOSDevice>
+          {cartOpen && (
+            <div onClick={() => setCart(false)} style={{
+              position:'absolute', inset:0, background:'rgba(0,0,0,0.5)',
+              borderRadius:46, display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:999,
+              padding:14, animation:'fadeIn 0.2s',
+            }}>
+              <div onClick={(e) => e.stopPropagation()} style={{ width:'100%', maxHeight:'85%', overflowY:'auto', borderRadius:24, background:'#0A0A0C', border:'0.5px solid rgba(255,255,255,0.10)' }}>
+                <window.CartDrawer/>
+                <div onClick={() => { setCart(false); navTo('section'); }} style={{ margin:'0 16px 18px', padding:'15px', borderRadius:14, background:'#fff', color:'#141416', fontSize:14, fontWeight:600, textAlign:'center', cursor:'pointer', fontFamily:'"Space Grotesk", system-ui' }}>Checkout →</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div onClick={() => setCart(true)} style={{ position:'fixed', right:24, bottom:90, padding:'10px 16px', borderRadius:99, background:'rgba(255,255,255,0.10)', border:'0.5px solid rgba(255,255,255,0.18)', backdropFilter:'blur(14px)', fontSize:12.5, fontWeight:600, cursor:'pointer', zIndex:50 }}>
+          🛒 Open cart
+        </div>
+      </div>
+    );
+  };
+
+  const renderDesktop = () => {
+    let inner;
+    switch (screen) {
+      case 'home':      inner = <window.DesktopHome onNav={navTo}/>; break;
+      case 'event':     inner = <window.DesktopEventDetail onNav={navTo}/>; break;
+      case 'section':   inner = <window.DesktopSectionSelect onNav={navTo}/>; break;
+      case 'seats':     inner = <window.DesktopSeatSelect onNav={navTo}/>; break;
+      case 'ticket':    inner = <window.DesktopTicketReceived onNav={navTo}/>; break;
+      case 'mytickets': inner = <window.DesktopMyTickets onNav={navTo}/>; break;
+      case 'about':     inner = <window.DesktopAbout onNav={navTo}/>; break;
+      case 'contact':   inner = <window.DesktopContact onNav={navTo}/>; break;
+      case 'faqs':      inner = <window.DesktopFaqs onNav={navTo}/>; break;
+      case 'terms':     inner = <window.DesktopLegal kind="terms" onNav={navTo}/>; break;
+      case 'privacy':   inner = <window.DesktopLegal kind="privacy" onNav={navTo}/>; break;
+      case 'queue':     inner = <window.QueueDesktop onNav={navTo}/>; break;
+      default:          inner = <window.DesktopHome onNav={navTo}/>;
+    }
+    return <div key={screen} className="screen-wrap" style={{ width:'100%', height:'100%' }}>{inner}</div>;
+  };
+
+  return (
+    <div style={{ width:'100vw', height:'100vh', display:'flex', flexDirection:'column', background:'#000' }}>
+      <div style={{
+        height:54, padding:'0 20px', flexShrink:0,
+        display:'flex', alignItems:'center', gap:16,
+        background:'rgba(0,0,0,0.92)',
+        borderBottom:'0.5px solid rgba(255,255,255,0.08)',
+        zIndex:1000,
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ width:24, height:24, borderRadius:6, background:'linear-gradient(135deg,#3A3A42,#15151A)', border:'0.5px solid rgba(255,255,255,0.12)' }}/>
+          <div style={{ fontFamily:'"Space Grotesk", system-ui', fontSize:14, fontWeight:600 }}>TicketSaver · Prototype <span style={{ color:'#D4A8F0', marginLeft:6 }}>Dark</span></div>
+        </div>
+        <div style={{ width:1, height:18, background:'rgba(255,255,255,0.12)' }}/>
+        <div style={{ display:'flex', padding:3, borderRadius:99, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.10)' }}>
+          {['mobile','desktop'].map(m => (
+            <div key={m} onClick={() => setMode(m)} style={{
+              padding:'5px 14px', borderRadius:99,
+              background: m === mode ? '#fff' : 'transparent',
+              color: m === mode ? '#0A0A0C' : 'rgba(255,255,255,0.65)',
+              fontSize:12, fontWeight:600, cursor:'pointer',
+              textTransform:'capitalize', display:'flex', alignItems:'center', gap:6,
+            }}>
+              {m === 'mobile' ? '📱' : '🖥️'} {m}
+            </div>
+          ))}
+        </div>
+        <div style={{ width:1, height:18, background:'rgba(255,255,255,0.12)' }}/>
+        <ScreenJump screen={screen} onJump={navTo}/>
+        <div style={{ flex:1 }}/>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>Click anywhere to navigate</div>
+      </div>
+
+      <div style={{ flex:1, minHeight:0, position:'relative', overflow:'hidden' }}>
+        {mode === 'mobile' ? renderMobile() : renderDesktop()}
+      </div>
+    </div>
+  );
+}
+
+function ScreenJump({ screen, onJump }){
+  const screens = [
+    ['home','Home'],
+    ['event','Event detail'],
+    ['queue','Waiting room'],
+    ['section','Section select'],
+    ['seats','Seat select'],
+    ['ticket','Ticket received'],
+    ['mytickets','My tickets'],
+    ['about','About'],
+    ['contact','Contact'],
+    ['faqs','FAQs'],
+    ['terms','Terms'],
+    ['privacy','Privacy'],
+  ];
+  const [open, setOpen] = useState(false);
+  const cur = screens.find(s => s[0] === screen) || screens[0];
+  return (
+    <div style={{ position:'relative' }}>
+      <div onClick={() => setOpen(!open)} style={{
+        padding:'5px 12px', borderRadius:99,
+        background:'rgba(255,255,255,0.06)',
+        border:'0.5px solid rgba(255,255,255,0.10)',
+        fontSize:12, fontWeight:500, cursor:'pointer',
+        display:'flex', alignItems:'center', gap:6,
+        color:'rgba(255,255,255,0.85)',
+      }}>
+        Jump to: <span style={{ color:'#fff', fontWeight:600 }}>{cur[1]}</span> ▾
+      </div>
+      {open && (
+        <div onMouseLeave={() => setOpen(false)} style={{ position:'absolute', top:'calc(100% + 6px)', left:0, padding:6, borderRadius:14, background:'rgba(10,10,12,0.95)', border:'0.5px solid rgba(255,255,255,0.10)', backdropFilter:'blur(20px)', minWidth:200, zIndex:1001 }}>
+          {screens.map(([id, label]) => (
+            <div key={id} onClick={() => { onJump(id); setOpen(false); }} style={{ padding:'8px 12px', borderRadius:8, background: screen === id ? 'rgba(255,255,255,0.10)' : 'transparent', color: screen === id ? '#fff' : 'rgba(255,255,255,0.75)', fontSize:12.5, cursor:'pointer', fontWeight: screen === id ? 600 : 500 }}>{label}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileSectionSelect({ onNav }){
+  return <window.SeatPicker onComplete={() => onNav('ticket')} onBack={() => onNav('event')}/>;
+}
+function MobileSeatSelect({ onNav }){
+  return <window.SeatPicker initialStep="seats" onComplete={() => onNav('ticket')} onBack={() => onNav('event')}/>;
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<Prototype/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+:root {
+  --brand-ink: #0E0820;
+  --brand-lo: #8A5BC7;
+  --brand-mid: #B57BE8;
+  --brand-hi: #D4A8F0;
+
+  --accent-pink: #FF5E9E;
+  --accent-mint: #7DFFB0;
+  --accent-coral: #FFB1C8;
+  --accent-amber: #FFE0A0;
+  --accent-aqua: #B0F0FF;
+
+  --surface-glass-5: rgba(255, 255, 255, 0.05);
+  --surface-glass-8: rgba(255, 255, 255, 0.08);
+  --surface-glass-12: rgba(255, 255, 255, 0.12);
+  --surface-glass-18: rgba(255, 255, 255, 0.18);
+
+  --border-soft: rgba(255, 255, 255, 0.10);
+  --border-mid: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
+
+  --text-primary: rgba(255, 255, 255, 1);
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --text-tertiary: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.42);
+
+  --pill-normal-bg: rgba(255, 255, 255, 0.08);
+  --pill-normal-fg: #ffffff;
+  --pill-warn-bg: rgba(255, 177, 200, 0.22);
+  --pill-warn-fg: #FFD6E2;
+  --pill-critical-bg: rgba(255, 90, 110, 0.18);
+  --pill-critical-fg: #FFB3BD;
+
+  --shadow-glass: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-glass-deep: 0 20px 50px rgba(0, 0, 0, 0.45);
+}

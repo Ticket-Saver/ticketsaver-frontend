@@ -28,6 +28,19 @@ export interface SessionTimerState {
   extendTimer: (minutes: number) => void // Extender tiempo
 }
 
+/**
+ * Custom event que se dispara cuando una instancia del hook escribe en
+ * localStorage. Permite que otras instancias (e.g. el CountdownPill del
+ * Header y el SeatGrid del paso 2) se mantengan sincronizadas dentro de
+ * la misma pestaña — el evento `storage` nativo sólo cross-tab.
+ */
+const SYNC_EVENT = 'tsv:session-timer:update'
+
+const broadcastSync = (storageKey: string) => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { storageKey } }))
+}
+
 export function useSessionTimer(
   eventLabel: string | undefined,
   timeoutMinutes: number = 10
@@ -72,6 +85,8 @@ export function useSessionTimer(
     if (import.meta.env.DEV) {
       console.log('⏱️ Timer iniciado:', timeoutMinutes, 'minutos')
     }
+
+    broadcastSync(STORAGE_KEY)
   }, [STORAGE_KEY, TIMEOUT_MS, timeoutMinutes])
 
   /**
@@ -87,6 +102,8 @@ export function useSessionTimer(
     if (import.meta.env.DEV) {
       console.log('🔄 Timer reiniciado')
     }
+
+    broadcastSync(STORAGE_KEY)
   }, [STORAGE_KEY, timeoutMinutes])
 
   /**
@@ -112,46 +129,65 @@ export function useSessionTimer(
       if (import.meta.env.DEV) {
         console.log('⏱️ Timer extendido:', minutes, 'minutos')
       }
+
+      broadcastSync(STORAGE_KEY)
     },
     [expiresAt, STORAGE_KEY, TIMEOUT_MS]
   )
 
   /**
-   * Recuperar timer de localStorage al montar
+   * Recuperar timer de localStorage al montar — y re-hidratar cuando
+   * otra instancia del hook (misma pestaña) o cambios externos
+   * (cross-tab) modifican la clave.
    */
   useEffect(() => {
     if (!eventLabel) return
 
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    const hydrateFromStorage = () => {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (!stored) {
+        // Otra instancia limpió el timer → reseteamos nuestro estado.
+        setExpiresAt(null)
+        setHasStarted(false)
+        setIsExpired(false)
+        setTimeRemaining(timeoutMinutes * 60)
+        return
+      }
       try {
         const { expiresAt: storedExpiresAt } = JSON.parse(stored)
         const now = Date.now()
 
         if (storedExpiresAt > now) {
-          // Timer aún válido
           setExpiresAt(storedExpiresAt)
           setHasStarted(true)
           setIsExpired(false)
-
-          if (import.meta.env.DEV) {
-            console.log('✅ Timer recuperado de localStorage')
-          }
         } else {
-          // Timer expiró mientras estaba fuera
           setIsExpired(true)
           setHasStarted(true)
           setTimeRemaining(0)
-
-          if (import.meta.env.DEV) {
-            console.log('⏰ Timer expiró mientras estabas fuera')
-          }
         }
       } catch (error) {
         console.error('Error recuperando timer:', error)
       }
     }
-  }, [eventLabel, STORAGE_KEY])
+
+    hydrateFromStorage()
+
+    const onCustomSync = (e: Event) => {
+      const detail = (e as CustomEvent<{ storageKey: string }>).detail
+      if (!detail || detail.storageKey === STORAGE_KEY) hydrateFromStorage()
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === STORAGE_KEY) hydrateFromStorage()
+    }
+
+    window.addEventListener(SYNC_EVENT, onCustomSync)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener(SYNC_EVENT, onCustomSync)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [eventLabel, STORAGE_KEY, timeoutMinutes])
 
   /**
    * Actualizar cuenta regresiva cada segundo

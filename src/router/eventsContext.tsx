@@ -52,7 +52,18 @@ export const EventsProvider = ({ children }: { children: any }) => {
           ttl: 10 * 60 * 1000, // 10 minutos
           useLocalStorage: true
         })
-        setEvents(data)
+
+        // Mergeamos los eventos "demo_*" del fallback local — el cliente
+        // los usa para verificar features sin tener que subirlos al
+        // GitHub real. Sólo entran si no existen ya en remoto.
+        const localEvents = (await fallbackDataService.getLocalEvents()) as EventsData
+        const merged: EventsData = { ...data }
+        for (const [key, value] of Object.entries(localEvents)) {
+          if (key.startsWith('demo_') && !merged[key]) {
+            merged[key] = value
+          }
+        }
+        setEvents(merged)
       } catch (error) {
         console.error('Error fetching events, usando fallback local: ', error)
         // Si falla GitHub, usar datos locales como fallback

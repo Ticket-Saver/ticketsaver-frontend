@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mesh Gradient</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    background: #1a1230;
+    overflow: hidden;
+    overscroll-behavior: none;
+    cursor: default;
+  }
+  canvas {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+</style>
+</head>
+<body data-screen-label="Mesh Gradient">
+  <canvas id="gl"></canvas>
+
+<script>
+/* Soft mesh gradient — Claude-inspired warm palette.
+   - 5 color points float around slowly (bezier-ish drift)
+   - one tracks the cursor smoothly
+   - clicks send a gentle pulse outward
+   - rendered as a smooth weighted-color blend in a fragment shader
+*/
+
+const VERT = `
+attribute vec2 a_pos;
+void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+
+const FRAG = `
+precision highp float;
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_aspect;
+uniform vec2  u_points[6];   // xy in 0..1 (aspect-corrected outside)
+uniform vec3  u_colors[6];
+uniform float u_radii[6];
+uniform vec4  u_clicks[4];   // xy = pos, z = age sec, w = strength
+
+float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = uv; p.x *= u_aspect;
+
+  /* click ripple — gentle additive shimmer */
+  float pulse = 0.0;
+  for (int i = 0; i < 4; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    vec2 cp = c.xy; cp.x *= u_aspect;
+    float d = length(p - cp);
+    float r = c.z * 0.45;
+    pulse += exp(-pow((d - r)*5.0, 2.0)) * exp(-c.z*1.0) * c.w;
+  }
+
+  /* weighted color blend — each anchor pulls with inverse-distance falloff */
+  vec3 col = vec3(0.0);
+  float wsum = 0.0;
+  for (int i = 0; i < 6; i++){
+    vec2 ap = u_points[i]; ap.x *= u_aspect;
+    float d = length(p - ap);
+    float r = u_radii[i];
+    /* smooth radial weight — gaussian-ish */
+    float w = exp(-pow(d / r, 2.0));
+    col += u_colors[i] * w;
+    wsum += w;
+  }
+  col /= max(wsum, 0.0001);
+
+  /* lift toward warm white on click */
+  col += pulse * vec3(0.10, 0.08, 0.05);
+
+  /* very subtle film grain to avoid banding */
+  float g = (hash(gl_FragCoord.xy + u_time)-0.5) * 0.012;
+  col += g;
+
+  /* tiny vignette */
+  float vg = smoothstep(1.25, 0.45, length(uv - 0.5));
+  col *= mix(0.94, 1.01, vg);
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false });
+if (!gl){ document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif">WebGL not supported.</p>'; throw new Error('no webgl'); }
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const aPos = gl.getAttribLocation(prog, 'a_pos');
+
+const U = {
+  res:     gl.getUniformLocation(prog, 'u_res'),
+  time:    gl.getUniformLocation(prog, 'u_time'),
+  aspect:  gl.getUniformLocation(prog, 'u_aspect'),
+  points:  gl.getUniformLocation(prog, 'u_points'),
+  colors:  gl.getUniformLocation(prog, 'u_colors'),
+  radii:   gl.getUniformLocation(prog, 'u_radii'),
+  clicks:  gl.getUniformLocation(prog, 'u_clicks'),
+};
+
+/* ---- palette: Claude-ish warm cream + terracotta ---- */
+function hex(h){
+  const v = parseInt(h.slice(1), 16);
+  return [((v>>16)&255)/255, ((v>>8)&255)/255, (v&255)/255];
+}
+const PALETTE = [
+  hex('#2A1A4A'),  // 0  deep indigo (base)
+  hex('#5B3A8C'),  // 1  royal violet
+  hex('#B57BE8'),  // 2  bright lavender (cursor)
+  hex('#3D2566'),  // 3  plum shadow
+  hex('#8A5BC7'),  // 4  amethyst
+  hex('#D4A8F0'),  // 5  soft mauve
+];
+
+/* anchor points — 6 total, last one tracks the cursor */
+const points = [
+  { x: 0.18, y: 0.22, r: 0.55, color: PALETTE[1], baseX: 0.18, baseY: 0.22, phaseX: 0.0,  phaseY: 1.3,  ampX: 0.10, ampY: 0.08, spdX: 0.05, spdY: 0.07 },
+  { x: 0.82, y: 0.18, r: 0.50, color: PALETTE[4], baseX: 0.82, baseY: 0.18, phaseX: 2.1,  phaseY: 0.4,  ampX: 0.12, ampY: 0.09, spdX: 0.06, spdY: 0.05 },
+  { x: 0.88, y: 0.78, r: 0.55, color: PALETTE[3], baseX: 0.88, baseY: 0.78, phaseX: 4.0,  phaseY: 2.8,  ampX: 0.10, ampY: 0.10, spdX: 0.04, spdY: 0.06 },
+  { x: 0.22, y: 0.82, r: 0.55, color: PALETTE[5], baseX: 0.22, baseY: 0.82, phaseX: 1.7,  phaseY: 3.5,  ampX: 0.11, ampY: 0.08, spdX: 0.07, spdY: 0.04 },
+  { x: 0.50, y: 0.50, r: 0.70, color: PALETTE[0], baseX: 0.50, baseY: 0.50, phaseX: 3.2,  phaseY: 1.9,  ampX: 0.18, ampY: 0.14, spdX: 0.03, spdY: 0.05 },
+  { x: 0.50, y: 0.50, r: 0.38, color: PALETTE[2], baseX: 0.50, baseY: 0.50, phaseX: 0,    phaseY: 0,    ampX: 0,    ampY: 0,    spdX: 0,    spdY: 0    }, // cursor anchor
+];
+
+/* ---- state ---- */
+const state = {
+  mouseRaw: { x: 0.5, y: 0.5 },
+  mouse:    { x: 0.5, y: 0.5 },
+  dpr: Math.min(window.devicePixelRatio || 1, 2),
+  startTime: performance.now(),
+  clicks: [],
+};
+
+function resize(){
+  state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(window.innerWidth  * state.dpr);
+  const h = Math.floor(window.innerHeight * state.dpr);
+  if (canvas.width !== w || canvas.height !== h){
+    canvas.width = w; canvas.height = h;
+  }
+  gl.viewport(0, 0, w, h);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function setMouse(e){
+  const r = canvas.getBoundingClientRect();
+  const cx = ('touches' in e && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+  const cy = ('touches' in e && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+  state.mouseRaw.x = (cx - r.left) / r.width;
+  state.mouseRaw.y = 1.0 - (cy - r.top) / r.height;
+}
+window.addEventListener('mousemove', setMouse, { passive: true });
+window.addEventListener('touchmove', setMouse, { passive: true });
+window.addEventListener('mousedown', e => {
+  setMouse(e);
+  state.clicks.push({ x: state.mouseRaw.x, y: state.mouseRaw.y, t: performance.now()/1000, strength: 1.0 });
+  if (state.clicks.length > 4) state.clicks.shift();
+});
+window.addEventListener('touchstart', e => {
+  setMouse(e);
+  state.clicks.push({ x: state.mouseRaw.x, y: state.mouseRaw.y, t: performance.now()/1000, strength: 1.0 });
+  if (state.clicks.length > 4) state.clicks.shift();
+}, { passive: true });
+
+/* ---- render ---- */
+function frame(now){
+  resize();
+  const t = (now - state.startTime) / 1000;
+
+  /* smooth cursor */
+  const k = 0.06;
+  state.mouse.x += (state.mouseRaw.x - state.mouse.x) * k;
+  state.mouse.y += (state.mouseRaw.y - state.mouse.y) * k;
+
+  /* update drifting anchors */
+  for (let i = 0; i < 5; i++){
+    const p = points[i];
+    p.x = p.baseX + Math.sin(t * p.spdX * 6.283 + p.phaseX) * p.ampX;
+    p.y = p.baseY + Math.cos(t * p.spdY * 6.283 + p.phaseY) * p.ampY;
+  }
+  /* cursor anchor */
+  points[5].x = state.mouse.x;
+  points[5].y = state.mouse.y;
+
+  /* pack uniforms */
+  const N = 6;
+  const ptArr = new Float32Array(N*2);
+  const colArr = new Float32Array(N*3);
+  const rArr  = new Float32Array(N);
+  for (let i = 0; i < N; i++){
+    ptArr[i*2]   = points[i].x;
+    ptArr[i*2+1] = points[i].y;
+    colArr[i*3]   = points[i].color[0];
+    colArr[i*3+1] = points[i].color[1];
+    colArr[i*3+2] = points[i].color[2];
+    rArr[i] = points[i].r;
+  }
+
+  /* clicks */
+  const clickArr = new Float32Array(4*4);
+  const tNow = now/1000;
+  for (let i = 0; i < state.clicks.length; i++){
+    const c = state.clicks[i];
+    const age = tNow - c.t;
+    clickArr[i*4]   = c.x;
+    clickArr[i*4+1] = c.y;
+    clickArr[i*4+2] = age;
+    clickArr[i*4+3] = age < 3.5 ? c.strength : 0.0;
+  }
+  state.clicks = state.clicks.filter(c => tNow - c.t < 3.5);
+
+  const aspect = canvas.width / canvas.height;
+
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  gl.uniform2f(U.res, canvas.width, canvas.height);
+  gl.uniform1f(U.time, t);
+  gl.uniform1f(U.aspect, aspect);
+  gl.uniform2fv(U.points, ptArr);
+  gl.uniform3fv(U.colors, colArr);
+  gl.uniform1fv(U.radii, rArr);
+  gl.uniform4fv(U.clicks, clickArr);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

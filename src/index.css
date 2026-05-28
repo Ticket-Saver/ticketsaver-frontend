@@ -1,111 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import './styles/tokens.css';
 @import './styles/custom.css';
 
-/* SEATS */
-.white_background {
-  background-color: #9b9999;
-  white-space: nowrap;
+/* v2 utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-.economy {
-  color: white;
-  background-color: #43aa8b;
-  white-space: nowrap;
-}
-
-.evip {
-  color: white;
-  background-color: #b3d25d;
-  white-space: nowrap;
-}
-
-.Orange {
-  background-color: #ff8000;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.Green {
-  background-color: #16960f;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.Purple {
-  background-color: #a858e6;
-  color: white;
-  font-size: 0.85em;
-  overflow: visible;
-  white-space: nowrap;
-}
-
-.Pink {
-  background-color: #ce518b;
-  color: white;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.Yellow {
-  background-color: #ffec00;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.Gray {
-  background-color: #8e8e8e;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.Red {
-  background-color: crimson;
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
-}
-
-.Brown {
-  background-color: brown;
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
-}
-
-.Blue {
-  background-color: darkblue;
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
-}
-
-.Aqua {
-  background-color: rgb(92, 201, 201);
-  font-size: 0.9em;
-  color: rgb(10, 10, 10);
-  white-space: nowrap;
-}
-
-.Beige {
-  background-color: burlywood;
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
-}
-
-.Coral {
-  background-color: rgb(231, 125, 86);
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
-}
-.Celeste {
-  background-color: rgb(104, 177, 243);
-  font-size: 0.9em;
-  color: white;
-  white-space: nowrap;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

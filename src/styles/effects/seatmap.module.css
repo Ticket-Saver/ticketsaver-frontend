@@ -1,0 +1,226 @@
+/*
+ * seatmap.module.css — clases que SeatchartJS aplica a cada asiento.
+ *
+ * Versión v2: la paleta es más suave que la del legacy `index.css` (más
+ * pastel, más uniforme) y todos los estados comparten radio/sombra para
+ * dar un look más prolijo y elegante. El `themeClassMap` del wrapper
+ * intercambia 1:1 — los nombres siguen iguales para compatibilidad.
+ */
+
+.seat,
+.economy,
+.evip,
+.Orange,
+.Green,
+.Purple,
+.Pink,
+.Yellow,
+.Gray,
+.Red,
+.Brown,
+.Blue,
+.Aqua,
+.Beige,
+.Coral,
+.Celeste,
+.white_background,
+.wheelchair,
+.companion,
+.reduced {
+  border-radius: 6px;
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: transform 120ms ease, box-shadow 150ms ease,
+    filter 150ms ease, outline-color 120ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.seat:hover,
+.economy:hover,
+.evip:hover,
+.Orange:hover,
+.Green:hover,
+.Purple:hover,
+.Pink:hover,
+.Yellow:hover,
+.Gray:hover,
+.Red:hover,
+.Brown:hover,
+.Blue:hover,
+.Aqua:hover,
+.Beige:hover,
+.Coral:hover,
+.Celeste:hover,
+.wheelchair:hover,
+.companion:hover,
+.reduced:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08) saturate(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.seat:focus-visible,
+.economy:focus-visible,
+.evip:focus-visible,
+.Orange:focus-visible,
+.Green:focus-visible,
+.Purple:focus-visible,
+.Pink:focus-visible,
+.Yellow:focus-visible,
+.Gray:focus-visible,
+.Red:focus-visible,
+.Brown:focus-visible,
+.Blue:focus-visible,
+.Aqua:focus-visible,
+.Beige:focus-visible,
+.Coral:focus-visible,
+.Celeste:focus-visible {
+  outline: 2px solid var(--brand-mid, #b57be8);
+  outline-offset: 2px;
+}
+
+/* Estado "selected" — Seatchart aplica esta clase encima de la del tier. */
+.selected {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+  box-shadow: 0 0 14px rgba(212, 168, 240, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85) !important;
+  filter: brightness(1.05);
+}
+
+/* Reserved / occupied — gris fuerte para que se note la diferencia. */
+.reserved,
+.occupied {
+  background-color: #4b4b58 !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.reserved:hover,
+.occupied:hover {
+  transform: none;
+  filter: none;
+}
+
+/* Tier colors — paleta v2 más sutil y consistente. */
+.economy {
+  background-color: #5fb39a;
+  color: #ffffff;
+}
+
+.evip {
+  background-color: #c4dd80;
+  color: #1a2a05;
+}
+
+.Orange {
+  background-color: #ff9a3d;
+  color: #2a1500;
+  font-size: 0.9em;
+}
+
+.Green {
+  background-color: #4cc26d;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Purple {
+  background-color: #b475e8;
+  color: #ffffff;
+  font-size: 0.85em;
+}
+
+.Pink {
+  background-color: #ef6ba1;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Yellow {
+  background-color: #ffd84d;
+  color: #2a1a00;
+  font-size: 0.9em;
+}
+
+.Gray {
+  background-color: #9ea3b0;
+  color: #1a1f2a;
+  font-size: 0.9em;
+}
+
+.Red {
+  background-color: #e85b5b;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Brown {
+  background-color: #a96a3d;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Blue {
+  background-color: #5b8bf2;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Aqua {
+  background-color: #6ed1d1;
+  color: #0a1f1f;
+  font-size: 0.9em;
+}
+
+.Beige {
+  background-color: #d4b58a;
+  color: #2a1a05;
+  font-size: 0.9em;
+}
+
+.Coral {
+  background-color: #f08a6b;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.Celeste {
+  background-color: #7fb5f3;
+  color: #051a2a;
+  font-size: 0.9em;
+}
+
+.white_background {
+  background-color: #6b6f7a;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Accesibilidad — wheelchair, companion, reduced mobility. */
+.wheelchair {
+  background-color: #2c4a99;
+  color: #ffffff;
+}
+
+.companion {
+  background-color: #c79ff5;
+  color: #1a0f33;
+}
+
+.reduced {
+  background-color: #38c08a;
+  color: #ffffff;
+}
+
+/* Aviso visual cuando el hook de contigüidad detecta un asiento aislado. */
+.isolationWarning {
+  outline: 2px dashed var(--accent-coral, #ffb1c8);
+  outline-offset: 2px;
+}

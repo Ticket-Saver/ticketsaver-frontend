@@ -4,34 +4,53 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe
 import { useNavigate } from 'react-router-dom'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-const CheckoutStripe = () => {
+
+interface CheckoutStripeProps {
+  /**
+   * Cuando se pasan, se usan en vez de `cart_checkout` del localStorage.
+   * Permite que `CheckoutV2` hidrate directo desde el `cartContext`.
+   */
+  cart?: unknown[]
+  eventInfo?: Record<string, unknown>
+  customer?: Record<string, unknown>
+}
+
+const CheckoutStripe = ({ cart, eventInfo, customer }: CheckoutStripeProps = {}) => {
   const [clientSecret, setClientSecret] = useState(null)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      const cartString = localStorage.getItem('cart_checkout')
-      if (!cartString) {
-        throw new Error('No sale to make payment for.')
+      let cartData: unknown[] | undefined = cart
+      let eventInfoData = eventInfo
+      let customerData = customer
+
+      if (!cartData || !eventInfoData) {
+        const cartString = localStorage.getItem('cart_checkout')
+        if (!cartString) {
+          throw new Error('No sale to make payment for.')
+        }
+        const parsed = JSON.parse(cartString)
+        cartData = parsed.cart
+        eventInfoData = parsed.eventInfo
+        customerData = parsed.customer
       }
 
-      const { cart, eventInfo, customer } = JSON.parse(cartString)
-
-      // Ensure cart is an array
-      if (!Array.isArray(cart)) {
+      if (!Array.isArray(cartData)) {
         throw new Error('Invalid cart data.')
       }
-      console.log(customer)
-      console.log(cart)
-      console.log(eventInfo)
 
       const response = await fetch('/api/checkoutSession', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cart, eventInfo, customer })
+        body: JSON.stringify({
+          cart: cartData,
+          eventInfo: eventInfoData,
+          customer: customerData
+        })
       })
 
       if (response.status === 409) {
@@ -46,11 +65,11 @@ const CheckoutStripe = () => {
 
       const data = await response.json()
       setClientSecret(data.clientSecret)
-    } catch (error) {
-      console.error('Error al obtener el pago de Stripe.', error)
+    } catch (err) {
+      console.error('Error al obtener el pago de Stripe.', err)
       setError('An error occurred while creating the checkout session. Please try again.')
     }
-  }, [])
+  }, [cart, eventInfo, customer])
   useEffect(() => {
     fetchClientSecret()
   }, [fetchClientSecret])

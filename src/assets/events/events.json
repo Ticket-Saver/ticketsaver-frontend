@@ -244,5 +244,38 @@
     "venue_label": "sanjose_ca",
     "sale_starts_at": "2026-03-13",
     "tricket_url": "https://alucines.ticketsaver.net/event/Las%20Alucines/24/2026-05-06/san_jose/null"
+  },
+  "demo_v2.01": {
+    "eventId": "demo_v2_01",
+    "event_label": "demo_v2.01",
+    "event_date": "2026-08-15",
+    "event_hour": "20:30",
+    "event_name": "Demo V2 Showcase",
+    "venue_label": "Copernicus_Center_IL",
+    "event_deleted_at": null,
+    "sale_starts_at": "2026-05-01",
+    "tricket_url": ""
+  },
+  "demo_v2.02": {
+    "eventId": "demo_v2_02",
+    "event_label": "demo_v2.02",
+    "event_date": "2026-08-16",
+    "event_hour": "20:30",
+    "event_name": "Demo V2 Showcase",
+    "venue_label": "Copernicus_Center_IL",
+    "event_deleted_at": null,
+    "sale_starts_at": "2026-05-01",
+    "tricket_url": ""
+  },
+  "demo_v2.03": {
+    "eventId": "demo_v2_03",
+    "event_label": "demo_v2.03",
+    "event_date": "2026-08-22",
+    "event_hour": "21:00",
+    "event_name": "Demo V2 Showcase",
+    "venue_label": "Copernicus_Center_IL",
+    "event_deleted_at": null,
+    "sale_starts_at": "2026-05-01",
+    "tricket_url": ""
   }
 }

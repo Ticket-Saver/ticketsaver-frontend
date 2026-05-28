@@ -157,5 +157,31 @@ export const mapConfig: MapConfig = {
         src: SanJoseMapPng
       }
     }
+  },
+  // Eventos demo para verificación del flujo v2 (Bloque 4b).
+  // Reutilizan el mapeo + SVG del Copernicus Center.
+  'demo_v2.01': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.02': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.03': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
   }
 }

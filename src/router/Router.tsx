@@ -2,32 +2,41 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ReactNode } from 'react'
 import ProtectedPage from '../protectedPage'
-import HomeUnlogin from '../pages/HomeUnlogin'
-import LayoutHeaderFooter from '../layouts/LayoutHeaderFooter'
-import LayoutHeader from '../layouts/LayoutHeader'
-import Dashboard from '../pages/Dashboard'
-import MyProfile from '../pages/MyProfile'
-import MyTickets from '../pages/MyTickets'
-import MySettings from '../pages/MySettings'
-import YouNeedHelp from '../pages/YouNeedHelp'
-import Web3 from '../pages/Web3'
-import UpcomingEvent from '../pages/dashboardTabs/UpcomigeEvents'
-import PastEvent from '../pages/dashboardTabs/PastEvent'
-import Collectibles from '../pages/dashboardTabs/Collectibles'
-import ReturnPage from '../pages/ReturnPage'
 import CheckoutPage from '../pages/checkout'
-import EventSalePage from '../pages/EventSalePage'
-import SalePage from '../pages/SalePage'
-import EventPage from '../pages/EventPage'
-import Contact from '../pages/Contact'
-import AboutPage from '../pages/AboutPage'
-import TermsConditionPage from '../pages/Terms&conditionsPage'
-import PrivayPolicyPage from '../pages/PrivayPolicyPage'
-import PCICompliancePage from '../pages/PciCompliancePage'
-import FaqsPage from '../pages/FaqsPage'
+import DesignCheck from '../pages/v2/_DesignCheck'
+import LayoutCheck from '../pages/v2/_LayoutCheck'
+import HomeV2 from '../pages/v2/HomeV2'
+import EventsV2 from '../pages/v2/EventsV2'
+import EventDetailV2 from '../pages/v2/EventDetailV2'
+import SaleV2 from '../pages/v2/SaleV2'
+import SaleCheck from '../pages/v2/_SaleCheck'
+import TicketReceivedV2 from '../pages/v2/TicketReceivedV2'
+import MyTicketsV2 from '../pages/v2/MyTicketsV2'
+import UpcomingV2 from '../pages/v2/dashboardTabs/UpcomingV2'
+import PastV2 from '../pages/v2/dashboardTabs/PastV2'
+import CollectiblesV2 from '../pages/v2/dashboardTabs/CollectiblesV2'
+import QueueV2 from '../pages/v2/QueueV2'
+import DashboardV2 from '../pages/v2/DashboardV2'
+import MyProfileV2 from '../pages/v2/MyProfileV2'
+import Web3V2 from '../pages/v2/Web3V2'
+import MySettingsV2 from '../pages/v2/MySettingsV2'
+import YouNeedHelpV2 from '../pages/v2/YouNeedHelpV2'
+import AboutV2 from '../pages/v2/AboutV2'
+import ContactV2 from '../pages/v2/ContactV2'
+import FaqsV2 from '../pages/v2/FaqsV2'
+import TermsV2 from '../pages/v2/TermsV2'
+import PrivacyV2 from '../pages/v2/PrivacyV2'
+import PCIV2 from '../pages/v2/PCIV2'
+import { useParams } from 'react-router-dom'
 import { VenuesProvider } from '../router/venuesContext'
 import { EventsProvider } from '../router/eventsContext'
+import { CartProvider } from '../router/cartContext'
 import { useLocation } from 'react-router-dom'
+
+const SaleRoute = () => {
+  const { label } = useParams<{ label: string }>()
+  return label ? <SaleV2 eventLabel={label} /> : <Navigate to='/events' />
+}
 
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const location = useLocation()
@@ -49,127 +58,65 @@ const ProtectedRoute = ({ element }: { element: ReactNode }) => {
 export const AppRouter = () => (
   <VenuesProvider>
     <EventsProvider>
-      {/* Envolvemos las rutas con ambos providers para compartir datos de venues y events */}
-      <Routes>
-        <Route
-          path='/'
-          element={
-            <LayoutHeaderFooter>
-              <HomeUnlogin />
-            </LayoutHeaderFooter>
-          }
-        />
+      <CartProvider>
+        {/* Envolvemos las rutas con providers: venues, events y carrito */}
+        <Routes>
+          <Route path='/_design-check' element={<DesignCheck />} />
+          <Route path='/_layout-check' element={<LayoutCheck />} />
+          <Route path='/_sale-check' element={<SaleCheck />} />
 
-        <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
+          <Route path='/' element={<HomeV2 />} />
 
-        <Route path='return' element={<ReturnPage />} />
+          <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
 
-        <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
+          <Route path='return' element={<TicketReceivedV2 />} />
 
-        <Route
-          path='/footer/contact'
-          element={
-            <LayoutHeaderFooter>
-              <Contact />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route path='/protected' element={<ProtectedRoute element={<ProtectedPage />} />} />
 
-        <Route
-          path='/footer/terms&conditions'
-          element={
-            <LayoutHeaderFooter>
-              <TermsConditionPage />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route path='/footer/contact' element={<ContactV2 />} />
+          <Route path='/footer/terms&conditions' element={<TermsV2 />} />
+          <Route path='/footer/PrivayPolicy' element={<PrivacyV2 />} />
+          <Route path='/footer/PCICompliance' element={<PCIV2 />} />
+          <Route path='/faqs' element={<FaqsV2 />} />
+          <Route path='/about' element={<AboutV2 />} />
 
-        <Route
-          path='/footer/PrivayPolicy'
-          element={
-            <LayoutHeaderFooter>
-              <PrivayPolicyPage />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route path='/events' element={<EventsV2 />} />
 
-        <Route
-          path='/footer/PCICompliance'
-          element={
-            <LayoutHeaderFooter>
-              <PCICompliancePage />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route
+            path='/event/:name/:venue/:date/:label/:delete?'
+            element={<EventDetailV2 />}
+          />
 
-        <Route
-          path='/faqs'
-          element={
-            <LayoutHeaderFooter>
-              <FaqsPage />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route
+            path='/sale/:name/:venue/:location/:date/:label/:delete?'
+            element={<SaleRoute />}
+          />
 
-        <Route
-          path='/about'
-          element={
-            <LayoutHeaderFooter>
-              <AboutPage />
-            </LayoutHeaderFooter>
-          }
-        />
+          <Route path='/queue/:label' element={<QueueV2 />} />
 
-        <Route
-          path='/events'
-          element={
-            <LayoutHeaderFooter>
-              <EventPage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/event/:name/:venue/:date/:label/:delete?'
-          element={
-            <LayoutHeaderFooter>
-              <EventSalePage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/sale/:name/:venue/:location/:date/:label/:delete?'
-          element={
-            <LayoutHeaderFooter>
-              <SalePage />
-            </LayoutHeaderFooter>
-          }
-        />
-
-        <Route
-          path='/dashboard'
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutHeader>
-                  <Dashboard />
-                </LayoutHeader>
-              }
-            />
-          }
-        >
-          <Route path='profile' element={<MyProfile />} />
-          <Route path='tickets' element={<MyTickets />}>
-            <Route path='upcomingevent' element={<UpcomingEvent />} />
-            <Route path='pastevent' element={<PastEvent />} />
-            <Route path='collectibles' element={<Collectibles />} />
+          {/* /dashboard/tickets/* — v2 standalone con LayoutV2. */}
+          <Route
+            path='/dashboard/tickets'
+            element={<ProtectedRoute element={<MyTicketsV2 />} />}
+          >
+            <Route index element={<Navigate to='upcomingevent' replace />} />
+            <Route path='upcomingevent' element={<UpcomingV2 />} />
+            <Route path='pastevent' element={<PastV2 />} />
+            <Route path='collectibles' element={<CollectiblesV2 />} />
           </Route>
-          <Route path='settings' element={<MySettings />} />
-          <Route path='help' element={<YouNeedHelp />} />
-          <Route path='web3' element={<Web3 />} />
-        </Route>
-      </Routes>
+
+          <Route
+            path='/dashboard'
+            element={<ProtectedRoute element={<DashboardV2 />} />}
+          >
+            <Route index element={<Navigate to='profile' replace />} />
+            <Route path='profile' element={<MyProfileV2 />} />
+            <Route path='web3' element={<Web3V2 />} />
+            <Route path='settings' element={<MySettingsV2 />} />
+            <Route path='help' element={<YouNeedHelpV2 />} />
+          </Route>
+        </Routes>
+      </CartProvider>
     </EventsProvider>
   </VenuesProvider>
 )
