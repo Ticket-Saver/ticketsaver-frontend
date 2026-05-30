@@ -4,6 +4,7 @@ import LayoutV2 from '../../layouts/LayoutV2'
 import CategoryChips from '../../components/v2/CategoryChips'
 import HeroEvent from '../../components/v2/HeroEvent'
 import EventCarousel from '../../components/v2/EventCarousel'
+import CoverFlow3D from '../../components/v2/CoverFlow3D'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import gradients from '../../styles/effects/gradients.module.css'
@@ -64,6 +65,14 @@ export default function HomeV2() {
     [byCategory, featuredCategory, hero]
   )
 
+  // Selección para el cover-flow 3D — eventos visibles que no estén en
+  // el hero, capados a 6 para que el efecto 3D no se sature.
+  const closerLook = useMemo(
+    () =>
+      visible.filter((e) => !hero.some((h) => h.id === e.id)).slice(0, 6),
+    [visible, hero]
+  )
+
   const handleCategory = (cat: CategoryFilter) => {
     if (cat === 'All') navigate('/events')
     else navigate(`/events?cat=${encodeURIComponent(cat)}`)
@@ -107,6 +116,13 @@ export default function HomeV2() {
               autoPlayMs={9000}
               className='mx-auto w-full max-w-[1280px]'
             />
+
+            {closerLook.length > 0 && (
+              <CoverFlow3D
+                events={closerLook}
+                className='mx-auto w-full max-w-[1280px]'
+              />
+            )}
 
             {trending.length > 0 && (
               <EventCarousel
