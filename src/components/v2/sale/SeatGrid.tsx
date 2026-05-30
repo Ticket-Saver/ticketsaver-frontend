@@ -11,7 +11,7 @@ import {
 } from './CartSummaryPanel'
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { useSessionCleanup } from '../../../hooks/useSessionCleanup'
-import { useSeatContiguity } from '../../../hooks/useSeatContiguity'
+import { validateSeatAdd } from '../../../hooks/useSeatContiguity'
 import {
   lockSeatAudited,
   unlockSeatAudited
@@ -115,10 +115,14 @@ export default function SeatGrid({
     clear: clearCart
   } = useCart()
   const seatchartRef = useRef<SeatchartJS>()
+  // Espejo del cart actual. El listener `cartchange` de Seatchart se
+  // registra una sola vez, así que su closure capturaría un cart viejo;
+  // leemos siempre de cartRef.current para evitar ese stale closure.
+  const cartRef = useRef(cart)
+  cartRef.current = cart
 
   const timerState = useSessionTimer(event.id, 10)
   const { validatedCart, isValidating } = useSessionCleanup(event.id)
-  const prevWarningCountRef = useRef(0)
   const wasEmptyRef = useRef(cart.length === 0)
   const hydratedRef = useRef(false)
 
@@ -184,34 +188,6 @@ export default function SeatGrid({
     }
   }, [cart.length, toast])
 
-  const contiguity = useSeatContiguity({
-    selected: cart
-      .map((c) => c.coords)
-      .filter((c): c is { row: number; col: number } => Boolean(c)),
-    reserved: reservedSeats,
-    disabled:
-      ((areaOptions?.map as any)?.disabledSeats as {
-        row: number
-        col: number
-      }[]) || [],
-    columns: (areaOptions?.map as any)?.columns
-  })
-
-  // Toast cuando aparece un nuevo asiento aislado
-  useEffect(() => {
-    const current = contiguity.warnings.length
-    if (current > prevWarningCountRef.current) {
-      const w = contiguity.warnings[current - 1]
-      toast.show({
-        variant: 'info',
-        title: 'Isolated seat',
-        message: w.message,
-        duration: 6000
-      })
-    }
-    prevWarningCountRef.current = current
-  }, [contiguity.warnings, toast])
-
   const seatchartOptions: Options | null = useMemo(() => {
     if (!areaOptions) return null
     return {
@@ -241,13 +217,46 @@ export default function SeatGrid({
     }
 
     if (e.action === 'add') {
-      if (cart.length >= MAX_SEATS) {
+      if (cartRef.current.length >= MAX_SEATS) {
         toast.show({
           variant: 'warn',
           title: 'Limit reached',
           message: `Maximum of ${MAX_SEATS} tickets per order.`
         })
         // Revertimos visualmente la selección en el Seatchart
+        try {
+          ;(seatchartRef.current as any)?.removeFromCart?.(e.seat)
+        } catch {
+          /* noop */
+        }
+        return
+      }
+
+      // Restricciones de contigüidad (bloqueo duro): no se permite dejar
+      // asientos sueltos ni separar la selección con lugares libres.
+      const validation = validateSeatAdd(
+        { row: e.seat.index.row, col: e.seat.index.col },
+        {
+          selected: cartRef.current
+            .map((c) => c.coords)
+            .filter((c): c is { row: number; col: number } => Boolean(c)),
+          reserved: reservedSeats,
+          disabled:
+            ((areaOptions.map as any)?.disabledSeats as {
+              row: number
+              col: number
+            }[]) || [],
+          columns: (areaOptions.map as any)?.columns
+        }
+      )
+      if (!validation.ok) {
+        toast.show({
+          variant: 'warn',
+          title: 'Keep your seats together',
+          message:
+            validation.reason || 'That selection would leave a seat isolated.',
+          duration: 6000
+        })
         try {
           ;(seatchartRef.current as any)?.removeFromCart?.(e.seat)
         } catch {
@@ -300,14 +309,14 @@ export default function SeatGrid({
       const newTicketId = ticketId(
         event.id,
         selectedArea.title,
-        cart.length + 1,
+        cartRef.current.length + 1,
         issuedAt
       )
       const priceBase = selectedArea.priceFrom
       const priceFinal = selectedArea.priceFrom
 
       // Dedupe: si ya hay un item con ese seatLabel, no agregamos otra vez.
-      if (cart.some((p) => p.seatLabel === e.seat.label)) return
+      if (cartRef.current.some((p) => p.seatLabel === e.seat.label)) return
 
       addItem({
         ticketId: newTicketId,
@@ -329,7 +338,7 @@ export default function SeatGrid({
           message: result.userMessage || 'Could not release the seat.'
         })
       }
-      const removed = cart.find((c) => c.seatLabel === e.seat.label)
+      const removed = cartRef.current.find((c) => c.seatLabel === e.seat.label)
       if (removed) removeItem(removed.ticketId)
     }
   }
@@ -436,10 +445,6 @@ export default function SeatGrid({
           </GlassCard>
 
           <SeatLegend />
-
-          {contiguity.hasIsolation && (
-            <ContiguityBanner count={contiguity.warnings.length} />
-          )}
         </div>
 
         <CartSidebar
@@ -471,23 +476,6 @@ export default function SeatGrid({
     </>
   )
 }
-
-const ContiguityBanner = ({ count }: { count: number }) => (
-  <div
-    className='rounded-glass-md border border-accent-coral/30 px-3.5 py-2.5 flex items-start gap-2.5 backdrop-blur-glass-strong'
-    style={{ background: 'rgba(255, 177, 200, 0.12)' }}
-  >
-    <span
-      aria-hidden
-      className='mt-1 h-1.5 w-1.5 rounded-full bg-accent-coral shadow-[0_0_8px_var(--accent-coral)]'
-    />
-    <p className='text-[11.5px] text-white/85 leading-relaxed'>
-      <strong className='text-white font-semibold'>Heads up.</strong>{' '}
-      Your selection would leave {count} {count === 1 ? 'seat' : 'seats'}{' '}
-      isolated. Consider widening your group or shifting it to avoid orphans.
-    </p>
-  </div>
-)
 
 interface FallbackProps {
   event: UIEvent

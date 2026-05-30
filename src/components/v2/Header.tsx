@@ -124,17 +124,11 @@ export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProp
 
 const Brand = () => (
   <Link to='/' className='flex items-center gap-2.5 shrink-0'>
-    <div className='grid h-9 w-9 place-items-center rounded-glass-sm bg-gradient-to-br from-brand-hi to-brand-mid shadow-brand-glow'>
-      <svg width='16' height='16' viewBox='0 0 14 14' fill='none'>
-        <path
-          d='M3 4 L7 2 L11 4 L11 10 L7 12 L3 10 Z'
-          stroke='#0E0820'
-          strokeWidth='1.6'
-          strokeLinejoin='round'
-        />
-        <circle cx='7' cy='7' r='1.5' fill='#0E0820' />
-      </svg>
-    </div>
+    <img
+      src='/logos/ticketsaver-icon.png'
+      alt=''
+      className='h-9 w-9'
+    />
     <span className='font-display text-lg font-semibold tracking-tight text-white'>
       ticketsaver
     </span>

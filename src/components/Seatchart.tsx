@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useMemo, useRef } from 'react'
 import SeatchartJS, { Options, CartChangeEvent } from 'seatchart'
+import 'seatchart/dist/seatchart.min.css'
 
 interface SeatchartProps {
   options: Options

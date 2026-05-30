@@ -102,7 +102,11 @@ export default function Footer() {
         <div className='grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(4,1fr)] lg:gap-12'>
           <div className='sm:col-span-2 lg:col-span-1'>
             <div className='flex items-center gap-2.5 mb-3'>
-              <div className='h-8 w-8 rounded-glass-sm bg-gradient-to-br from-brand-hi to-brand-mid shadow-brand-glow' />
+              <img
+                src='/logos/ticketsaver-icon.png'
+                alt=''
+                className='h-8 w-8'
+              />
               <span className='font-display text-base font-semibold'>
                 ticketsaver
               </span>

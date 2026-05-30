@@ -99,3 +99,95 @@ export function useSeatContiguity(
     }
   }, [selected, reserved, disabled, columns])
 }
+
+export interface ValidateAddResult {
+  ok: boolean
+  reason?: string
+}
+
+/**
+ * Valida — ANTES de confirmar — si agregar `candidate` produciría una
+ * selección inválida en su fila. Reglas (bloqueo duro):
+ *
+ * 1. Contigüidad: los asientos del comprador en esa fila no pueden tener
+ *    un lugar LIBRE entre medio (deben quedar pegados, salvo que los
+ *    separe un asiento ya vendido/pasillo).
+ * 2. Sin huérfanos: la acción no puede dejar un asiento libre suelto
+ *    (un hueco de exactamente 1), ni encerrado ni pegado al borde/pasillo.
+ *
+ * Sólo evalúa la fila del candidato: su click sólo afecta esa fila.
+ */
+export function validateSeatAdd(
+  candidate: SeatCoord,
+  args: {
+    selected: SeatCoord[]
+    reserved: SeatCoord[]
+    disabled?: SeatCoord[]
+    columns?: number
+  }
+): ValidateAddResult {
+  const { selected, reserved, disabled = [], columns } = args
+  const row = candidate.row
+  const colsInRow = (arr: SeatCoord[]) =>
+    arr.filter((s) => s.row === row).map((s) => s.col)
+
+  const disabledCols = new Set(colsInRow(disabled))
+  const reservedCols = new Set(colsInRow(reserved))
+  const selectedBefore = new Set(colsInRow(selected))
+  const selectedAfter = new Set(selectedBefore)
+  selectedAfter.add(candidate.col)
+
+  const width =
+    columns ??
+    Math.max(
+      candidate.col,
+      ...colsInRow(reserved),
+      ...colsInRow(disabled),
+      ...colsInRow(selected)
+    ) + 1
+
+  const isWall = (c: number) => c < 0 || c >= width || disabledCols.has(c)
+  const isFree = (c: number, sel: Set<number>) =>
+    !isWall(c) && !sel.has(c) && !reservedCols.has(c)
+
+  // Regla 1 — contigüidad de la selección del comprador.
+  const myCols = [...selectedAfter].sort((a, b) => a - b)
+  if (myCols.length >= 2) {
+    for (let c = myCols[0]; c <= myCols[myCols.length - 1]; c++) {
+      if (isFree(c, selectedAfter)) {
+        return {
+          ok: false,
+          reason:
+            "Your seats have to be next to each other — you can't leave an empty seat between the ones you pick. Choose adjacent seats."
+        }
+      }
+    }
+  }
+
+  // Regla 2 — no dejar un asiento suelto (run de libres de longitud 1).
+  const findOrphans = (sel: Set<number>): number[] => {
+    const orphans: number[] = []
+    let c = 0
+    while (c < width) {
+      if (isFree(c, sel)) {
+        const start = c
+        while (c < width && isFree(c, sel)) c++
+        if (c - start === 1) orphans.push(start)
+      } else {
+        c++
+      }
+    }
+    return orphans
+  }
+  const before = new Set(findOrphans(selectedBefore))
+  const createsOrphan = findOrphans(selectedAfter).some((c) => !before.has(c))
+  if (createsOrphan) {
+    return {
+      ok: false,
+      reason:
+        'That selection would leave a single seat stranded on its own. Pick your seats so none are left alone — not in the middle and not at the edge of the row.'
+    }
+  }
+
+  return { ok: true }
+}
