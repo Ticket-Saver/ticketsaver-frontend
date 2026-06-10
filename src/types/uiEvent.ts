@@ -41,6 +41,8 @@ export interface UIEvent {
 
   /** Hash determinista del event_label → paleta nebula/inferno/aqua/etc. */
   cover: CoverKey
+  /** URL de la imagen real del evento (HiEvents). Si existe, se usa en vez del cover procedural. */
+  imageUrl?: string
 
   /** Precio mínimo en USD; null si aún no se cargó zonePriceList. */
   priceFrom: number | null
@@ -62,6 +64,8 @@ export interface UIEvent {
   expired: boolean
   /** Evento high-demand: el flujo pasa por /queue antes de /sale. */
   requiresQueue: boolean
+  /** Mapa de asientos de HiEvents ('map1'|'map2'). Presente ⇒ evento enumerado (asientos); ausente/null ⇒ general. */
+  map?: string | null
 
   /** Ruta interna a la página de detalle (B3 la reemplazará). */
   detailHref: string

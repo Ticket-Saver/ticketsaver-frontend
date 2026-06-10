@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { useEvents } from '../router/eventsContext'
-import { useVenues } from '../router/venuesContext'
-import { isVisibleEvent, toUIEvents } from '../services/eventAdapter'
+import { isVisibleEvent } from '../services/eventAdapter'
+import { hiEventsToUIEvents } from '../services/hiEventsAdapter'
 import type { Category, CategoryFilter, UIEvent } from '../types/uiEvent'
 
 interface UseUIEventsResult {
-  /** True hasta que cargan ambos providers (events + venues). */
+  /** True hasta que carga el listado de eventos. */
   loading: boolean
   /** Todos los UIEvents adaptados (incluye hidden + expired). */
   all: UIEvent[]
@@ -19,8 +19,10 @@ interface UseUIEventsResult {
   tonight: UIEvent[]
   /** Filtrado por categoría. 'All' devuelve todos los visibles. */
   byCategory: (cat: CategoryFilter) => UIEvent[]
-  /** Devuelve el UIEvent por su event_label. */
+  /** Devuelve el UIEvent por su id (slug). */
   byLabel: (label: string | undefined) => UIEvent | undefined
+  /** Devuelve el UIEvent por su id numérico de HiEvents (eventId). */
+  byId: (id: string | undefined) => UIEvent | undefined
   /** Lista de categorías con al menos 1 evento visible (sin 'Other'). */
   availableCategories: Category[]
 }
@@ -46,11 +48,10 @@ const isToday = (e: UIEvent): boolean => {
 
 export const useUIEvents = (): UseUIEventsResult => {
   const { events } = useEvents()
-  const { venues } = useVenues()
 
   return useMemo(() => {
-    const loading = events === null || venues === null
-    const all = toUIEvents(events, venues)
+    const loading = events === null
+    const all = hiEventsToUIEvents(events)
 
     const visible = all
       .filter(isVisibleEvent)
@@ -70,6 +71,9 @@ export const useUIEvents = (): UseUIEventsResult => {
     const byLabel = (label: string | undefined): UIEvent | undefined =>
       label ? all.find((e) => e.id === label) : undefined
 
+    const byId = (id: string | undefined): UIEvent | undefined =>
+      id ? all.find((e) => e.eventId === id) : undefined
+
     return {
       loading,
       all,
@@ -79,7 +83,8 @@ export const useUIEvents = (): UseUIEventsResult => {
       tonight,
       byCategory,
       byLabel,
+      byId,
       availableCategories
     }
-  }, [events, venues])
+  }, [events])
 }

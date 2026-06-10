@@ -17,7 +17,20 @@ interface ItemBreakdown {
   total: number
 }
 
-const breakdownPerItem = (net: number): ItemBreakdown => {
+/**
+ * Desglose por item. Si el item trae net/fee/tax REALES (asientos de HiEvents),
+ * los usa tal cual; si no (general, hasta C3b), cae al cálculo con los % legacy.
+ */
+const breakdownPerItem = (item: CartSummaryItem): ItemBreakdown => {
+  if (item.net !== undefined && item.fee !== undefined && item.tax !== undefined) {
+    return {
+      net: round2(item.net),
+      fee: round2(item.fee),
+      tax: round2(item.tax),
+      total: round2(item.net + item.fee + item.tax)
+    }
+  }
+  const net = item.price
   const fee = round2(net * SERVICE_FEE_PCT)
   const tax = round2(net * TAX_PCT)
   return { net: round2(net), fee, tax, total: round2(net + fee + tax) }
@@ -32,13 +45,13 @@ const ItemBreakdownRows = ({ b }: { b: ItemBreakdown }) => (
       </span>
     </div>
     <div className='flex justify-between'>
-      <span className='text-white/55'>Service fee (8.5%)</span>
+      <span className='text-white/55'>Service fee</span>
       <span className='text-white/80 tabular-nums font-display'>
         ${b.fee.toFixed(2)}
       </span>
     </div>
     <div className='flex justify-between'>
-      <span className='text-white/55'>Tax (6%)</span>
+      <span className='text-white/55'>Tax</span>
       <span className='text-white/80 tabular-nums font-display'>
         ${b.tax.toFixed(2)}
       </span>
@@ -52,7 +65,12 @@ export interface CartSummaryItem {
   label: string
   /** Línea secundaria — ej. "Row K · Seat 7" o "$55 each". */
   sublabel?: string
+  /** Total del item (con impuestos). */
   price: number
+  /** Desglose real de HiEvents. Si vienen, el panel los usa en vez de los % legacy. */
+  net?: number
+  fee?: number
+  tax?: number
 }
 
 interface BaseProps {
@@ -106,10 +124,10 @@ const BreakdownLines = ({ breakdown }: { breakdown: PricingBreakdown }) => (
   <div className='space-y-1.5'>
     <PriceRow label='Subtotal' value={breakdown.subtotal} />
     {breakdown.serviceFee > 0 && (
-      <PriceRow label='Service fee (8.5%)' value={breakdown.serviceFee} />
+      <PriceRow label='Service fee' value={breakdown.serviceFee} />
     )}
     {breakdown.taxes > 0 && (
-      <PriceRow label='Taxes (6%)' value={breakdown.taxes} />
+      <PriceRow label='Taxes' value={breakdown.taxes} />
     )}
   </div>
 )
@@ -154,7 +172,7 @@ export const CartSidebar = (props: BaseProps) => {
         ) : (
           <ul className='space-y-2'>
             {items.map((item) => {
-              const b = breakdownPerItem(item.price)
+              const b = breakdownPerItem(item)
               return (
                 <li
                   key={item.id}
@@ -286,7 +304,7 @@ export const CartMobileSheet = (props: BaseProps) => {
           <div className='max-h-[50vh] overflow-y-auto border-t border-white/[0.08] px-4 py-3 space-y-3'>
             <ul className='space-y-2'>
               {items.map((item) => {
-                const b = breakdownPerItem(item.price)
+                const b = breakdownPerItem(item)
                 return (
                   <li
                     key={item.id}

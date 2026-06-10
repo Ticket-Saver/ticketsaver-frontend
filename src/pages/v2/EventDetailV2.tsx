@@ -10,12 +10,11 @@ import StickyCTA from '../../components/v2/eventDetail/StickyCTA'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import { getDatesForArtist } from '../../services/multiDateAdapter'
-import { cacheService } from '../../services/cacheService'
-import { fallbackDataService } from '../../services/fallbackDataService'
-import { extractZonePrices } from '../../components/Utils/priceUtils'
-import { fetchDescription } from '../../components/Utils/FetchDataJson'
+import { hiEventsService } from '../../services/hiEventsService'
+import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
-import type { UIEvent } from '../../types/uiEvent'
+import type { Availability, UIEvent } from '../../types/uiEvent'
+import type { HiAvailability, HiEventPublic, HiTicketPublic } from '../../types/hievents'
 
 const SALE_DATE_FMT = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
@@ -23,32 +22,107 @@ const SALE_DATE_FMT = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 })
 
-interface ZoneEntry {
-  zone: string
-  prices: { priceBase: number; priceFinal: number }[]
+/** Deriva el estado de disponibilidad visual desde el availability real de HiEvents. */
+const deriveAvailability = (av: HiAvailability | null | undefined): Availability | null => {
+  if (!av || av.total <= 0) return null
+  if (av.available <= 0) return 'sold-out'
+  const ratio = av.available / av.total
+  if (ratio <= 0.1) return 'few-left'
+  if (ratio <= 0.3) return 'selling-fast'
+  return 'available'
 }
 
 export default function EventDetailV2() {
-  const { label, delete: deleteParam } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
-  const { loading, byLabel, visible } = useUIEvents()
+  const { loading, byId, visible } = useUIEvents()
 
-  const event = byLabel(label)
+  const eventFromList = byId(id)
 
-  // Guards: delete flag, expired o label inexistente → redirige
+  const [detail, setDetail] = useState<HiEventPublic | null>(null)
+  const [tickets, setTickets] = useState<HiTicketPublic[]>([])
+  const [detailError, setDetailError] = useState(false)
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+
+  // Detalle rico + tickets desde HiEvents. Sirve también de deep-link: si el
+  // evento no está en la lista cargada, igual se resuelve por su id.
   useEffect(() => {
-    if (deleteParam === 'delete') {
-      navigate('/', { replace: true })
-      return
+    if (!id) return
+    let cancelled = false
+    setDetail(null)
+    setTickets([])
+    setDetailError(false)
+    ;(async () => {
+      try {
+        const [d, t] = await Promise.all([
+          hiEventsService.getEvent(id),
+          hiEventsService.getTickets(id).catch(() => [] as HiTicketPublic[])
+        ])
+        if (cancelled) return
+        setDetail(d)
+        setTickets(t)
+      } catch {
+        if (!cancelled) setDetailError(true)
+      }
+    })()
+    return () => {
+      cancelled = true
     }
-    if (!loading && !event) {
-      navigate('/events', { replace: true })
-      return
+  }, [id])
+
+  // Evento base: de la lista (rápido) o construido desde el detalle (deep-link).
+  const baseEvent: UIEvent | null =
+    eventFromList ?? (detail ? hiEventToUIEvent(detail) : null)
+
+  // priceFrom real: mínimo con impuestos de los tickets.
+  const priceFrom = useMemo(() => {
+    const all = tickets.flatMap((t) =>
+      t.prices.map((p) => p.price_including_taxes_and_fees ?? p.price)
+    )
+    return all.length > 0 ? Math.min(...all) : null
+  }, [tickets])
+
+  // Countdown: si ningún ticket está en venta y hay una fecha de apertura futura,
+  // mostramos "On sale {fecha}" (la más temprana) y se deshabilita la compra.
+  const { isSaleActive, saleStartsLabel, saleStartsAt } = useMemo(() => {
+    const active = {
+      isSaleActive: true,
+      saleStartsLabel: undefined as string | undefined,
+      saleStartsAt: null as Date | null
     }
-    if (event?.expired) {
-      navigate('/events', { replace: true })
+    if (tickets.length === 0) return active
+    if (tickets.some((t) => t.is_available)) return active
+    const upcoming = tickets
+      .map((t) => t.sale_start_date)
+      .filter((s): s is string => Boolean(s))
+      .map((s) => new Date(s))
+      .filter((d) => !Number.isNaN(d.getTime()) && d.getTime() > Date.now())
+      .sort((a, b) => a.getTime() - b.getTime())
+    if (upcoming.length > 0) {
+      return {
+        isSaleActive: false,
+        saleStartsLabel: `On sale ${SALE_DATE_FMT.format(upcoming[0])}`,
+        saleStartsAt: upcoming[0]
+      }
     }
-  }, [deleteParam, event, loading, navigate])
+    return active
+  }, [tickets])
+
+  // Evento enriquecido con datos reales del detalle (precio, disponibilidad,
+  // vibe), sin tocar los subcomponentes que ya consumen UIEvent.
+  const event: UIEvent | null = useMemo(() => {
+    if (!baseEvent) return null
+    const realAvailability = deriveAvailability(detail?.availability)
+    return {
+      ...baseEvent,
+      priceFrom: priceFrom ?? baseEvent.priceFrom,
+      // Si la venta aún no abrió, no mostramos "sold-out" (0 disponibles ≠ agotado).
+      availability: !isSaleActive ? 'available' : realAvailability ?? baseEvent.availability,
+      vibe: detail?.description_preview ?? baseEvent.vibe
+    }
+  }, [baseEvent, priceFrom, detail, isSaleActive])
+
+  const description = detail?.description ?? ''
 
   const dates = useMemo(
     () => getDatesForArtist(visible, event?.title),
@@ -56,109 +130,19 @@ export default function EventDetailV2() {
   )
   const datesForArtist = dates.length > 0 ? dates : event ? [event] : []
 
-  const [zonePriceList, setZonePriceList] = useState<ZoneEntry[]>([])
-  const [description, setDescription] = useState('')
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
-
-  // Fetch zone_price con caché + fallback (mismo flow que el legacy)
+  // Si no se encuentra ni en la lista ni en HiEvents → a /events.
   useEffect(() => {
-    if (!label) return
-    let cancelled = false
-
-    const token = import.meta.env.VITE_GITHUB_TOKEN
-    const url = `${import.meta.env.VITE_GITHUB_API_URL as string}/events/${label}/zone_price.json`
-    const options = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3.raw'
-      }
+    if (!loading && !eventFromList && detailError) {
+      navigate('/events', { replace: true })
     }
-
-    const load = async () => {
-      try {
-        if (fallbackDataService.isEmergencyMode()) {
-          const local = await fallbackDataService.getLocalZonePrice(label)
-          if (local && !cancelled) setZonePriceList(extractZonePrices(local))
-          return
-        }
-        const data = await cacheService.fetchWithCache(url, options, {
-          ttl: 5 * 60 * 1000
-        })
-        if (!cancelled) setZonePriceList(extractZonePrices(data))
-      } catch {
-        try {
-          const local = await fallbackDataService.getLocalZonePrice(label)
-          if (local && !cancelled) setZonePriceList(extractZonePrices(local))
-        } catch {
-          if (!cancelled) setZonePriceList([])
-        }
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [label])
-
-  // Fetch description con cache + fallback
-  useEffect(() => {
-    if (!label) return
-    let cancelled = false
-    const token = import.meta.env.VITE_GITHUB_TOKEN
-    const options = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3.raw'
-      }
-    }
-    fetchDescription(label, options)
-      .then((d) => {
-        if (cancelled) return
-        if (typeof d !== 'string') {
-          setDescription('')
-          return
-        }
-        // Si el endpoint devolvió HTML (dev server fallback, página 404 de
-        // GitHub, etc.), no lo mostramos como texto crudo.
-        if (/^\s*(<!doctype|<html|<\?xml)/i.test(d)) {
-          setDescription('')
-          return
-        }
-        setDescription(d)
-      })
-      .catch(() => {
-        if (!cancelled) setDescription('')
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [label])
-
-  const priceFrom = useMemo(() => {
-    if (zonePriceList.length === 0) return null
-    const all = zonePriceList.flatMap((z) =>
-      z.prices.map((p) => p.priceFinal / 100)
-    )
-    return all.length > 0 ? Math.min(...all) : null
-  }, [zonePriceList])
-
-  const saleStartsAt = event?.raw.sale_starts_at
-    ? new Date(event.raw.sale_starts_at)
-    : null
-  const isSaleActive = saleStartsAt
-    ? saleStartsAt.getTime() <= Date.now()
-    : true
-  const saleStartsLabel =
-    saleStartsAt && !isSaleActive
-      ? `On sale ${SALE_DATE_FMT.format(saleStartsAt)}`
-      : undefined
+  }, [loading, eventFromList, detailError, navigate])
 
   const handleDateChange = (newEvent: UIEvent) => {
     if (newEvent.id === event?.id) return
     navigate(newEvent.detailHref, { replace: true })
   }
 
-  if (loading || !event) {
+  if (!event) {
     return (
       <LayoutV2 hideMobileTabBar hideFooter meshSeed={1}>
         <LoadingState />
@@ -168,7 +152,7 @@ export default function EventDetailV2() {
 
   return (
     <LayoutV2 hideFooter meshSeed={(coverSeed(event.id) % 8) + 1}>
-      <Banner event={event} />
+      <Banner event={event} images={detail?.images} />
 
       <div className='mt-8 lg:mt-10 px-5 lg:px-10 max-w-7xl mx-auto'>
         <TitleBlock event={event} />
@@ -191,6 +175,12 @@ export default function EventDetailV2() {
         <SelectedDateHighlight event={event} />
       </div>
 
+      {!isSaleActive && saleStartsAt && (
+        <div className='mt-5 px-5 lg:px-10 max-w-7xl mx-auto'>
+          <CountdownBanner date={saleStartsAt} />
+        </div>
+      )}
+
       <Section title='About the show'>
         <Description
           text={description}
@@ -203,7 +193,7 @@ export default function EventDetailV2() {
         <div className='px-5 lg:px-10 pb-3'>
           <SectionLabel>Gallery</SectionLabel>
         </div>
-        <Gallery event={event} />
+        <Gallery event={event} images={detail?.gallery ?? detail?.images} />
       </section>
 
       <Section title='Location'>
@@ -216,14 +206,13 @@ export default function EventDetailV2() {
 
       <Section title='Good to know'>
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
+          {/* Solo mostramos datos reales. El resto (duración, edad, política de
+              bolsos) se cargará desde el admin (bloque A). */}
           <FactPill label='Doors' value={event.time || 'TBA'} />
-          <FactPill label='Duration' value='Varies' />
-          <FactPill label='Age' value='All ages' />
-          <FactPill label='Bag policy' value='Clear bags only' />
         </div>
       </Section>
 
-      <ZonePricesPanel zonePriceList={zonePriceList} />
+      <TicketPricesPanel tickets={tickets} />
 
       <div className='h-32 lg:h-24' />
 
@@ -322,30 +311,33 @@ const Description = ({ text, expanded, onToggle }: DescriptionProps) => {
   )
 }
 
-const ZonePricesPanel = ({
-  zonePriceList
-}: {
-  zonePriceList: ZoneEntry[]
-}) => {
-  if (zonePriceList.length === 0) return null
+/**
+ * Panel de precios del detalle. Para eventos generales muestra los tipos de
+ * ticket de HiEvents con su precio (ya con impuestos). Para enumerados, los
+ * precios reales viven en los asientos (se afina en C3/C4); si llegan muchos
+ * tickets (probable enumerado), se omite el listado para no saturar.
+ */
+const TicketPricesPanel = ({ tickets }: { tickets: HiTicketPublic[] }) => {
+  if (tickets.length === 0 || tickets.length > 12) return null
   return (
-    <Section title='Ticket zones'>
+    <Section title='Tickets'>
       <GlassCard depth='sm' radius='md' className='divide-y divide-white/[0.08]'>
-        {zonePriceList.map((zone) => {
-          const min = Math.min(
-            ...zone.prices.map((p) => p.priceFinal / 100)
+        {tickets.map((ticket) => {
+          const prices = ticket.prices.map(
+            (p) => p.price_including_taxes_and_fees ?? p.price
           )
+          const min = prices.length > 0 ? Math.min(...prices) : 0
           return (
             <div
-              key={zone.zone}
+              key={ticket.id}
               className='flex items-center justify-between px-4 py-3'
             >
               <div>
                 <div className='font-display text-sm font-semibold text-white'>
-                  {zone.zone}
+                  {ticket.title}
                 </div>
                 <div className='text-[10.5px] text-white/45 uppercase tracking-[0.14em] mt-0.5 font-display'>
-                  Starting from
+                  {ticket.is_sold_out ? 'Sold out' : 'Starting from'}
                 </div>
               </div>
               <div className='font-display text-sm font-semibold text-white tabular-nums'>
@@ -387,6 +379,61 @@ const FactPill = ({ label, value }: { label: string; value: string }) => (
       {value}
     </div>
   </div>
+)
+
+const CountdownBanner = ({ date }: { date: Date }) => {
+  const days = Math.max(
+    0,
+    Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+  )
+  const dateLabel = new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }).format(date)
+  return (
+    <div
+      className='relative overflow-hidden rounded-glass-md border border-brand-hi/40 px-4 py-4 flex items-center gap-4'
+      style={{
+        background:
+          'linear-gradient(110deg, rgba(181,123,232,0.22), rgba(255,94,158,0.16))'
+      }}
+    >
+      <div className='shrink-0 grid place-items-center h-12 w-12 rounded-glass-sm bg-white/10 border border-white/15 text-white/85'>
+        <ClockIcon />
+      </div>
+      <div className='min-w-0 flex-1'>
+        <div className='font-display text-[10px] uppercase tracking-[0.16em] font-semibold text-brand-hi'>
+          Tickets on sale
+        </div>
+        <div className='font-display text-sm lg:text-base font-bold text-white tracking-tight mt-0.5'>
+          {dateLabel}
+        </div>
+      </div>
+      <div className='shrink-0 text-right'>
+        <div className='font-display text-2xl font-bold text-white leading-none tabular-nums'>
+          {days}
+        </div>
+        <div className='text-[9.5px] uppercase tracking-[0.14em] text-white/60 font-display mt-1'>
+          {days === 1 ? 'day to go' : 'days to go'}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ClockIcon = () => (
+  <svg width='20' height='20' viewBox='0 0 24 24' fill='none' aria-hidden>
+    <circle cx='12' cy='12' r='9' stroke='currentColor' strokeWidth='1.6' />
+    <path
+      d='M12 7.5V12l3 1.8'
+      stroke='currentColor'
+      strokeWidth='1.6'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+  </svg>
 )
 
 const PinIcon = () => (

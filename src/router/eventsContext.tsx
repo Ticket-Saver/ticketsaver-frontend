@@ -1,8 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { cacheService } from '../services/cacheService'
-import { fallbackDataService } from '../services/fallbackDataService'
+import { hiEventsService } from '../services/hiEventsService'
+import type { HiEventPublic } from '../types/hievents'
 
-// Define la interfaz para un evento
+/**
+ * Schema viejo (GitHub). Se CONSERVA aunque la fuente ahora sea HiEvents:
+ * `hiEventsAdapter` lo usa para rellenar `UIEvent.raw` (Event sintético), y lo
+ * importan `eventAdapter`/`uiEvent`. No eliminar sin migrar esos consumidores.
+ */
 export interface Event {
   eventId: string
   event_date: string
@@ -15,64 +19,33 @@ export interface Event {
   tricket_url: string
 }
 
-interface EventsData {
-  [key: string]: Event
-}
-
 interface EventsContextValue {
-  events: EventsData | null
+  /** Eventos crudos del listado de HiEvents (LIVE, upcoming). */
+  events: HiEventPublic[] | null
 }
 
 const EventsContext = createContext<EventsContextValue>({ events: null })
 
 export const EventsProvider = ({ children }: { children: any }) => {
-  const [events, setEvents] = useState<EventsData | null>(null)
-  const token = import.meta.env.VITE_GITHUB_TOKEN
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
+  const [events, setEvents] = useState<HiEventPublic[] | null>(null)
 
   useEffect(() => {
+    let cancelled = false
     const fetchEvents = async () => {
       try {
-        // Verificar si está en modo emergencia
-        if (fallbackDataService.isEmergencyMode()) {
-          console.warn('🚨 Modo emergencia: Usando eventos locales')
-          const localEvents = await fallbackDataService.getLocalEvents()
-          setEvents(localEvents)
-          return
-        }
-
-        // Usar caché con TTL de 10 minutos para eventos
-        const data = await cacheService.fetchWithCache<EventsData>(githubApiUrl, options, {
-          ttl: 10 * 60 * 1000, // 10 minutos
-          useLocalStorage: true
-        })
-
-        // Mergeamos los eventos "demo_*" del fallback local — el cliente
-        // los usa para verificar features sin tener que subirlos al
-        // GitHub real. Sólo entran si no existen ya en remoto.
-        const localEvents = (await fallbackDataService.getLocalEvents()) as EventsData
-        const merged: EventsData = { ...data }
-        for (const [key, value] of Object.entries(localEvents)) {
-          if (key.startsWith('demo_') && !merged[key]) {
-            merged[key] = value
-          }
-        }
-        setEvents(merged)
+        // Listado de producción: HiEvents /events (LIVE, upcoming). Requiere token.
+        const list = await hiEventsService.listEvents({ eventsStatus: 'upcoming', only_live: true })
+        if (!cancelled) setEvents(list)
       } catch (error) {
-        console.error('Error fetching events, usando fallback local: ', error)
-        // Si falla GitHub, usar datos locales como fallback
-        const localEvents = await fallbackDataService.getLocalEvents()
-        setEvents(localEvents)
+        console.error('Error listando eventos de HiEvents:', error)
+        if (!cancelled) setEvents([])
       }
     }
     fetchEvents()
-  }, [githubApiUrl, token])
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return <EventsContext.Provider value={{ events }}>{children}</EventsContext.Provider>
 }

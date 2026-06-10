@@ -82,10 +82,7 @@ export const AppRouter = () => (
 
           <Route path='/events' element={<EventsV2 />} />
 
-          <Route
-            path='/event/:name/:venue/:date/:label/:delete?'
-            element={<EventDetailV2 />}
-          />
+          <Route path='/event/:id/:slug?' element={<EventDetailV2 />} />
 
           <Route
             path='/sale/:name/:venue/:location/:date/:label/:delete?'

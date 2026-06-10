@@ -39,9 +39,10 @@ export default function StickyCTA({
   const disabled = !isSaleActive || event.expired || isSoldOut
 
   const ctaLabel = (() => {
-    if (isSoldOut) return 'Sold out'
     if (event.expired) return 'Event ended'
+    // La pre-venta tiene prioridad: 0 disponibles antes de abrir ≠ agotado.
     if (!isSaleActive) return saleStartsLabel ?? 'Coming soon'
+    if (isSoldOut) return 'Sold out'
     if (event.requiresQueue) return 'Join queue'
     return 'Choose seats'
   })()

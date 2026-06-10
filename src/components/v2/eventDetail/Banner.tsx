@@ -1,14 +1,30 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import EventCover from '../EventCover'
 import type { UIEvent } from '../../../types/uiEvent'
+import type { HiImage } from '../../../types/hievents'
 
 interface BannerProps {
   event: UIEvent
+  /** Imágenes reales del evento (HiEvents). Si hay banner/cover, reemplaza al cover procedural. */
+  images?: HiImage[]
   /** Texto opcional al pie del banner — ej. "World Tour '25". */
   tourName?: string
 }
 
-export default function Banner({ event, tourName }: BannerProps) {
+/** Elige la mejor imagen de fondo: banner > cover > thumbnail > primera disponible. */
+const pickBannerImage = (images?: HiImage[]): string | undefined => {
+  if (!images || images.length === 0) return undefined
+  const byType = (t: string) => images.find((i) => i.type === t)?.url
+  return (
+    byType('EVENT_BANNER') ||
+    byType('EVENT_COVER') ||
+    byType('EVENT_THUMBNAIL') ||
+    images[0]?.url
+  )
+}
+
+export default function Banner({ event, images, tourName }: BannerProps) {
+  const bgImage = pickBannerImage(images)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -35,14 +51,22 @@ export default function Banner({ event, tourName }: BannerProps) {
   return (
     <div className='relative h-[260px] sm:h-[320px] lg:h-[420px] w-full overflow-hidden'>
       <div className='absolute inset-0'>
-        <EventCover
-          event={event}
-          height={420}
-          big
-          hideCategory
-          hideTitle
-          hideDate
-        />
+        {bgImage ? (
+          <img
+            src={bgImage}
+            alt={event.title}
+            className='h-full w-full object-cover'
+          />
+        ) : (
+          <EventCover
+            event={event}
+            height={420}
+            big
+            hideCategory
+            hideTitle
+            hideDate
+          />
+        )}
       </div>
 
       <div

@@ -10,7 +10,7 @@ import type { UIEvent } from '../../types/uiEvent'
  */
 export type EventCoverData = Pick<
   UIEvent,
-  'id' | 'title' | 'subtitle' | 'category' | 'cover' | 'month' | 'date'
+  'id' | 'title' | 'subtitle' | 'category' | 'cover' | 'month' | 'date' | 'imageUrl'
 >
 
 interface EventCoverProps {
@@ -54,55 +54,77 @@ export default function EventCover({
       }}
       aria-label={event.title}
     >
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          width: '80%',
-          height: '80%',
-          left: '-20%',
-          top: '20%',
-          background: `radial-gradient(circle, ${c.accent}80 0%, transparent 60%)`,
-          filter: 'blur(30px)'
-        }}
-      />
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          width: '60%',
-          height: '60%',
-          right: '-10%',
-          top: '-15%',
-          background: `radial-gradient(circle, ${c.b}cc 0%, transparent 60%)`,
-          filter: 'blur(24px)',
-          mixBlendMode: 'screen'
-        }}
-      />
-
-      <svg
-        aria-hidden
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          opacity: 0.22,
-          mixBlendMode: 'overlay',
-          pointerEvents: 'none'
-        }}
-      >
-        <filter id={filterId}>
-          <feTurbulence
-            type='fractalNoise'
-            baseFrequency='0.9'
-            numOctaves={2}
-            stitchTiles='stitch'
+      {event.imageUrl ? (
+        <>
+          <img
+            src={event.imageUrl}
+            alt=''
+            aria-hidden
+            className='absolute inset-0 h-full w-full object-cover'
           />
-          <feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0' />
-        </filter>
-        <rect width='100%' height='100%' filter={`url(#${filterId})`} />
-      </svg>
+          {/* Velo para legibilidad de los chips/título sobre la foto. */}
+          <div
+            aria-hidden
+            className='absolute inset-0'
+            style={{
+              background:
+                'linear-gradient(to top, rgba(8,3,20,0.72) 0%, rgba(8,3,20,0.06) 45%, rgba(8,3,20,0.30) 100%)'
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              width: '80%',
+              height: '80%',
+              left: '-20%',
+              top: '20%',
+              background: `radial-gradient(circle, ${c.accent}80 0%, transparent 60%)`,
+              filter: 'blur(30px)'
+            }}
+          />
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              width: '60%',
+              height: '60%',
+              right: '-10%',
+              top: '-15%',
+              background: `radial-gradient(circle, ${c.b}cc 0%, transparent 60%)`,
+              filter: 'blur(24px)',
+              mixBlendMode: 'screen'
+            }}
+          />
+
+          <svg
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              opacity: 0.22,
+              mixBlendMode: 'overlay',
+              pointerEvents: 'none'
+            }}
+          >
+            <filter id={filterId}>
+              <feTurbulence
+                type='fractalNoise'
+                baseFrequency='0.9'
+                numOctaves={2}
+                stitchTiles='stitch'
+              />
+              <feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0' />
+            </filter>
+            <rect width='100%' height='100%' filter={`url(#${filterId})`} />
+          </svg>
+        </>
+      )}
 
       {!hideCategory && (
         <div

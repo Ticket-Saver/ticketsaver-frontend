@@ -191,3 +191,65 @@ export function validateSeatAdd(
 
   return { ok: true }
 }
+
+/** Un asiento de una fila para validar contigüidad por número de asiento. */
+export interface RowSeatInfo {
+  /** seat_number numérico. */
+  num: number
+  /** true si está libre/comprable (is_available && !is_sold_out). */
+  available: boolean
+}
+
+/**
+ * Variante de `validateSeatAdd` para el mapa de HiEvents, donde los asientos se
+ * identifican por FILA (letra) + número, no por coordenadas. Es genérica: vale
+ * para cualquier mapa (map1 fila+número, map2 número+fila) porque opera sobre los
+ * `seat_number` de los asientos REALES de la fila. Los números inexistentes (saltos
+ * de numeración → pasillos) y los asientos vendidos se tratan como pared.
+ *
+ * Regla de bloqueo duro: CONTIGÜIDAD — los asientos elegidos no pueden tener un
+ * asiento LIBRE entre medio. NO se bloquea dejar asientos sueltos en la punta: el
+ * comprador puede querer menos asientos de los que hay en la fila (comprar 3 de 4),
+ * o llegar a comprar los 4 pasando por estados intermedios.
+ *
+ * @param candidateNum  seat_number que se quiere AGREGAR.
+ * @param rowSeats      todos los asientos de esa fila visibles en la sección.
+ * @param selectedNums  seat_number ya seleccionados en esa fila (antes de agregar).
+ */
+export function validateSeatAddByNumber(
+  candidateNum: number,
+  rowSeats: RowSeatInfo[],
+  selectedNums: number[]
+): ValidateAddResult {
+  if (rowSeats.length === 0) return { ok: true }
+
+  const availableByNum = new Map<number, boolean>()
+  for (const s of rowSeats) availableByNum.set(s.num, s.available)
+
+  const selAfter = new Set(selectedNums)
+  selAfter.add(candidateNum)
+
+  // Libre = existe, está disponible y no está seleccionado.
+  const isFree = (n: number, sel: Set<number>) =>
+    availableByNum.get(n) === true && !sel.has(n)
+
+  // Única regla (bloqueo duro): CONTIGÜIDAD — no dejar un asiento LIBRE entre los
+  // asientos que el comprador eligió. NO bloqueamos dejar asientos sueltos (en la
+  // punta o donde sea): el comprador puede querer menos asientos de los que hay en
+  // la fila, y forzarlo a llenarla impediría compras legítimas (comprar 3 de 4, o
+  // llegar a comprar los 4 pasando por estados intermedios).
+  const sel = [...selAfter].sort((a, b) => a - b)
+  if (sel.length >= 2) {
+    for (let n = sel[0]; n <= sel[sel.length - 1]; n++) {
+      if (isFree(n, selAfter)) {
+        return {
+          ok: false,
+          reason:
+            "Your seats have to be next to each other — you can't leave an empty seat between the ones you pick. Choose adjacent seats."
+        }
+      }
+    }
+  }
+
+  return { ok: true }
+}
