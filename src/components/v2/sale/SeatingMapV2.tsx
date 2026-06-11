@@ -7,7 +7,7 @@
  *     el modal y la contigüidad se resuelven localmente desde esa lista + ranges.
  * La lógica de mapeo SVG↔asiento (frágil) se conserva idéntica a producción.
  */
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { hiEventsService } from '../../../services/hiEventsService'
 import type { RangesRaw } from '../../../lib/seatmaps/registry'
 import ZoomPanContainer from './ZoomPanContainer'
@@ -33,7 +33,9 @@ export default function SeatingMapV2({
 }: SeatingMapV2Props) {
   // map metadata is fetched but not stored to avoid unused state
   const [svgContent, setSvgContent] = useState<string>('')
-  const [seats, setSeats] = useState<SeatItem[]>([])
+  // `seats` queda vacío: el mapa ya no carga la lista global (lazy por grupo). Se
+  // conserva para las funciones legacy de map1/map2 que aún lo referencian.
+  const [seats] = useState<SeatItem[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [ranges, setRanges] = useState<
@@ -58,11 +60,36 @@ export default function SeatingMapV2({
   } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
+  // Precio "desde $X" por rango (traído on-demand; el mapa masivo no trae precio).
+  const [priceByRange, setPriceByRange] = useState<Record<string, number>>({})
   // La carga del grupo es síncrona (cálculo local), así que siempre es false.
   const isLoadingGroup = false
   const lastFetchedGroupRef = useRef<string | null>(null)
   const availabilityCacheRef = useRef<Record<string, { total: number; available: number; price?: number }>>({})
   const pendingClickRef = useRef<boolean>(false)
+  // Cache de asientos por grupo (lazy): el mapa no trae los ~1876 de una; cada sección
+  // se trae al hacer hover/click sobre ella, vía /seats?group= (~100 asientos, <0.7s).
+  const groupSeatsCacheRef = useRef<Map<string, SeatItem[]>>(new Map())
+  const loadGroupSeats = useCallback(
+    async (groupKey: string, signal?: AbortSignal): Promise<SeatItem[]> => {
+      const cached = groupSeatsCacheRef.current.get(groupKey)
+      if (cached) return cached
+      const list = (await hiEventsService.getSeats(eventId, groupKey, signal)) as unknown as SeatItem[]
+      groupSeatsCacheRef.current.set(groupKey, list)
+      // Alimentar el "desde $X" por rango con el precio base de estos asientos.
+      setPriceByRange((prev) => {
+        const next = { ...prev }
+        for (const s of list) {
+          if (s.price_range && typeof s.price === 'number' && next[s.price_range] === undefined) {
+            next[s.price_range] = s.price
+          }
+        }
+        return next
+      })
+      return list
+    },
+    [eventId]
+  )
 
   const toTitleCaseFromKebab = (value: string): string => {
     return value
@@ -246,11 +273,10 @@ export default function SeatingMapV2({
           if (isMounted) setRanges(parsed)
         }
 
-        // Asientos en vivo desde HiEvents (todos). El hover/modal/contigüidad se
-        // resuelven localmente desde esta lista + los ranges del asset.
-        const list = (await hiEventsService.getSeats(eventId)) as unknown as SeatItem[]
+        // El mapa NO carga los ~1876 asientos (eso lo volvía lento). Se pinta solo con
+        // el SVG (selector de secciones). Los asientos de cada sección se traen
+        // on-demand al hacer hover/click, vía /seats?group= (~100 asientos, <0.7s).
         if (!isMounted) return
-        setSeats(list)
       } catch (e: unknown) {
         if (!isMounted) return
         const message = e instanceof Error ? e.message : 'Error loading seating map'
@@ -373,37 +399,6 @@ export default function SeatingMapV2({
       }
     })
 
-    const computeStatsForGroupKey = (groupKey: string) => {
-      const rKeys = groupKeyToRangeKeys[groupKey]
-      if (!rKeys || rKeys.length === 0) return null
-      // total/available = asientos REALES del grupo (los que existen en /seats),
-      // para que la disponibilidad sea la real, no la teórica del mapa completo.
-      const seen = new Set<string>()
-      let total = 0
-      let available = 0
-      for (const s of seats) {
-        const seatNum =
-          typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
-        const row = (s.row || '').toString().toUpperCase()
-        const inGroup = rKeys.some((k) => {
-          const def = ranges[k]
-          return (
-            def &&
-            def.rows.includes(row) &&
-            def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
-          )
-        })
-        if (!inGroup) continue
-        const id = `${row}-${seatNum}`
-        if (seen.has(id)) continue
-        seen.add(id)
-        total += 1
-        if (s.is_available === true && s.is_sold_out !== true) available += 1
-      }
-
-      return { total, available }
-    }
-
     const getGroupPrice = (gKey: string) => {
       const rKeys = groupKeyToRangeKeys[gKey]
       if (!rKeys || rKeys.length === 0) return undefined
@@ -414,14 +409,14 @@ export default function SeatingMapV2({
           const def = ranges[k]
           return def && def.rows.includes(row) && def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
         })
-        if (match) return s.price_including_taxes_and_fees ?? s.price
+        if (match) return priceByRange[s.price_range]
       }
       return undefined
     }
 
     const getSectionPrice = (secKey: string) => {
       const match = seats.find((s) => s.section === secKey || s.position === secKey || s.seat_key === secKey || s.seat_key_alt === secKey)
-      return match ? match.price_including_taxes_and_fees ?? match.price : undefined
+      return match ? priceByRange[match.price_range] : undefined
     }
 
     const getRangePrice = (rangeKey: string, rowCandidate?: string) => {
@@ -433,7 +428,7 @@ export default function SeatingMapV2({
         if (!def.rows.includes(row)) continue
         const seatNum = typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
         if (def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)) {
-          return s.price_including_taxes_and_fees ?? s.price
+          return priceByRange[s.price_range]
         }
       }
       return undefined
@@ -468,13 +463,26 @@ export default function SeatingMapV2({
     // Disponibilidad calculada localmente desde los asientos ya cargados. El
     // endpoint /seats/availability/group no aporta agregados fiables (en prod
     // terminaba cayendo a este mismo cálculo local); mejorarlo = bloque A.
-    const fetchRealtimeAvailability = (groupKey: string, fallbackGroupKey?: string) => {
+    const fetchRealtimeAvailability = async (groupKey: string, _fallbackGroupKey?: string) => {
       const cached = availabilityCacheRef.current[groupKey]
-      if (cached) return Promise.resolve(cached)
-      const stats =
-        computeStatsForGroupKey(groupKey) || computeStatsForGroupKey(fallbackGroupKey || groupKey)
-      if (stats) availabilityCacheRef.current[groupKey] = stats
-      return Promise.resolve(stats)
+      if (cached) return cached
+      // Traer los asientos de la sección (/seats?group=) y contar disponibilidad real.
+      const groupSeats = await loadGroupSeats(groupKey)
+      const seen = new Set<string>()
+      let total = 0
+      let available = 0
+      let price: number | undefined
+      for (const s of groupSeats) {
+        const dk = s.id ? s.id.toString() : `${s.row}-${s.seat_number}`
+        if (seen.has(dk)) continue
+        seen.add(dk)
+        total += 1
+        if (s.is_available === true && s.is_sold_out !== true) available += 1
+        if (price === undefined && typeof s.price === 'number') price = s.price
+      }
+      const stats = { total, available, price }
+      availabilityCacheRef.current[groupKey] = stats
+      return stats
     }
 
     const getLastNonNumericToken = (tokens: string[]): string | undefined => {
@@ -676,7 +684,7 @@ export default function SeatingMapV2({
                   label: formattedLabel,
                   total: realtimeStats.total,
                   available: realtimeStats.available,
-                  price: groupPrice,
+                  price: realtimeStats.price ?? groupPrice,
                   isLoadingGroup: false
                 })
               }
@@ -1133,7 +1141,7 @@ export default function SeatingMapV2({
             groupApplied = []
           }
         }
-        const doClick = (ev: MouseEvent) => {
+        const doClick = async (ev: MouseEvent) => {
           const targetId = (
             (el as HTMLElement).id ||
             (ev.target as HTMLElement)?.id ||
@@ -1151,25 +1159,8 @@ export default function SeatingMapV2({
             return
           }
 
-          // Todos los asientos del grupo (disponibles y ocupados) desde la lista local.
-          const rKeys = groupKeyToRangeKeys[groupKey] || []
-          const seen = new Set<string>()
-          const groupSeats: SeatItem[] = []
-          for (const s of seats) {
-            const row = (s.row || '').toString().toUpperCase()
-            const seatNum =
-              typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
-            const inGroup = rKeys.some((k) => {
-              const def = ranges[k]
-              if (!def || !def.rows.includes(row)) return false
-              return def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
-            })
-            if (!inGroup) continue
-            const dk = s.id ? s.id.toString() : `${row}-${seatNum}`
-            if (seen.has(dk)) continue
-            seen.add(dk)
-            groupSeats.push(s)
-          }
+          // Asientos de la sección on-demand (/seats?group=), no de una lista global.
+          const groupSeats = await loadGroupSeats(groupKey)
           if (groupSeats.length === 0) return
           onSelectSection({ label: toTitleCaseFromKebab(groupKey), seats: groupSeats, groupId: groupKey })
         }
@@ -1216,7 +1207,9 @@ export default function SeatingMapV2({
     return () => {
       listeners.forEach((off) => off())
     }
-  }, [svgContent, sectionStats, ranges, seats, eventId, rowZoneMap, isLoadingGroup])
+    // priceByRange NO va en deps: cambia al abrir cada sección y re-montaría todos los
+    // listeners (hover errático). El precio del tooltip ya llega por fetchRealtimeAvailability.
+  }, [svgContent, sectionStats, ranges, seats, eventId, rowZoneMap, loadGroupSeats])
 
   if (loading) {
     return (
@@ -1291,7 +1284,7 @@ export default function SeatingMapV2({
         </div>
       </div>
 
-      <PriceRangeLegend seats={seats} />
+      <PriceRangeLegend priceByRange={priceByRange} />
     </div>
   )
 }
@@ -1316,17 +1309,12 @@ const RANGE_COLORS: Record<string, string> = {
 }
 
 /** Leyenda de rangos de precio (color → "desde $X"), derivada de los asientos. */
-function PriceRangeLegend({ seats }: { seats: SeatItem[] }) {
-  const ranges = useMemo(() => {
-    const byRange = new Map<string, number>()
-    for (const s of seats) {
-      const key = s.price_range || '—'
-      const price = s.price_including_taxes_and_fees ?? s.price
-      const prev = byRange.get(key)
-      if (prev === undefined || price < prev) byRange.set(key, price)
-    }
-    return [...byRange.entries()].sort((a, b) => a[1] - b[1])
-  }, [seats])
+function PriceRangeLegend({ priceByRange }: { priceByRange: Record<string, number> }) {
+  // Rangos con precio "desde" — se van llenando a medida que se abren secciones.
+  const ranges = useMemo(
+    () => Object.entries(priceByRange).sort((a, b) => a[1] - b[1]) as [string, number][],
+    [priceByRange]
+  )
 
   if (ranges.length === 0) return null
 
@@ -1347,7 +1335,7 @@ function PriceRangeLegend({ seats }: { seats: SeatItem[] }) {
               {range}
             </div>
             <div className='mt-0.5 font-display text-[10px] tabular-nums text-white/55'>
-              From ${price.toFixed(2)}
+              {typeof price === 'number' ? `From $${price.toFixed(2)}` : '—'}
             </div>
           </div>
         </div>

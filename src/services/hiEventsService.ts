@@ -22,6 +22,15 @@ import type {
   HiEventsListParams
 } from '../types/hievents'
 
+/** Precio + impuestos de un asiento, traído on-demand vía /tickets/by-seat-ids. */
+export interface HiSeatPricing {
+  id: number
+  price: number
+  price_including_taxes_and_fees: number | null
+  tax_total: number | null
+  fee_total: number | null
+}
+
 export class HiEventsApiError extends Error {
   readonly status: number
   readonly path: string
@@ -120,19 +129,30 @@ export const hiEventsService = {
   },
 
   async getSeats(eventId: string | number, group?: string, signal?: AbortSignal): Promise<HiSeat[]> {
-    // El backend pagina /seats (per_page máx 100). El mapa necesita TODOS los
-    // asientos, así que iteramos las páginas y las concatenamos.
+    // SIN group: el backend pagina y `data` es un ARRAY → concatenamos páginas.
+    // CON ?group=: el backend devuelve los asientos AGRUPADOS POR FILA y sin paginar
+    // (`data` = { "E": [...], "F": [...] }) → hay que aplanar ese objeto. (Sin esto,
+    // hacer spread de un objeto rompía la carga por sección — ni hover ni click.)
     const all: HiSeat[] = []
     let page = 1
     let lastPage = 1
     do {
-      const path = `/public/events/${eventId}/seats${toQuery({ group, per_page: 100, page })}`
+      const path = `/public/events/${eventId}/seats${toQuery({ group, per_page: 1000, page })}`
       const body = await getJson<HiPaginated<HiSeat> | HiSeat[]>(path, signal)
       if (Array.isArray(body)) {
         all.push(...body)
         break
       }
-      all.push(...(body.data ?? []))
+      const data = body.data as unknown
+      if (Array.isArray(data)) {
+        all.push(...(data as HiSeat[]))
+      } else if (data && typeof data === 'object') {
+        // Respuesta agrupada por fila (?group=): aplanar y no paginar.
+        for (const rowSeats of Object.values(data as Record<string, HiSeat[]>)) {
+          if (Array.isArray(rowSeats)) all.push(...rowSeats)
+        }
+        break
+      }
       const meta = body.meta as { last_page?: number } | undefined
       lastPage = meta?.last_page ?? 1
       page++
@@ -155,8 +175,25 @@ export const hiEventsService = {
     return body.data
   },
 
-  async getTicketsBySeatIds(eventId: string | number, seatIds: number[]): Promise<unknown> {
-    return request('POST', HIEVENTS_CONFIG.endpoints.ticketsBySeatIds(eventId), { seat_ids: seatIds })
+  /**
+   * Precio + impuestos de asientos específicos (los de una sección / los seleccionados).
+   * El mapa masivo (/seats) NO trae el precio por performance; este endpoint lo calcula
+   * solo para los pocos asientos que importan (~150 de una sección en <0.6s). Devuelve
+   * [] si no hay ids.
+   */
+  async getTicketsBySeatIds(
+    eventId: string | number,
+    seatIds: number[],
+    signal?: AbortSignal
+  ): Promise<HiSeatPricing[]> {
+    if (seatIds.length === 0) return []
+    const body = await request<{ tickets?: HiSeatPricing[] }>(
+      'POST',
+      HIEVENTS_CONFIG.endpoints.ticketsBySeatIds(eventId),
+      { seat_ids: seatIds },
+      signal
+    )
+    return body.tickets ?? []
   },
 
   async updateOrder(eventId: string | number, shortId: string, payload: unknown): Promise<HiOrder> {

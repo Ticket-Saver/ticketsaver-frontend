@@ -13,12 +13,12 @@ export interface SeatItem {
   row: string
   seat_number: string | number
   price_range: string
-  /** Precio NETO del asiento. */
-  price: number
-  /** Precio final con impuestos/cargos (lo que cobra Stripe). */
-  price_including_taxes_and_fees?: number
-  tax_total?: number
-  fee_total?: number
+  /** Precio NETO del asiento. `null` en el listado masivo del mapa (se trae on-demand). */
+  price: number | null
+  /** Precio final con impuestos/cargos (lo que cobra Stripe). Solo on-demand (by-seat-ids). */
+  price_including_taxes_and_fees?: number | null
+  tax_total?: number | null
+  fee_total?: number | null
   is_available: boolean
   is_sold_out: boolean
   seat_key: string

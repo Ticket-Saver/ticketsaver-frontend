@@ -11,6 +11,7 @@ import {
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { validateSeatAddByNumber, type RowSeatInfo } from '../../../hooks/useSeatContiguity'
 import { useCart } from '../../../router/cartContext'
+import { hiEventsService, type HiSeatPricing } from '../../../services/hiEventsService'
 import type { PricingBreakdown } from '../../../lib/pricing'
 import type { UIEvent } from '../../../types/uiEvent'
 import type { SeatItem } from './seatTypes'
@@ -55,6 +56,33 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
   const timerState = useSessionTimer(event.id, 10)
   const [warning, setWarning] = useState<string | null>(null)
   const wasEmptyRef = useRef(cart.length === 0)
+
+  // El mapa masivo NO trae precio (performance). Al abrir la sección traemos el precio
+  // + impuestos SOLO de sus asientos (pocos → <0.6s) vía /tickets/by-seat-ids.
+  const [pricing, setPricing] = useState<Map<number, HiSeatPricing>>(new Map())
+  const [pricingReady, setPricingReady] = useState(false)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    let mounted = true
+    setPricingReady(false)
+    const ids = section.seats.map((s) => s.id)
+    hiEventsService
+      .getTicketsBySeatIds(event.eventId, ids, controller.signal)
+      .then((rows) => {
+        if (!mounted) return
+        setPricing(new Map(rows.map((r) => [r.id, r])))
+        setPricingReady(true)
+      })
+      .catch(() => {
+        // Si falla, no bloqueamos la compra: se permite con el precio base.
+        if (mounted) setPricingReady(true)
+      })
+    return () => {
+      mounted = false
+      controller.abort()
+    }
+  }, [section.seats, event.eventId])
 
   const seatsByRow = useMemo(() => {
     const acc: Record<string, SeatItem[]> = {}
@@ -130,6 +158,12 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
       return
     }
 
+    // Precios de la sección aún cargando → no agregar sin precio (se resuelve en <1s).
+    if (!pricingReady) {
+      setWarning('Loading seat prices, one moment…')
+      return
+    }
+
     if (cart.length >= MAX_SEATS) {
       setWarning(`You can select up to ${MAX_SEATS} seats per order.`)
       return
@@ -149,6 +183,9 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     }
 
     setWarning(null)
+    const p = pricing.get(seat.id)
+    const base = p?.price ?? seat.price ?? 0
+    const final = p?.price_including_taxes_and_fees ?? base
     addItem({
       ticketId: `seat-${seat.id}`,
       seatLabel: `${seat.row}${seat.seat_number}`,
@@ -156,13 +193,13 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
       zoneName: event.id,
       priceType: seat.price_range,
       seatType: seat.price_range,
-      price_base: seat.price,
-      price_final: seat.price_including_taxes_and_fees ?? seat.price,
+      price_base: base,
+      price_final: final,
       issuedAt: Date.now(),
       // metadata para el desglose y la orden de HiEvents (C5)
       seatId: seat.id,
-      fee: seat.fee_total ?? 0,
-      tax: seat.tax_total ?? 0
+      fee: p?.fee_total ?? 0,
+      tax: p?.tax_total ?? 0
     })
   }
 
@@ -231,7 +268,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
                 {section.label}
               </h2>
               <p className='mt-0.5 text-[11px] text-white/55'>
-                Click on available seats to select them
+                {pricingReady ? 'Click on available seats to select them' : 'Loading seat prices…'}
               </p>
             </div>
             <Pill state={cart.length >= MAX_SEATS ? 'warn' : 'normal'} size='sm'>
