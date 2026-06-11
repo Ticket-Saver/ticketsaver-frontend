@@ -62,6 +62,8 @@ export default function SeatingMapV2({
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
   // Precio "desde $X" por rango (traído on-demand; el mapa masivo no trae precio).
   const [priceByRange, setPriceByRange] = useState<Record<string, number>>({})
+  // Leyenda: TODOS los colores del mapa (instantáneo, del ranges) + "desde $X" por color.
+  const [legend, setLegend] = useState<Array<{ color: string; name: string; price?: number }>>([])
   // La carga del grupo es síncrona (cálculo local), así que siempre es false.
   const isLoadingGroup = false
   const lastFetchedGroupRef = useRef<string | null>(null)
@@ -290,6 +292,46 @@ export default function SeatingMapV2({
       isMounted = false
     }
   }, [eventId, svg, rangesRaw])
+
+  // Leyenda de rangos: TODOS los colores del mapa salen del ranges (asset) → aparece al
+  // instante y completa. El "desde $X" se completa cargando 1 grupo representativo por
+  // color en paralelo (rápido, ~100 asientos c/u). Se listan todos los colores aunque el
+  // precio se repita — es la referencia color → zona.
+  useEffect(() => {
+    const defs = Object.values(ranges)
+    if (defs.length === 0) return
+    let mounted = true
+    const byColor = new Map<string, string>() // color → groupKey representativo
+    for (const def of defs) {
+      if (def.color && def.position && !byColor.has(def.color)) {
+        byColor.set(def.color, `${def.position}-${def.color}`)
+      }
+    }
+    // Mostrar los colores ya (sin precio); completar el precio en paralelo.
+    setLegend([...byColor.keys()].map((color) => ({ color, name: COLOR_LABELS[color] || color })))
+    Promise.all(
+      [...byColor.entries()].map(async ([color, groupKey]) => {
+        try {
+          const gs = await loadGroupSeats(groupKey)
+          const withPrice = gs.find((s) => typeof s.price === 'number')
+          return {
+            color,
+            name: withPrice?.price_range || COLOR_LABELS[color] || color,
+            price: withPrice?.price ?? undefined
+          }
+        } catch {
+          return { color, name: COLOR_LABELS[color] || color, price: undefined }
+        }
+      })
+    ).then((rows) => {
+      if (!mounted) return
+      rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
+      setLegend(rows)
+    })
+    return () => {
+      mounted = false
+    }
+  }, [ranges, loadGroupSeats])
 
   const sectionStats = useMemo(() => {
     const bySection: Record<string, { total: number; available: number; position?: string }> = {}
@@ -1284,58 +1326,56 @@ export default function SeatingMapV2({
         </div>
       </div>
 
-      <PriceRangeLegend priceByRange={priceByRange} />
+      <PriceRangeLegend legend={legend} />
     </div>
   )
 }
 
+// Tonos tomados del propio SVG del Copernicus para que la leyenda COINCIDA con el mapa.
 const RANGE_COLORS: Record<string, string> = {
-  anaranjado: '#FF7D00',
-  amarillo: '#F6C84A',
-  verde: '#149806',
-  morado: '#9020E6',
-  celeste: '#04CDFF',
-  rosa: '#ED3689',
-  azul: '#3B82F6',
-  rojo: '#E0245E',
-  orange: '#FF7D00',
-  yellow: '#F6C84A',
-  green: '#149806',
-  purple: '#9020E6',
-  cyan: '#04CDFF',
-  pink: '#ED3689',
-  blue: '#3B82F6',
-  red: '#E0245E'
+  celeste: '#93cddc', cyan: '#93cddc',
+  rojo: '#ea0a0a', red: '#ea0a0a',
+  verde: '#c2d69b', green: '#c2d69b',
+  morado: '#b2a1c7', purple: '#b2a1c7',
+  anaranjado: '#b97034', orange: '#b97034',
+  // otros rangos (map1/map2) — se afinan al validar esos mapas
+  amarillo: '#F6C84A', yellow: '#F6C84A',
+  rosa: '#ED3689', pink: '#ED3689',
+  azul: '#3B82F6', blue: '#3B82F6'
+}
+
+/** Nombre legible por color (mientras no llegó el price_range real del backend). */
+const COLOR_LABELS: Record<string, string> = {
+  cyan: 'Celeste', red: 'Rojo', green: 'Verde', purple: 'Morado', orange: 'Anaranjado',
+  celeste: 'Celeste', rojo: 'Rojo', verde: 'Verde', morado: 'Morado', anaranjado: 'Anaranjado'
 }
 
 /** Leyenda de rangos de precio (color → "desde $X"), derivada de los asientos. */
-function PriceRangeLegend({ priceByRange }: { priceByRange: Record<string, number> }) {
-  // Rangos con precio "desde" — se van llenando a medida que se abren secciones.
-  const ranges = useMemo(
-    () => Object.entries(priceByRange).sort((a, b) => a[1] - b[1]) as [string, number][],
-    [priceByRange]
-  )
-
-  if (ranges.length === 0) return null
+function PriceRangeLegend({
+  legend
+}: {
+  legend: Array<{ color: string; name: string; price?: number }>
+}) {
+  if (legend.length === 0) return null
 
   return (
     <div className='mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3'>
-      {ranges.map(([range, price]) => (
+      {legend.map(({ color, name, price }) => (
         <div
-          key={range}
+          key={color}
           className='flex items-center gap-2.5 rounded-glass-sm border border-white/[0.10] bg-white/[0.04] px-3 py-2.5'
         >
           <span
             aria-hidden
             className='h-3.5 w-3.5 shrink-0 rounded-sm'
-            style={{ background: RANGE_COLORS[range.toLowerCase()] || '#B57BE8' }}
+            style={{ background: RANGE_COLORS[color.toLowerCase()] || '#B57BE8' }}
           />
           <div className='min-w-0'>
             <div className='truncate font-display text-[12px] font-semibold capitalize tracking-tight text-white'>
-              {range}
+              {name}
             </div>
             <div className='mt-0.5 font-display text-[10px] tabular-nums text-white/55'>
-              {typeof price === 'number' ? `From $${price.toFixed(2)}` : '—'}
+              {typeof price === 'number' ? `From $${price.toFixed(2)}` : '…'}
             </div>
           </div>
         </div>
