@@ -8,7 +8,7 @@ import {
   type ReactNode
 } from 'react'
 import { useSessionTimer } from '../hooks/useSessionTimer'
-import { computePricing, type PricingBreakdown } from '../lib/pricing'
+import { type PricingBreakdown } from '../lib/pricing'
 
 /**
  * CartContext — versión Bloque 5.
@@ -238,11 +238,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const toggleDrawer = useCallback(() => setIsOpen((s) => !s), [])
 
   const subtotal = useMemo(
-    () => items.reduce((s, it) => s + (it.price_final ?? 0), 0),
+    () => items.reduce((s, it) => s + (it.price_base ?? it.price_final ?? 0), 0),
     [items]
   )
 
-  const pricing = useMemo(() => computePricing(subtotal), [subtotal])
+  // Pricing REAL de HiEvents: cada item ya trae su fee/tax (de C3). Nada hardcodeado.
+  const pricing = useMemo<PricingBreakdown>(() => {
+    let sub = 0
+    let serviceFee = 0
+    let taxes = 0
+    for (const it of items) {
+      sub += it.price_base ?? it.price_final ?? 0
+      serviceFee += Number(it.fee) || 0
+      taxes += Number(it.tax) || 0
+    }
+    const r = (n: number) => Math.round(n * 100) / 100
+    return {
+      subtotal: r(sub),
+      serviceFee: r(serviceFee),
+      taxes: r(taxes),
+      total: r(sub + serviceFee + taxes)
+    }
+  }, [items])
 
   const value = useMemo<CartContextValue>(
     () => ({

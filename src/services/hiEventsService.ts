@@ -29,6 +29,8 @@ export interface HiSeatPricing {
   price_including_taxes_and_fees: number | null
   tax_total: number | null
   fee_total: number | null
+  /** Price tiers del asiento — el primero es el price_id que usa la orden. */
+  prices?: Array<{ id: number; price: number }>
 }
 
 export class HiEventsApiError extends Error {

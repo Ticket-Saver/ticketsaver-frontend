@@ -2,11 +2,7 @@ import { useState } from 'react'
 import { Button } from '../../ui'
 import { cn } from '../../../types/ui'
 import glass from '../../../styles/effects/glass.module.css'
-import {
-  SERVICE_FEE_PCT,
-  TAX_PCT,
-  type PricingBreakdown
-} from '../../../lib/pricing'
+import { type PricingBreakdown } from '../../../lib/pricing'
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
@@ -18,22 +14,14 @@ interface ItemBreakdown {
 }
 
 /**
- * Desglose por item. Si el item trae net/fee/tax REALES (asientos de HiEvents),
- * los usa tal cual; si no (general, hasta C3b), cae al cálculo con los % legacy.
+ * Desglose por item con los valores REALES de HiEvents (net/fee/tax que ya trae
+ * cada item del carrito). Nada hardcodeado.
  */
 const breakdownPerItem = (item: CartSummaryItem): ItemBreakdown => {
-  if (item.net !== undefined && item.fee !== undefined && item.tax !== undefined) {
-    return {
-      net: round2(item.net),
-      fee: round2(item.fee),
-      tax: round2(item.tax),
-      total: round2(item.net + item.fee + item.tax)
-    }
-  }
-  const net = item.price
-  const fee = round2(net * SERVICE_FEE_PCT)
-  const tax = round2(net * TAX_PCT)
-  return { net: round2(net), fee, tax, total: round2(net + fee + tax) }
+  const net = item.net ?? item.price
+  const fee = item.fee ?? 0
+  const tax = item.tax ?? 0
+  return { net: round2(net), fee: round2(fee), tax: round2(tax), total: round2(net + fee + tax) }
 }
 
 const ItemBreakdownRows = ({ b }: { b: ItemBreakdown }) => (

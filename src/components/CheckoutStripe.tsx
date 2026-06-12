@@ -1,105 +1,262 @@
-import { useEffect, useState, useCallback } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { hiEventsService, HiEventsApiError } from '../services/hiEventsService'
+import { Button } from './ui'
+import type { CartItem } from '../router/cartContext'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+/**
+ * CheckoutStripe (v2) — porta el flujo de pago de PRODUCCIÓN (origin/new-version),
+ * reexpresado con `hiEventsService`. Cadena 100% HiEvents:
+ *
+ *   [enumerado] /tickets/by-seat-ids → resuelve ticket_id/price_id por asiento
+ *   POST /order (reserva)  →  form de attendees  →  PUT /order (attendees)
+ *   POST /order/{id}/stripe/checkout_session  →  redirect a Stripe
+ *
+ * HiEvents cobra (con la cuenta que tenga configurada) y emite QR/attendees.
+ * El front NO maneja Stripe ni Supabase: solo orquesta y redirige.
+ */
 
 interface CheckoutStripeProps {
-  /**
-   * Cuando se pasan, se usan en vez de `cart_checkout` del localStorage.
-   * Permite que `CheckoutV2` hidrate directo desde el `cartContext`.
-   */
-  cart?: unknown[]
-  eventInfo?: Record<string, unknown>
-  customer?: Record<string, unknown>
+  cart: CartItem[]
+  /** eventInfo del checkout. `eventId` = id numérico de HiEvents. */
+  eventInfo: { eventId?: string; name?: string; [k: string]: unknown }
+  customer: { name?: string; email?: string; [k: string]: unknown }
 }
 
-const CheckoutStripe = ({ cart, eventInfo, customer }: CheckoutStripeProps = {}) => {
-  const [clientSecret, setClientSecret] = useState(null)
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
+interface Attendee {
+  firstName: string
+  lastName: string
+  email: string
+}
 
-  const fetchClientSecret = useCallback(async () => {
-    try {
-      let cartData: unknown[] | undefined = cart
-      let eventInfoData = eventInfo
-      let customerData = customer
+const genSessionId = () =>
+  `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 
-      if (!cartData || !eventInfoData) {
-        const cartString = localStorage.getItem('cart_checkout')
-        if (!cartString) {
-          throw new Error('No sale to make payment for.')
-        }
-        const parsed = JSON.parse(cartString)
-        cartData = parsed.cart
-        eventInfoData = parsed.eventInfo
-        customerData = parsed.customer
-      }
+const seatIdsOf = (cart: CartItem[]) =>
+  cart.map((c) => Number(c.seatId)).filter((n) => Number.isFinite(n) && n > 0)
 
-      if (!Array.isArray(cartData)) {
-        throw new Error('Invalid cart data.')
-      }
-
-      const response = await fetch('/api/checkoutSession', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          cart: cartData,
-          eventInfo: eventInfoData,
-          customer: customerData
-        })
-      })
-
-      if (response.status === 409) {
-        const data = await response.json()
-        setError(data.error || 'Not enough seats available. Please go back and try again.')
-        return
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session')
-      }
-
-      const data = await response.json()
-      setClientSecret(data.clientSecret)
-    } catch (err) {
-      console.error('Error al obtener el pago de Stripe.', err)
-      setError('An error occurred while creating the checkout session. Please try again.')
+function humanizeError(e: unknown): string {
+  if (e instanceof HiEventsApiError) {
+    if (e.status === 409 || e.status === 422) {
+      return 'Uno o más lugares ya no están disponibles. Volvé atrás y elegí de nuevo.'
     }
-  }, [cart, eventInfo, customer])
-  useEffect(() => {
-    fetchClientSecret()
-  }, [fetchClientSecret])
+    return 'No pudimos procesar tu orden. Probá de nuevo en unos segundos.'
+  }
+  return e instanceof Error ? e.message : 'Ocurrió un error inesperado.'
+}
 
-  if (error) {
+const inputCls =
+  'w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-[13px] text-black outline-none transition focus:border-brand-mid'
+
+export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutStripeProps) {
+  const navigate = useNavigate()
+  const eventId = String(eventInfo?.eventId ?? '')
+
+  const [orderShortId, setOrderShortId] = useState<string | null>(null)
+  const [attendees, setAttendees] = useState<Attendee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  // price_id por item (mismo orden que `cart`) — para mandar cada attendee con el
+  // MISMO ticket_price_id usado al crear la orden.
+  const priceIdsRef = useRef<number[]>([])
+  const sessionIdRef = useRef<string>(genSessionId())
+  const initRef = useRef(false)
+
+  // Arma el payload de tickets: enumerado (resuelve por seat ids) o general
+  // (agrupa por ticket/price de cada item del carrito).
+  const buildOrderTickets = useCallback(async () => {
+    const seatIds = seatIdsOf(cart)
+    const isSeated = seatIds.length === cart.length && seatIds.length > 0
+
+    if (isSeated) {
+      const rows = await hiEventsService.getTicketsBySeatIds(eventId, seatIds)
+      const priceIds: number[] = []
+      const tickets = cart.map((c, i) => {
+        const row = rows[i]
+        if (!row) throw new Error(`No se pudo resolver el asiento ${c.seatLabel}.`)
+        const priceId = row.prices?.[0]?.id ?? row.id
+        priceIds.push(priceId)
+        return { ticket_id: row.id, quantities: [{ price_id: priceId, quantity: 1 }] }
+      })
+      return { tickets, priceIds }
+    }
+
+    // General: cada item ya trae ticketHiId/priceId (de SaleNoSeatsV2). Agrupar.
+    const grouped = new Map<string, { ticket_id: number; price_id: number; quantity: number }>()
+    const priceIds: number[] = []
+    for (const c of cart) {
+      const ticket_id = Number(c.ticketHiId)
+      const price_id = Number(c.priceId)
+      priceIds.push(price_id)
+      const key = `${ticket_id}-${price_id}`
+      const g = grouped.get(key)
+      if (g) g.quantity += 1
+      else grouped.set(key, { ticket_id, price_id, quantity: 1 })
+    }
+    const tickets = [...grouped.values()].map((g) => ({
+      ticket_id: g.ticket_id,
+      quantities: [{ price_id: g.price_id, quantity: g.quantity }]
+    }))
+    return { tickets, priceIds }
+  }, [cart, eventId])
+
+  // Crear la orden (reserva en HiEvents) al montar.
+  useEffect(() => {
+    if (initRef.current) return
+    initRef.current = true
+    setAttendees(
+      cart.map(() => ({ firstName: '', lastName: '', email: customer?.email || '' }))
+    )
+    ;(async () => {
+      try {
+        if (!eventId) throw new Error('Falta el identificador del evento.')
+        if (cart.length === 0) throw new Error('El carrito está vacío.')
+        const { tickets, priceIds } = await buildOrderTickets()
+        priceIdsRef.current = priceIds
+        const order = await hiEventsService.createOrder(eventId, {
+          tickets,
+          session_identifier: sessionIdRef.current
+        })
+        setOrderShortId(order.short_id)
+      } catch (e) {
+        setError(humanizeError(e))
+      } finally {
+        setLoading(false)
+      }
+    })()
+    // Solo al montar: la orden se crea una vez para este carrito.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const onAttendeeChange = (i: number, field: keyof Attendee, value: string) => {
+    setAttendees((prev) => {
+      const next = [...prev]
+      next[i] = { ...next[i], [field]: value }
+      return next
+    })
+  }
+
+  const attendeesValid =
+    attendees.length > 0 &&
+    attendees.every((a) => a.firstName.trim() && a.lastName.trim() && a.email.includes('@'))
+
+  const handlePay = async () => {
+    if (!orderShortId || submitting) return
+    if (!attendeesValid) {
+      setError('Completá nombre, apellido y un email válido para cada asistente.')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      const attendeesData = attendees.map((a, i) => ({
+        first_name: a.firstName,
+        last_name: a.lastName,
+        email: a.email,
+        ticket_price_id: priceIdsRef.current[i]
+      }))
+      const nameParts = (customer?.name || '').trim().split(' ').filter(Boolean)
+      await hiEventsService.updateOrder(eventId, orderShortId, {
+        order: {
+          first_name: nameParts[0] || attendees[0]?.firstName || '',
+          last_name: nameParts.slice(1).join(' ') || attendees[0]?.lastName || '',
+          email: customer?.email || attendees[0]?.email || ''
+        },
+        attendees: attendeesData
+      })
+      const session = await hiEventsService.createStripeCheckoutSession(eventId, orderShortId, {
+        success_url: `${window.location.origin}/checkout/${eventId}/${orderShortId}/success`,
+        cancel_url: `${window.location.origin}/checkout`,
+        session_identifier: sessionIdRef.current
+      })
+      if (session.checkout_url) {
+        window.location.href = session.checkout_url
+      } else {
+        throw new Error('No se recibió la URL de pago de Stripe.')
+      }
+    } catch (e) {
+      setError(humanizeError(e))
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
     return (
-      <div id='checkout' className='flex flex-col items-center justify-center min-h-[400px] p-8'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-6 max-w-md text-center'>
-          <p className='text-red-700 font-semibold text-lg mb-4'>{error}</p>
-          <button
-            onClick={() => navigate(-1)}
-            className='bg-red-600 text-white font-bold py-2 px-6 rounded-md hover:bg-red-700 transition duration-300'
-          >
-            Go Back
-          </button>
-        </div>
+      <div className='grid place-items-center py-16 text-center'>
+        <span className='h-8 w-8 rounded-full border-2 border-black/15 border-t-brand-mid animate-spin' />
+        <p className='mt-3 text-[12px] text-black/55'>Reservando tus lugares…</p>
       </div>
     )
   }
 
-  // Renderiza el EmbeddedCheckoutProvider si tienes el clientSecret
+  // Error al crear la orden (ej. asiento ya tomado) → bloquear y volver a elegir.
+  if (error && !orderShortId) {
+    return (
+      <div className='py-10 text-center'>
+        <p className='mx-auto max-w-sm text-[13px] font-semibold text-red-600'>{error}</p>
+        <Button variant='primary' size='md' className='mt-4' onClick={() => navigate(-1)}>
+          Volver a elegir
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <div id='checkout'>
-      {clientSecret && (
-        <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-          <EmbeddedCheckout />
-        </EmbeddedCheckoutProvider>
-      )}
+    <div className='text-black'>
+      <h3 className='font-display text-sm font-bold text-black/80'>Datos de los asistentes</h3>
+      <p className='mt-0.5 text-[11.5px] text-black/50'>
+        Un titular por entrada. Los boletos quedan a nombre del comprador.
+      </p>
+
+      <div className='mt-4 space-y-3'>
+        {attendees.map((a, i) => (
+          <div key={i} className='rounded-xl border border-black/10 bg-black/[0.02] p-3'>
+            <div className='mb-2 text-[11px] font-semibold uppercase tracking-wide text-black/45'>
+              {cart[i]?.subZone ? `${cart[i].subZone} · ` : ''}
+              {String(cart[i]?.seatLabel ?? `Entrada ${i + 1}`)}
+            </div>
+            <div className='grid grid-cols-2 gap-2'>
+              <input
+                className={inputCls}
+                placeholder='Nombre'
+                value={a.firstName}
+                onChange={(e) => onAttendeeChange(i, 'firstName', e.target.value)}
+              />
+              <input
+                className={inputCls}
+                placeholder='Apellido'
+                value={a.lastName}
+                onChange={(e) => onAttendeeChange(i, 'lastName', e.target.value)}
+              />
+              <input
+                className={`${inputCls} col-span-2`}
+                type='email'
+                placeholder='Email'
+                value={a.email}
+                onChange={(e) => onAttendeeChange(i, 'email', e.target.value)}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {error && <p className='mt-3 text-[12px] font-medium text-red-600'>{error}</p>}
+
+      <Button
+        variant='primary'
+        size='lg'
+        fullWidth
+        className='mt-5'
+        onClick={handlePay}
+        disabled={submitting || !attendeesValid}
+      >
+        {submitting ? 'Redirigiendo a Stripe…' : 'Pagar de forma segura'}
+      </Button>
+      <p className='mt-2 text-center text-[10.5px] text-black/40'>
+        Te llevamos a Stripe para completar el pago de forma segura.
+      </p>
     </div>
   )
 }
-
-export default CheckoutStripe

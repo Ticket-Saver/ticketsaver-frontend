@@ -9,10 +9,6 @@ import { useCart } from '../../../router/cartContext'
 import { useUIEvents } from '../../../hooks/useUIEvents'
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { coverSeed } from '../../../lib/covers/coverHash'
-import {
-  SERVICE_FEE_PCT,
-  TAX_PCT
-} from '../../../lib/pricing'
 import { cn } from '../../../types/ui'
 import glass from '../../../styles/effects/glass.module.css'
 
@@ -45,6 +41,8 @@ export default function CheckoutV2() {
       event
         ? {
             id: event.id,
+            // id numérico de HiEvents — el que usa la cadena de orden/checkout.
+            eventId: event.eventId,
             name: event.title,
             venue: event.venueName,
             venueId: event.venueLabel,
@@ -232,9 +230,9 @@ const OrderSummary = ({
     <div className='flex-1 min-h-0 overflow-y-auto -mx-1 px-1 mt-3'>
       <ul className='space-y-2'>
         {items.map((item) => {
-          const net = item.price_final
-          const fee = round2(net * SERVICE_FEE_PCT)
-          const tax = round2(net * TAX_PCT)
+          const net = item.price_base ?? item.price_final
+          const fee = Number(item.fee) || 0
+          const tax = Number(item.tax) || 0
           const total = round2(net + fee + tax)
           return (
             <li
@@ -258,8 +256,8 @@ const OrderSummary = ({
               </div>
               <div className='mt-2 pt-2 border-t border-white/[0.06] space-y-1 text-[10.5px]'>
                 <BreakdownRow label='Net' value={net} />
-                <BreakdownRow label='Service fee (8.5%)' value={fee} />
-                <BreakdownRow label='Tax (6%)' value={tax} />
+                <BreakdownRow label='Service fee' value={fee} />
+                <BreakdownRow label='Tax' value={tax} />
               </div>
             </li>
           )
@@ -269,8 +267,8 @@ const OrderSummary = ({
 
     <footer className='mt-4 pt-4 border-t border-white/[0.08] space-y-1.5'>
       <BreakdownRow label='Subtotal' value={pricing.subtotal} />
-      <BreakdownRow label='Service fee (8.5%)' value={pricing.serviceFee} />
-      <BreakdownRow label='Taxes (6%)' value={pricing.taxes} />
+      <BreakdownRow label='Service fee' value={pricing.serviceFee} />
+      <BreakdownRow label='Taxes' value={pricing.taxes} />
       <div className='pt-3 mt-2 border-t border-white/[0.08] flex items-center justify-between'>
         <span className='text-[13px] text-white/65'>Total</span>
         <span className='font-display text-xl font-bold text-white tabular-nums'>

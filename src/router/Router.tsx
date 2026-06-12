@@ -11,6 +11,7 @@ import EventDetailV2 from '../pages/v2/EventDetailV2'
 import SaleV2 from '../pages/v2/SaleV2'
 import SaleCheck from '../pages/v2/_SaleCheck'
 import TicketReceivedV2 from '../pages/v2/TicketReceivedV2'
+import SuccessCheckoutV2 from '../pages/v2/SuccessCheckoutV2'
 import MyTicketsV2 from '../pages/v2/MyTicketsV2'
 import UpcomingV2 from '../pages/v2/dashboardTabs/UpcomingV2'
 import PastV2 from '../pages/v2/dashboardTabs/PastV2'
@@ -68,6 +69,10 @@ export const AppRouter = () => (
           <Route path='/' element={<HomeV2 />} />
 
           <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
+          <Route
+            path='/checkout/:venueId/:orderShortId/success'
+            element={<SuccessCheckoutV2 />}
+          />
 
           <Route path='return' element={<TicketReceivedV2 />} />
 

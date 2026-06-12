@@ -4,10 +4,6 @@ import Drawer from '../../ui/Drawer'
 import { Button } from '../../ui'
 import { useCart, type CartItem } from '../../../router/cartContext'
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
-import {
-  SERVICE_FEE_PCT,
-  TAX_PCT
-} from '../../../lib/pricing'
 import { cn } from '../../../types/ui'
 import glass from '../../../styles/effects/glass.module.css'
 
@@ -171,8 +167,8 @@ export default function CartDrawer() {
         <footer className='border-t border-white/[0.08] px-5 py-4 space-y-3'>
           <div className='space-y-1.5 text-[12px]'>
             <PriceRow label='Subtotal' value={pricing.subtotal} />
-            <PriceRow label='Service fee (8.5%)' value={pricing.serviceFee} />
-            <PriceRow label='Taxes (6%)' value={pricing.taxes} />
+            <PriceRow label='Service fee' value={pricing.serviceFee} />
+            <PriceRow label='Taxes' value={pricing.taxes} />
           </div>
           <div className='pt-3 border-t border-white/[0.08] flex items-center justify-between'>
             <span className='text-[13px] text-white/65'>Total</span>
@@ -241,9 +237,9 @@ const SeatRowCard = ({
   item: CartItem
   onRemove: () => void
 }) => {
-  const net = item.price_final
-  const fee = round2(net * SERVICE_FEE_PCT)
-  const tax = round2(net * TAX_PCT)
+  const net = item.price_base ?? item.price_final
+  const fee = Number(item.fee) || 0
+  const tax = Number(item.tax) || 0
   const total = round2(net + fee + tax)
   return (
     <li className='rounded-glass-md bg-white/[0.05] border border-white/[0.10] px-3 py-2.5'>
@@ -294,9 +290,9 @@ const GAGroupCard = ({
   onDecrement: () => void
 }) => {
   const qty = group.items.length
-  const groupNet = round2(qty * group.unitPrice)
-  const groupFee = round2(groupNet * SERVICE_FEE_PCT)
-  const groupTax = round2(groupNet * TAX_PCT)
+  const groupNet = round2(group.items.reduce((s, it) => s + (it.price_base ?? it.price_final ?? 0), 0))
+  const groupFee = round2(group.items.reduce((s, it) => s + (Number(it.fee) || 0), 0))
+  const groupTax = round2(group.items.reduce((s, it) => s + (Number(it.tax) || 0), 0))
   const groupTotal = round2(groupNet + groupFee + groupTax)
   return (
     <li className='rounded-glass-md bg-white/[0.05] border border-white/[0.10] px-3 py-2.5'>
@@ -362,8 +358,8 @@ const BreakdownLines = ({
 }) => (
   <div className='mt-2 pt-2 border-t border-white/[0.06] space-y-0.5 text-[10.5px]'>
     <BreakdownRow label='Net' value={net} />
-    <BreakdownRow label='Service fee (8.5%)' value={fee} />
-    <BreakdownRow label='Tax (6%)' value={tax} />
+    <BreakdownRow label='Service fee' value={fee} />
+    <BreakdownRow label='Tax' value={tax} />
   </div>
 )
 
