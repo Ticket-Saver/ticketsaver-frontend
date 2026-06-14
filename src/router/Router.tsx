@@ -11,7 +11,7 @@ import EventDetailV2 from '../pages/v2/EventDetailV2'
 import SaleV2 from '../pages/v2/SaleV2'
 import SaleCheck from '../pages/v2/_SaleCheck'
 import TicketReceivedV2 from '../pages/v2/TicketReceivedV2'
-import SuccessCheckoutV2 from '../pages/v2/SuccessCheckoutV2'
+import TicketPublicV2 from '../pages/v2/TicketPublicV2'
 import MyTicketsV2 from '../pages/v2/MyTicketsV2'
 import UpcomingV2 from '../pages/v2/dashboardTabs/UpcomingV2'
 import PastV2 from '../pages/v2/dashboardTabs/PastV2'
@@ -39,9 +39,15 @@ const SaleRoute = () => {
   return label ? <SaleV2 eventLabel={label} /> : <Navigate to='/events' />
 }
 
+// Auth0 sólo se exige si está configurado (producción). Mientras no haya
+// credenciales Auth0 en local (migración futura a login custom), no bloqueamos:
+// se deja pasar para poder probar el flujo de compra de punta a punta.
+const authConfigured = Boolean(import.meta.env.VITE_AUTH0_DOMAIN)
+
 const ProtectedRoute = ({ element }: { element: ReactNode }) => {
   const location = useLocation()
   const { isAuthenticated, loginWithRedirect } = useAuth0()
+  if (!authConfigured) return <>{element}</>
   if (!isAuthenticated) {
     loginWithRedirect({
       authorizationParams: {
@@ -69,10 +75,16 @@ export const AppRouter = () => (
           <Route path='/' element={<HomeV2 />} />
 
           <Route path='/checkout' element={<ProtectedRoute element={<CheckoutPage />} />} />
+          {/* Post-pago: la pantalla de ticket de Claude Design (TicketCard NFT
+              + Apple Wallet + Share), alimentada por el flujo HiEvents. */}
           <Route
             path='/checkout/:venueId/:orderShortId/success'
-            element={<SuccessCheckoutV2 />}
+            element={<TicketReceivedV2 />}
           />
+
+          {/* Ticketera pública: destino del "View Ticket" del mail y del QR.
+              Sin login (el public_id es el secreto). */}
+          <Route path='/ticket/:eventId/:publicId' element={<TicketPublicV2 />} />
 
           <Route path='return' element={<TicketReceivedV2 />} />
 

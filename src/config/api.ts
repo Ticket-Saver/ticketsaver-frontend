@@ -47,6 +47,11 @@ export const HIEVENTS_CONFIG = {
     confirmPayment: (eventId: string | number, shortId: string) =>
       `/public/events/${eventId}/order/${shortId}/confirm_payment`,
 
+    // --- Attendee / ticketera pública ---
+    /** Attendee público por public_id (el backend busca por PUBLIC_ID pese al nombre del param de ruta). */
+    attendee: (eventId: string | number, publicId: string) =>
+      `/public/events/${eventId}/attendees/${publicId}`,
+
     // --- Usuario ---
     userTickets: () => `/public/user/tickets`
   }

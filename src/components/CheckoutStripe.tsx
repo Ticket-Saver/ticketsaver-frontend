@@ -46,7 +46,7 @@ function humanizeError(e: unknown): string {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-[13px] text-black outline-none transition focus:border-brand-mid'
+  'w-full rounded-lg border border-white/12 bg-white/[0.04] px-3 py-2 text-[13px] text-white placeholder-white/35 outline-none transition focus:border-brand-mid focus:bg-white/[0.06]'
 
 export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutStripeProps) {
   const navigate = useNavigate()
@@ -185,8 +185,8 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
   if (loading) {
     return (
       <div className='grid place-items-center py-16 text-center'>
-        <span className='h-8 w-8 rounded-full border-2 border-black/15 border-t-brand-mid animate-spin' />
-        <p className='mt-3 text-[12px] text-black/55'>Reservando tus lugares…</p>
+        <span className='h-8 w-8 rounded-full border-2 border-white/15 border-t-brand-hi animate-spin' />
+        <p className='mt-3 text-[12px] text-white/60'>Reservando tus lugares…</p>
       </div>
     )
   }
@@ -195,7 +195,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
   if (error && !orderShortId) {
     return (
       <div className='py-10 text-center'>
-        <p className='mx-auto max-w-sm text-[13px] font-semibold text-red-600'>{error}</p>
+        <p className='mx-auto max-w-sm text-[13px] font-semibold text-red-400'>{error}</p>
         <Button variant='primary' size='md' className='mt-4' onClick={() => navigate(-1)}>
           Volver a elegir
         </Button>
@@ -204,16 +204,16 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
   }
 
   return (
-    <div className='text-black'>
-      <h3 className='font-display text-sm font-bold text-black/80'>Datos de los asistentes</h3>
-      <p className='mt-0.5 text-[11.5px] text-black/50'>
+    <div className='text-white'>
+      <h3 className='font-display text-sm font-bold text-white/90'>Datos de los asistentes</h3>
+      <p className='mt-0.5 text-[11.5px] text-white/50'>
         Un titular por entrada. Los boletos quedan a nombre del comprador.
       </p>
 
       <div className='mt-4 space-y-3'>
         {attendees.map((a, i) => (
-          <div key={i} className='rounded-xl border border-black/10 bg-black/[0.02] p-3'>
-            <div className='mb-2 text-[11px] font-semibold uppercase tracking-wide text-black/45'>
+          <div key={i} className='rounded-xl border border-white/10 bg-white/[0.03] p-3'>
+            <div className='mb-2 text-[11px] font-semibold uppercase tracking-wide text-white/45'>
               {cart[i]?.subZone ? `${cart[i].subZone} · ` : ''}
               {String(cart[i]?.seatLabel ?? `Entrada ${i + 1}`)}
             </div>
@@ -242,7 +242,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
         ))}
       </div>
 
-      {error && <p className='mt-3 text-[12px] font-medium text-red-600'>{error}</p>}
+      {error && <p className='mt-3 text-[12px] font-medium text-red-400'>{error}</p>}
 
       <Button
         variant='primary'
@@ -254,7 +254,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
       >
         {submitting ? 'Redirigiendo a Stripe…' : 'Pagar de forma segura'}
       </Button>
-      <p className='mt-2 text-center text-[10.5px] text-black/40'>
+      <p className='mt-2 text-center text-[10.5px] text-white/40'>
         Te llevamos a Stripe para completar el pago de forma segura.
       </p>
     </div>

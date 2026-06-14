@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import LayoutV2 from '../../layouts/LayoutV2'
 import TicketCard from '../../components/v2/ticket/TicketCard'
 import NFTPreview from '../../components/v2/ticket/NFTPreview'
 import AppleWalletButton from '../../components/v2/ticket/AppleWalletButton'
+import GoogleWalletButton from '../../components/v2/ticket/GoogleWalletButton'
 import ShareSheet from '../../components/v2/ticket/ShareSheet'
 import { Button, GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import { useCart } from '../../router/cartContext'
+import { hiEventsService } from '../../services/hiEventsService'
+import type { HiOrder } from '../../types/hievents'
 import { coverHash, coverSeed } from '../../lib/covers/coverHash'
 import gradients from '../../styles/effects/gradients.module.css'
 import type { UIEvent } from '../../types/uiEvent'
@@ -29,9 +32,22 @@ interface CartCheckoutSnapshot {
   customer?: { email?: string }
 }
 
-interface SessionStatusResponse {
-  status?: 'open' | 'complete' | string
-  customer_email?: string
+const MAX_RETRIES = 6
+const BASE_DELAY_MS = 700
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/** Extrae el session_id real de la URL (Stripe a veces deja el placeholder). */
+const extractSessionId = (): string | null => {
+  const matches = window.location.href.match(/session_id=([^&?#]+)/g)
+  if (matches) {
+    for (const m of matches) {
+      const v = m.replace('session_id=', '')
+      if (v && !v.includes('CHECKOUT_SESSION_ID') && !v.includes('%7B') && !v.includes('%7D')) {
+        return decodeURIComponent(v)
+      }
+    }
+  }
+  return new URLSearchParams(window.location.search).get('session_id')
 }
 
 const readCartSnapshot = (): CartCheckoutSnapshot | null => {
@@ -44,69 +60,74 @@ const readCartSnapshot = (): CartCheckoutSnapshot | null => {
   }
 }
 
+/** "A15" / "K-7" → { row: "A", seat: "15" }. Los asientos de HiEvents traen el
+ *  seatLabel como `${row}${seat_number}`; el flujo Seatchart viejo usaba coords. */
+const parseSeatLabel = (label?: string): { row?: string; seat?: string } => {
+  if (!label) return {}
+  const m = label.match(/^([A-Za-z]+)[\s-]?(\d+)$/)
+  return m ? { row: m[1].toUpperCase(), seat: m[2] } : {}
+}
+
 /**
- * TicketReceivedV2 — landing post-checkout (proviene del return de Stripe).
+ * TicketReceivedV2 — landing post-checkout (return de Stripe), con la estética
+ * de Claude Design: hero de confirmación + `TicketCard` (NFT) + `NFTPreview` +
+ * Apple Wallet + Share.
  *
- * Estructura:
- *  - Mini-header propio con "Back home" + link a "My tickets".
- *  - Hero de confirmación (checkmark + "You're in." + cantidad).
- *  - `TicketCard` hero (NFT card visual) del evento comprado.
- *  - `NFTPreview` con wallet address (mock por ahora).
- *  - Apple Wallet + Share image buttons.
- *
- * Datos: del `cart_checkout` del localStorage (set por SaleV2 antes de
- * Stripe) + `session-status` API (legacy). Cuando llegamos vía session
- * complete, limpiamos `local_cart` para que el cart drawer no muestre
- * cosas viejas.
+ * Datos: el evento y los asientos vienen del `cart_checkout` (snapshot que
+ * setea CheckoutV2 antes de ir a Stripe) → el ticket se muestra al instante,
+ * fiel al diseño, sin spinner. La CONFIRMACIÓN del pago se hace contra
+ * HiEvents en background (ruta /checkout/:venueId/:orderShortId/success):
+ * POST /confirm_payment con reintentos. HiEvents ya emitió QR + mail.
  */
 export default function TicketReceivedV2() {
   const navigate = useNavigate()
+  const { venueId, orderShortId } = useParams<{ venueId?: string; orderShortId?: string }>()
   const { byLabel } = useUIEvents()
   const { clear: clearCart } = useCart()
 
   const [snapshot, setSnapshot] = useState<CartCheckoutSnapshot | null>(() =>
     readCartSnapshot()
   )
-  const [status, setStatus] = useState<SessionStatusResponse['status'] | null>(
-    null
-  )
   const [customerEmail, setCustomerEmail] = useState<string>(
     snapshot?.customer?.email ?? ''
   )
+  const [order, setOrder] = useState<HiOrder | null>(null)
+  const confirmRan = useRef(false)
 
-  // Valida el session_id contra Stripe (igual flow que legacy Return).
-  // Si está 'open', volvemos al checkout. Si 'complete', confirmamos.
+  // Confirma el pago contra HiEvents en background y limpia el carrito. El
+  // `ranRef` evita la doble ejecución del StrictMode SIN un flag `mounted`
+  // (que censuraría el setState — lección del bug del spinner infinito).
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const sessionId = params.get('session_id')
-    if (!sessionId) return
-
-    fetch(`/api/session-status?session_id=${sessionId}`)
-      .then((r) => r.json())
-      .then((data: SessionStatusResponse) => {
-        setStatus(data.status ?? null)
-        if (data.customer_email) setCustomerEmail(data.customer_email)
-        if (data.status === 'complete') {
-          // Limpia el cart legacy + context — el usuario ya pagó.
-          try {
-            localStorage.removeItem('local_cart')
-          } catch {}
-          clearCart()
+    if (confirmRan.current || !venueId || !orderShortId) return
+    confirmRan.current = true
+    ;(async () => {
+      try {
+        const sessionId = extractSessionId()
+        if (sessionId) {
+          for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+              await hiEventsService.confirmPayment(venueId, orderShortId, sessionId)
+              break
+            } catch {
+              if (attempt < MAX_RETRIES - 1) {
+                await delay(Math.round(BASE_DELAY_MS * Math.pow(1.7, attempt)))
+              }
+            }
+          }
         }
-      })
-      .catch(() => {
-        // En dev sin /api endpoint asumimos complete (best effort) para
-        // no bloquear la demo.
-        if (import.meta.env.DEV) {
-          setStatus('complete')
-        }
-      })
-  }, [clearCart])
-
-  // Si el status del backend es 'open', redirigimos al checkout.
-  useEffect(() => {
-    if (status === 'open') navigate('/checkout', { replace: true })
-  }, [status, navigate])
+        const ord = await hiEventsService.getOrder(venueId, orderShortId)
+        setOrder(ord)
+        if (ord?.email) setCustomerEmail(ord.email)
+      } catch {
+        // El pago igual se confirma vía webhook de HiEvents; no bloqueamos la UI.
+      } finally {
+        try {
+          localStorage.removeItem('local_cart')
+        } catch {}
+        clearCart()
+      }
+    })()
+  }, [venueId, orderShortId, clearCart])
 
   const event = useMemo<UIEvent | undefined>(() => {
     if (snapshot?.eventInfo?.id) return byLabel(snapshot.eventInfo.id)
@@ -122,17 +143,44 @@ export default function TicketReceivedV2() {
     }
   }, [snapshot])
 
-  const cartCount = snapshot?.cart?.length ?? 0
-  const firstSeat = snapshot?.cart?.[0]
-  const seatInfo = firstSeat
-    ? {
-        section: firstSeat.subZone,
-        row: firstSeat.coords ? String.fromCharCode(65 + firstSeat.coords.row) : undefined,
-        seat: firstSeat.coords
-          ? String(firstSeat.coords.col + 1)
-          : undefined
+  // Un "ticket" visual por asiento. Fuente preferida: los attendees de la orden
+  // HiEvents (traen public_id para el QR REAL + el asiento real). Mientras no
+  // llegó la orden, fallback al snapshot del checkout (QR decorativo).
+  const tickets = useMemo(() => {
+    if (order?.attendees && order.attendees.length > 0) {
+      return order.attendees.map((a, i) => ({
+        key: a.public_id ?? `a-${i}`,
+        ticketId: a.public_id ?? `a-${i}`,
+        qrValue: a.public_id || undefined,
+        ticketNumber: i + 1,
+        seatInfo: {
+          section: a.ticket?.section ?? undefined,
+          row: a.ticket?.row ?? undefined,
+          seat: a.ticket?.seat_number ?? undefined
+        }
+      }))
+    }
+    return (snapshot?.cart ?? []).map((it, i) => {
+      const parsed = parseSeatLabel(it.seatLabel)
+      return {
+        key: it.ticketId ?? `t-${i}`,
+        ticketId: it.ticketId ?? `seat-${i}`,
+        qrValue: undefined as string | undefined,
+        ticketNumber: i + 1,
+        seatInfo: {
+          section: it.subZone,
+          row:
+            parsed.row ??
+            (it.coords ? String.fromCharCode(65 + it.coords.row) : undefined),
+          seat:
+            parsed.seat ??
+            (it.coords ? String(it.coords.col + 1) : undefined)
+        }
       }
-    : undefined
+    })
+  }, [order, snapshot])
+
+  const cartCount = tickets.length
 
   // Fallback: si no hay event en useUIEvents pero sí hay eventInfo, mock.
   const displayEvent: UIEvent | null = useMemo(() => {
@@ -249,37 +297,52 @@ export default function TicketReceivedV2() {
           )}
         </header>
 
-        <div className='mt-8'>
-          <TicketCard
-            event={displayEvent}
-            variant='hero'
-            seatInfo={seatInfo}
-            ticketNumber={firstSeat?.ticketId?.slice(0, 4) ?? 42}
-          />
+        {/* Un ticket por asiento; cada uno con su pase de wallet (1 por 1:
+            cada entrada tiene su QR propio y se escanea individualmente). */}
+        <div className='mt-8 space-y-7'>
+          {tickets.map((t) => (
+            <div key={t.key}>
+              <TicketCard
+                event={displayEvent}
+                variant='hero'
+                seatInfo={t.seatInfo}
+                ticketNumber={t.ticketNumber}
+                qrValue={t.qrValue}
+              />
+              <AppleWalletButton
+                className='mt-3'
+                payload={{
+                  ticketId: t.ticketId,
+                  eventLabel: displayEvent.id,
+                  eventName: displayEvent.title,
+                  venueName: displayEvent.venueName,
+                  date: displayEvent.isoDate,
+                  time: displayEvent.time,
+                  seatInfo: t.seatInfo
+                }}
+              />
+              <GoogleWalletButton
+                className='mt-2'
+                payload={{
+                  ticketId: t.ticketId,
+                  eventLabel: displayEvent.id,
+                  eventName: displayEvent.title,
+                  venueName: displayEvent.venueName,
+                  date: displayEvent.isoDate,
+                  time: displayEvent.time,
+                  seatInfo: t.seatInfo
+                }}
+              />
+            </div>
+          ))}
         </div>
 
-        <div className='mt-5'>
-          <NFTPreview
-            walletAddress='0x3f2ad14ed2bcdbef91f8e15f88b91d'
-            explorerUrl='https://zora.co/'
-          />
-        </div>
-
-        <div className='mt-4 grid gap-2.5'>
-          <AppleWalletButton
-            payload={{
-              ticketId: firstSeat?.ticketId ?? 'preview',
-              eventLabel: displayEvent.id,
-              eventName: displayEvent.title,
-              venueName: displayEvent.venueName,
-              date: displayEvent.isoDate,
-              time: displayEvent.time,
-              seatInfo
-            }}
-          />
+        {/* Wallet del comprador + compartir, a nivel de la compra. */}
+        <div className='mt-8 space-y-2.5'>
+          <NFTPreview walletAddress='0x3f2ad14ed2bcdbef91f8e15f88b91d' />
           <ShareSheet
             input={{
-              ticketId: firstSeat?.ticketId ?? displayEvent.id.slice(0, 6),
+              ticketId: tickets[0]?.ticketId ?? displayEvent.id.slice(0, 6),
               eventTitle: displayEvent.title,
               eventSubtitle: displayEvent.subtitle,
               venueName: displayEvent.venueName,

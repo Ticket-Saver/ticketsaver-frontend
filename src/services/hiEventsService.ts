@@ -17,6 +17,7 @@ import type {
   HiSeatingMap,
   HiSeat,
   HiOrder,
+  HiAttendee,
   HiResource,
   HiPaginated,
   HiEventsListParams
@@ -227,6 +228,15 @@ export const hiEventsService = {
 
   async getOrder(eventId: string | number, shortId: string, signal?: AbortSignal): Promise<HiOrder> {
     const body = await getJson<HiResource<HiOrder>>(HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), signal)
+    return body.data
+  },
+
+  /** Attendee emitido por public_id — para la ticketera pública (QR real). */
+  async getAttendee(eventId: string | number, publicId: string, signal?: AbortSignal): Promise<HiAttendee> {
+    const body = await getJson<HiResource<HiAttendee>>(
+      HIEVENTS_CONFIG.endpoints.attendee(eventId, publicId),
+      signal
+    )
     return body.data
   },
 

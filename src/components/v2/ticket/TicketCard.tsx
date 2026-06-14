@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { Link } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import { getCoverPalette } from '../../../lib/covers/palettes'
 import { cn } from '../../../types/ui'
 import type { UIEvent } from '../../../types/uiEvent'
@@ -17,6 +18,8 @@ interface TicketCardProps {
   }
   /** Número del NFT para mostrar en el hero ("No. 042"). */
   ticketNumber?: string | number
+  /** Valor del QR REAL (el public_id de HiEvents). Sin esto, dibuja un QR decorativo. */
+  qrValue?: string
   /** Hace toda la card un Link al detalle (variant list). */
   href?: string
   /** Cuando true, hace el filter saturate(.6) opacity(.7) para "past events". */
@@ -37,6 +40,7 @@ export default function TicketCard({
   variant = 'list',
   seatInfo,
   ticketNumber,
+  qrValue,
   href,
   past,
   className
@@ -47,6 +51,7 @@ export default function TicketCard({
         event={event}
         seatInfo={seatInfo}
         ticketNumber={ticketNumber}
+        qrValue={qrValue}
         className={className}
       />
     )
@@ -69,11 +74,13 @@ const HeroTicket = ({
   event,
   seatInfo,
   ticketNumber,
+  qrValue,
   className
 }: {
   event: UIEvent
   seatInfo?: TicketCardProps['seatInfo']
   ticketNumber?: string | number
+  qrValue?: string
   className?: string
 }) => {
   const palette = getCoverPalette(event.cover)
@@ -173,9 +180,16 @@ const HeroTicket = ({
         <SeatField label='Seat' value={seatInfo?.seat ?? '—'} />
       </div>
 
-      {/* QR */}
+      {/* QR — real (public_id de HiEvents, escaneable por el check-in) si viene
+          qrValue; si no, un patrón decorativo. */}
       <div className='relative px-5 pb-5 pt-3 flex items-center gap-3'>
-        <FakeQR seed={String(ticketNumber ?? event.id)} />
+        {qrValue ? (
+          <div className='shrink-0 grid place-items-center rounded-glass-sm bg-white p-1.5 h-20 w-20'>
+            <QRCodeSVG value={qrValue} size={68} level='M' />
+          </div>
+        ) : (
+          <FakeQR seed={String(ticketNumber ?? event.id)} />
+        )}
         <div className='flex-1 min-w-0'>
           <div className='text-[9.5px] uppercase tracking-[0.16em] font-display font-bold text-white/75'>
             Scan at entry

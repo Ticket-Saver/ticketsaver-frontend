@@ -175,11 +175,44 @@ export interface HiSeat {
 
 // --- Órdenes (se consumen en C5; tipado mínimo, se refina al portar el checkout) ---
 
+/** Ticket anidado en un attendee (TicketMinimalResourcePublic): trae el asiento. */
+export interface HiAttendeeTicket {
+  id: number
+  title: string | null
+  type?: string | null
+  event_id?: number
+  section?: string | null
+  row?: string | null
+  seat_number?: string | null
+  position?: string | null
+  price_range?: string | null
+}
+
+/** Asistente emitido (AttendeeResourcePublic). El `public_id` es lo que codifica el QR de check-in. */
+export interface HiAttendee {
+  id: number
+  public_id: string
+  short_id?: string
+  first_name?: string | null
+  last_name?: string | null
+  email?: string | null
+  status?: string | null
+  ticket_id?: number
+  ticket?: HiAttendeeTicket | null
+}
+
 export interface HiOrder {
   id: number
   short_id: string
   status: string
   payment_status: string
+  first_name?: string | null
+  last_name?: string | null
+  email?: string | null
+  total_gross?: number
+  currency?: string
+  attendees?: HiAttendee[]
+  order_items?: Array<{ item_name?: string; quantity?: number; price?: number }>
   [key: string]: unknown
 }
 

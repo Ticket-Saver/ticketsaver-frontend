@@ -170,9 +170,9 @@ const PaymentPanel = ({ children }: { children: React.ReactNode }) => (
         Secured by Stripe
       </span>
     </div>
-    {/* Stripe Embedded inyecta sus propios estilos. Lo dejamos sobre
-        fondo más claro para que las tarjetas se vean nítidas. */}
-    <div className='rounded-glass-md bg-white p-1.5 lg:p-3'>{children}</div>
+    {/* El pago real es un redirect a Stripe (no embebido), así que el form de
+        asistentes va con la estética v2, no sobre fondo blanco. */}
+    <div className='mt-1'>{children}</div>
   </GlassCard>
 )
 

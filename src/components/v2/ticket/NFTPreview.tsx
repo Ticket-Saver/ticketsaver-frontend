@@ -1,8 +1,6 @@
 interface NFTPreviewProps {
   /** Address corta de wallet — ej "0x3f2a...b91d". */
   walletAddress?: string
-  /** URL al explorador (Zora). Si no, no muestra el link. */
-  explorerUrl?: string
   /** Texto override del label superior. */
   label?: string
 }
@@ -15,7 +13,6 @@ const shortenAddress = (addr?: string): string => {
 
 export default function NFTPreview({
   walletAddress,
-  explorerUrl,
   label = 'Minted on Base'
 }: NFTPreviewProps) {
   return (
@@ -40,31 +37,6 @@ export default function NFTPreview({
           </div>
         )}
       </div>
-      {explorerUrl && (
-        <a
-          href={explorerUrl}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='shrink-0 inline-flex items-center gap-1 text-[10.5px] text-brand-hi font-display font-semibold hover:text-white transition'
-        >
-          View on Zora
-          <svg
-            width='9'
-            height='9'
-            viewBox='0 0 10 10'
-            fill='none'
-            aria-hidden
-          >
-            <path
-              d='M3 7 7 3M7 3H4M7 3v3'
-              stroke='currentColor'
-              strokeWidth='1.4'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </a>
-      )}
     </div>
   )
 }
