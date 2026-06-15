@@ -1,11 +1,13 @@
 interface VenueMapProps {
   venueName: string
   city: string
+  /** Dirección completa (location_details) — se muestra bajo la ciudad si viene. */
+  address?: string
   /** URL directa de Google Maps (Directions). Si no, se construye a partir de la query. */
   mapsUrl?: string
 }
 
-export default function VenueMap({ venueName, city, mapsUrl }: VenueMapProps) {
+export default function VenueMap({ venueName, city, address, mapsUrl }: VenueMapProps) {
   const query = [venueName, city].filter(Boolean).join(', ')
   const iframeSrc = `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`
   const directionsUrl =
@@ -44,6 +46,11 @@ export default function VenueMap({ venueName, city, mapsUrl }: VenueMapProps) {
           {city && (
             <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>
               {city}
+            </div>
+          )}
+          {address && (
+            <div className='text-[10.5px] text-white/45 mt-0.5 truncate'>
+              {address}
             </div>
           )}
         </div>

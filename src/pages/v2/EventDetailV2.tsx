@@ -14,7 +14,7 @@ import { hiEventsService } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
 import type { Availability, UIEvent } from '../../types/uiEvent'
-import type { HiAvailability, HiEventPublic, HiTicketPublic } from '../../types/hievents'
+import type { HiAvailability, HiEventPublic, HiTicketPublic, HiLocationDetails } from '../../types/hievents'
 
 const SALE_DATE_FMT = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
@@ -30,6 +30,33 @@ const deriveAvailability = (av: HiAvailability | null | undefined): Availability
   if (ratio <= 0.1) return 'few-left'
   if (ratio <= 0.3) return 'selling-fast'
   return 'available'
+}
+
+/** Hora de un ISO en la timezone del evento, formato "8:00 PM". */
+const fmtTimeInTz = (iso: string | null | undefined, tz: string | null | undefined): string => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: tz || 'UTC',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).format(d)
+}
+
+/** Une location_details en una dirección legible (sin venue ni país). */
+const formatAddress = (loc: HiLocationDetails | null | undefined): string => {
+  if (!loc) return ''
+  return [
+    loc.address_line_1,
+    loc.address_line_2,
+    loc.city,
+    loc.state_or_region,
+    loc.zip_or_postal_code
+  ]
+    .filter(Boolean)
+    .join(', ')
 }
 
 export default function EventDetailV2() {
@@ -123,6 +150,9 @@ export default function EventDetailV2() {
   }, [baseEvent, priceFrom, detail, isSaleActive])
 
   const description = detail?.description ?? ''
+  const endTime = fmtTimeInTz(detail?.end_date, detail?.timezone)
+  const address = formatAddress(detail?.location_details)
+  const organizerName = detail?.organizer?.name
 
   const dates = useMemo(
     () => getDatesForArtist(visible, event?.title),
@@ -155,7 +185,7 @@ export default function EventDetailV2() {
       <Banner event={event} images={detail?.images} />
 
       <div className='mt-8 lg:mt-10 px-5 lg:px-10 max-w-7xl mx-auto'>
-        <TitleBlock event={event} />
+        <TitleBlock event={event} organizer={organizerName} />
         {event.tags.length > 0 && (
           <div className='mt-4'>
             <TagList tags={event.tags} />
@@ -172,7 +202,7 @@ export default function EventDetailV2() {
       </div>
 
       <div className='mt-6 px-5 lg:px-10 max-w-7xl mx-auto'>
-        <SelectedDateHighlight event={event} />
+        <SelectedDateHighlight event={event} endTime={endTime} />
       </div>
 
       {!isSaleActive && saleStartsAt && (
@@ -200,15 +230,47 @@ export default function EventDetailV2() {
         <VenueMap
           venueName={event.venueName}
           city={event.city}
+          address={address}
           mapsUrl={event.mapsUrl}
         />
+        {(detail?.settings?.website_url || detail?.settings?.support_email) && (
+          <div className='mt-3 space-y-1 text-[12.5px] text-white/65'>
+            {detail?.settings?.website_url && (
+              <a
+                href={detail.settings.website_url}
+                target='_blank'
+                rel='noreferrer'
+                className='inline-block text-brand-hi hover:text-white transition'
+              >
+                Event website ↗
+              </a>
+            )}
+            {detail?.settings?.support_email && (
+              <p>
+                Contact:{' '}
+                <a
+                  href={`mailto:${detail.settings.support_email}`}
+                  className='text-brand-hi hover:text-white transition'
+                >
+                  {detail.settings.support_email}
+                </a>
+              </p>
+            )}
+          </div>
+        )}
       </Section>
 
       <Section title='Good to know'>
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
-          {/* Solo mostramos datos reales. El resto (duración, edad, política de
-              bolsos) se cargará desde el admin (bloque A). */}
           <FactPill label='Doors' value={event.time || 'TBA'} />
+          {/* Campos custom públicos cargados desde el admin (attributes). */}
+          {(detail?.attributes ?? []).map((attr) => (
+            <FactPill
+              key={attr.name}
+              label={attr.name}
+              value={String(attr.value ?? '')}
+            />
+          ))}
         </div>
       </Section>
 
@@ -226,7 +288,7 @@ export default function EventDetailV2() {
   )
 }
 
-const TitleBlock = ({ event }: { event: UIEvent }) => (
+const TitleBlock = ({ event, organizer }: { event: UIEvent; organizer?: string }) => (
   <div className='min-w-0'>
     <div className='text-[10.5px] uppercase tracking-[0.16em] font-display font-semibold text-brand-hi'>
       {event.category} · Tour
@@ -237,10 +299,15 @@ const TitleBlock = ({ event }: { event: UIEvent }) => (
     <p className='mt-3 text-sm lg:text-base text-white/70'>
       {event.subtitle}
     </p>
+    {organizer && (
+      <p className='mt-1.5 text-[12.5px] text-white/55'>
+        Presented by <span className='text-white/75'>{organizer}</span>
+      </p>
+    )}
   </div>
 )
 
-const SelectedDateHighlight = ({ event }: { event: UIEvent }) => (
+const SelectedDateHighlight = ({ event, endTime }: { event: UIEvent; endTime?: string }) => (
   <div
     className='flex items-center gap-3 p-3.5 rounded-glass-md border border-brand-hi/30 backdrop-blur-glass-strong'
     style={{ background: 'rgba(212,168,240,0.12)' }}
@@ -257,6 +324,7 @@ const SelectedDateHighlight = ({ event }: { event: UIEvent }) => (
       <div className='font-display text-[13.5px] font-semibold text-white tracking-tight'>
         {event.day}, {event.month} {event.date}
         {event.time && ` · ${event.time}`}
+        {event.time && endTime && ` – ${endTime}`}
       </div>
       <div className='text-[11.5px] text-white/65 mt-0.5 flex items-center gap-1.5'>
         <PinIcon />
