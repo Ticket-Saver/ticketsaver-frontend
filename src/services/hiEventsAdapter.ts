@@ -17,7 +17,7 @@
  */
 
 import type { Event } from '../router/eventsContext'
-import type { Availability, Category, UIEvent } from '../types/uiEvent'
+import type { Category, UIEvent } from '../types/uiEvent'
 import type { HiEventPublic, HiImage, HiUserTicketsEvent } from '../types/hievents'
 import { coverHash } from '../lib/covers/coverHash'
 
@@ -27,13 +27,6 @@ const MONTH_NAMES = [
 ]
 const HERO_LIMIT = 5
 
-const djb2 = (input: string): number => {
-  let h = 5381
-  for (let i = 0; i < input.length; i++) {
-    h = ((h << 5) + h + input.charCodeAt(i)) | 0
-  }
-  return Math.abs(h)
-}
 
 const CATEGORY_KEYWORDS: ReadonlyArray<{ kw: RegExp; cat: Category }> = [
   { kw: /comedy|standup|stand-up|laugh/i, cat: 'Comedy' },
@@ -63,18 +56,10 @@ const resolveCategory = (raw: string | null | undefined, title: string): Categor
     ? (raw as Category)
     : inferCategory(title)
 
-const inferAvailability = (key: string): Availability => {
-  // El listado de HiEvents no trae disponibilidad; heurística determinista por
-  // slug hasta que el detalle (C2) la traiga real desde availability/tickets.
-  const bucket = djb2(key) % 100
-  if (bucket < 60) return 'available'
-  if (bucket < 80) return 'few-left'
-  if (bucket < 95) return 'selling-fast'
-  return 'sold-out'
-}
-
-const inferTags = (startsAt: Date, category: Category): string[] => {
-  if (Number.isNaN(startsAt.getTime())) return [category]
+// Tags derivados de la fecha real (Tonight/Weekend/etc.). NO incluyen la
+// categoría (ya se muestra aparte) ni nada inventado.
+const inferTags = (startsAt: Date): string[] => {
+  if (Number.isNaN(startsAt.getTime())) return []
   const tags: string[] = []
   const now = new Date()
   const dayMs = 24 * 60 * 60 * 1000
@@ -88,7 +73,6 @@ const inferTags = (startsAt: Date, category: Category): string[] => {
   if (day === 0 || day === 6) tags.push('Weekend')
   const hour = startsAt.getHours()
   if (hour >= 22 || hour < 4) tags.push('Late night')
-  tags.push(category)
   return Array.from(new Set(tags))
 }
 
@@ -182,7 +166,9 @@ export const hiEventToUIEvent = (
   const city = hi.location_details?.city ?? ''
   const country = hi.location_details?.country ?? ''
   const venueLabel = venueName ? slugify(venueName) : hi.slug
-  const subtitle = city && venueName ? `${venueName} · ${city}` : venueName || city || hi.title
+  // Sin inventar: si no hay venue/ciudad, subtítulo y venueName quedan vacíos
+  // (no se cae al slug ni al título). La UI los oculta.
+  const subtitle = city && venueName ? `${venueName} · ${city}` : venueName || city || ''
 
   const expired = hi.status !== 'LIVE' || hi.lifecycle_status === 'ENDED'
 
@@ -202,7 +188,7 @@ export const hiEventToUIEvent = (
     startsAt: parts.startsAt,
 
     venueLabel,
-    venueName: venueName || venueLabel,
+    venueName,
     city,
     country,
     mapsUrl: hi.settings?.maps_url ?? undefined,
@@ -211,9 +197,11 @@ export const hiEventToUIEvent = (
     imageUrl: pickCardImage(hi.images ?? []),
 
     priceFrom: null,
-    availability: inferAvailability(hi.slug),
+    // Disponibilidad real solo en el detalle (deriveAvailability del API). En el
+    // listado no hay dato real → neutro (las cards no muestran badge inventado).
+    availability: 'available',
 
-    tags: inferTags(parts.startsAt, category),
+    tags: inferTags(parts.startsAt),
     hero: context.hero ?? false,
     vibe: hi.description_preview ?? undefined,
 
@@ -273,7 +261,7 @@ export const userTicketsEventToUIEvent = (e: HiUserTicketsEvent): UIEvent => {
     priceFrom: null,
     availability: 'available',
 
-    tags: inferTags(parts.startsAt, category),
+    tags: inferTags(parts.startsAt),
     hero: false,
     vibe: e.description ?? undefined,
 

@@ -150,7 +150,13 @@ export default function EventDetailV2() {
   }, [baseEvent, priceFrom, detail, isSaleActive])
 
   const description = detail?.description ?? ''
-  const endTime = fmtTimeInTz(detail?.end_date, detail?.timezone)
+  // Solo mostramos la hora de fin si es posterior al inicio (evita "9:54 – 9:54").
+  const endTime =
+    detail?.end_date &&
+    detail?.start_date &&
+    new Date(detail.end_date).getTime() > new Date(detail.start_date).getTime()
+      ? fmtTimeInTz(detail.end_date, detail.timezone)
+      : ''
   const address = formatAddress(detail?.location_details)
   const organizerName = detail?.organizer?.name
 
@@ -291,7 +297,7 @@ export default function EventDetailV2() {
 const TitleBlock = ({ event, organizer }: { event: UIEvent; organizer?: string }) => (
   <div className='min-w-0'>
     <div className='text-[10.5px] uppercase tracking-[0.16em] font-display font-semibold text-brand-hi'>
-      {event.category} · Tour
+      {event.category}
     </div>
     <h1 className='mt-2 font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.05]'>
       {event.title}

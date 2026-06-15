@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import EventCover from './EventCover'
 import { cn } from '../../types/ui'
 import { getCoverPalette } from '../../lib/covers/palettes'
-import type { Availability, UIEvent } from '../../types/uiEvent'
+import type { UIEvent } from '../../types/uiEvent'
 import glass from '../../styles/effects/glass.module.css'
 
 export type EventCardVariant = 'poster' | 'cinema' | 'ticket' | 'minimal'
@@ -16,20 +16,6 @@ interface EventCardV2Props {
   className?: string
   /** Override del comportamiento default de click (navegar a detail). */
   onClick?: (event: UIEvent) => void
-}
-
-const AVAILABILITY_LABEL: Record<Availability, string> = {
-  available: 'Available',
-  'few-left': 'Few left',
-  'selling-fast': 'Selling fast',
-  'sold-out': 'Sold out'
-}
-
-const AVAILABILITY_CLASS: Record<Availability, string> = {
-  available: 'bg-accent-mint/15 text-accent-mint border-accent-mint/30',
-  'few-left': 'bg-accent-coral/15 text-accent-coral border-accent-coral/30',
-  'selling-fast': 'bg-accent-pink/15 text-accent-pink border-accent-pink/30',
-  'sold-out': 'bg-white/[0.06] text-white/45 border-white/10'
 }
 
 const formatPrice = (priceFrom: number | null): string =>
@@ -150,8 +136,7 @@ export default function EventCardV2({
                 )}
               </div>
             </div>
-            <div className='flex items-center justify-between gap-2 mt-1.5'>
-              <AvailabilityBadge value={event.availability} />
+            <div className='flex items-center justify-end gap-2 mt-1.5'>
               <PriceLabel priceFrom={event.priceFrom} compact />
             </div>
           </div>
@@ -284,31 +269,11 @@ export default function EventCardV2({
               </div>
             </div>
           </div>
-          <div className='mt-2.5 flex items-center justify-between gap-2'>
-            <AvailabilityBadge value={event.availability} />
-            {event.tags.length > 0 && (
-              <span className='text-[10px] text-white/45 font-display tracking-[0.12em] uppercase truncate'>
-                {event.tags[0]}
-              </span>
-            )}
-          </div>
         </div>
       </div>
     </CardShell>
   )
 }
-
-const AvailabilityBadge = ({ value }: { value: Availability }) => (
-  <span
-    className={cn(
-      'inline-flex items-center gap-1 rounded-pill border px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] font-display',
-      AVAILABILITY_CLASS[value]
-    )}
-  >
-    <span className='h-1 w-1 rounded-full bg-current' />
-    {AVAILABILITY_LABEL[value]}
-  </span>
-)
 
 const PriceLabel = ({
   priceFrom,
