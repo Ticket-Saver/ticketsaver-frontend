@@ -18,7 +18,7 @@
 
 import type { Event } from '../router/eventsContext'
 import type { Availability, Category, UIEvent } from '../types/uiEvent'
-import type { HiEventPublic, HiImage } from '../types/hievents'
+import type { HiEventPublic, HiImage, HiUserTicketsEvent } from '../types/hievents'
 import { coverHash } from '../lib/covers/coverHash'
 
 const MONTH_NAMES = [
@@ -213,6 +213,75 @@ export const hiEventToUIEvent = (
     detailHref: buildDetailHref(hi),
 
     raw: buildSyntheticRaw(hi, parts, venueLabel),
+    rawVenue: undefined
+  }
+}
+
+/**
+ * Adapta un evento de `/user/tickets` (Mis Tickets) a UIEvent, para reusar las
+ * cards (TicketGrid/TicketCard) con el mismo formato de fecha + cover que el
+ * resto de la app. `id` = slug; `eventId` = id numérico (para el link al QR
+ * público y el lookup). `expired` se deriva de la fecha (pasó o no).
+ */
+export const userTicketsEventToUIEvent = (e: HiUserTicketsEvent): UIEvent => {
+  const parts = toDateParts(e.date ?? '', e.timezone ?? 'UTC')
+  const category = inferCategory(e.eventName)
+  const venueName = e.venue ?? e.locationDetails?.venue_name ?? ''
+  const city = e.locationDetails?.city ?? ''
+  const country = e.locationDetails?.country ?? ''
+  const venueLabel = venueName ? slugify(venueName) : e.eventId
+  const subtitle = city && venueName ? `${venueName} · ${city}` : venueName || city || e.eventName
+  const expired = parts.startsAt.getTime() ? parts.startsAt.getTime() < Date.now() : false
+
+  return {
+    id: e.eventId,
+    eventId: String(e.eventIdNumber),
+    title: e.eventName,
+    subtitle,
+    category,
+
+    isoDate: parts.isoDate,
+    day: parts.day,
+    date: parts.date,
+    month: parts.month,
+    year: parts.year,
+    time: parts.time,
+    startsAt: parts.startsAt,
+
+    venueLabel,
+    venueName: venueName || venueLabel,
+    city,
+    country,
+
+    cover: coverHash(e.eventId),
+    imageUrl: e.imageUrl ?? undefined,
+
+    priceFrom: null,
+    availability: 'available',
+
+    tags: inferTags(parts.startsAt, category),
+    hero: false,
+    vibe: e.description ?? undefined,
+
+    isExternal: false,
+    hidden: false,
+    expired,
+    requiresQueue: false,
+    map: null,
+
+    detailHref: `/event/${e.eventIdNumber}/${encodeURIComponent(e.eventId)}`,
+
+    raw: {
+      eventId: String(e.eventIdNumber),
+      event_date: parts.isoDate,
+      event_hour: parts.hour24,
+      event_name: e.eventName,
+      venue_label: venueLabel,
+      event_label: e.eventId,
+      event_deleted_at: null,
+      sale_starts_at: '',
+      tricket_url: ''
+    },
     rawVenue: undefined
   }
 }

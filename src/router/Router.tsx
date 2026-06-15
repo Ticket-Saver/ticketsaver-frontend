@@ -15,7 +15,6 @@ import TicketPublicV2 from '../pages/v2/TicketPublicV2'
 import MyTicketsV2 from '../pages/v2/MyTicketsV2'
 import UpcomingV2 from '../pages/v2/dashboardTabs/UpcomingV2'
 import PastV2 from '../pages/v2/dashboardTabs/PastV2'
-import CollectiblesV2 from '../pages/v2/dashboardTabs/CollectiblesV2'
 import QueueV2 from '../pages/v2/QueueV2'
 import DashboardV2 from '../pages/v2/DashboardV2'
 import MyProfileV2 from '../pages/v2/MyProfileV2'
@@ -116,7 +115,8 @@ export const AppRouter = () => (
             <Route index element={<Navigate to='upcomingevent' replace />} />
             <Route path='upcomingevent' element={<UpcomingV2 />} />
             <Route path='pastevent' element={<PastV2 />} />
-            <Route path='collectibles' element={<CollectiblesV2 />} />
+            {/* 'collectibles' (NFT) eliminado — NFT/Web3 fuera del proyecto. */}
+            <Route path='collectibles' element={<Navigate to='../pastevent' replace />} />
           </Route>
 
           <Route

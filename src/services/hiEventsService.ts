@@ -20,7 +20,9 @@ import type {
   HiAttendee,
   HiResource,
   HiPaginated,
-  HiEventsListParams
+  HiEventsListParams,
+  HiUserTicketsParams,
+  HiUserTicketsResponse
 } from '../types/hievents'
 
 /** Precio + impuestos de un asiento, traído on-demand vía /tickets/by-seat-ids. */
@@ -259,8 +261,19 @@ export const hiEventsService = {
     return body.data
   },
 
-  async getUserTickets(signal?: AbortSignal): Promise<unknown> {
-    return getJson(HIEVENTS_CONFIG.endpoints.userTickets(), signal)
+  /**
+   * Tickets emitidos del usuario, agrupados por evento (GET /public/user/tickets).
+   * Requiere `email` (o un Bearer del usuario, no disponible aún → ver login custom).
+   */
+  async getUserTickets(
+    params: HiUserTicketsParams,
+    signal?: AbortSignal
+  ): Promise<HiUserTicketsResponse> {
+    const query = toQuery({ ...params })
+    return getJson<HiUserTicketsResponse>(
+      `${HIEVENTS_CONFIG.endpoints.userTickets()}${query}`,
+      signal
+    )
   }
 }
 

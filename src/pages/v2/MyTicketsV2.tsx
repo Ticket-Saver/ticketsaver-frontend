@@ -1,32 +1,31 @@
-import { useMemo } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import LayoutV2 from '../../layouts/LayoutV2'
-import { GlassCard, Pill } from '../../components/ui'
-import { useUIEvents } from '../../hooks/useUIEvents'
+import { GlassCard } from '../../components/ui'
+import { useUserTickets, type UseUserTicketsResult } from '../../hooks/useUserTickets'
 import { cn } from '../../types/ui'
 import gradients from '../../styles/effects/gradients.module.css'
 
+/** Contexto que MyTicketsV2 pasa a las tabs hijas (Upcoming / Past). */
+export type MyTicketsContext = UseUserTicketsResult
+
 const TABS = [
   { to: 'upcomingevent', label: 'Upcoming' },
-  { to: 'pastevent', label: 'Past' },
-  { to: 'collectibles', label: 'Collection' }
+  { to: 'pastevent', label: 'Past' }
 ] as const
 
 /**
- * MyTicketsV2 — dashboard del usuario.
+ * MyTicketsV2 — dashboard del usuario con sus tickets REALES de HiEvents
+ * (GET /user/tickets vía `useUserTickets`, identificado por email de Auth0;
+ * ver nota del hook sobre el futuro login custom).
  *
- * Header con greeting y wallet pill. Stats placeholder (Upcoming /
- * Collected / Tier) que en producción vendrán de un endpoint que liste
- * los tickets del usuario autenticado.
- *
- * Las pestañas hijas se montan vía `<Outlet />` (UpcomingV2, PastV2,
- * CollectiblesV2). Cada sub-ruta usa `useUIEvents` + filtros simples
- * como demo hasta que exista el backend.
+ * Header con greeting + stats reales. Las pestañas hijas (UpcomingV2 / PastV2)
+ * se montan vía `<Outlet />` y reciben los datos por `useOutletContext` para no
+ * re-consultar el endpoint por tab.
  */
 export default function MyTicketsV2() {
   const { user } = useAuth0()
-  const { visible, all } = useUIEvents()
+  const tickets = useUserTickets()
   const location = useLocation()
 
   const greeting = user?.given_name
@@ -34,17 +33,6 @@ export default function MyTicketsV2() {
     : user?.name
       ? `Hey, ${user.name.split(' ')[0]}`
       : 'Hey there'
-
-  // Stats demo. En backend real vendría un /api/userTickets.
-  const stats = useMemo(() => {
-    const upcoming = visible.slice(0, 3).length
-    const pastCount = all.filter((e) => e.expired).slice(0, 6).length
-    return {
-      upcoming,
-      collected: pastCount,
-      tier: pastCount >= 10 ? 'Platinum' : pastCount >= 5 ? 'Gold' : 'Silver'
-    }
-  }, [visible, all])
 
   return (
     <LayoutV2 hideFooter meshSeed={3}>
@@ -58,17 +46,15 @@ export default function MyTicketsV2() {
               My tickets
             </h1>
             <p className='mt-2 text-sm text-white/55 max-w-xl'>
-              All your upcoming shows, past attendance and collectibles in one
-              wallet.
+              All your upcoming shows and past attendance in one place.
             </p>
           </div>
-          <WalletPill />
         </header>
 
         <div className='mt-6 grid grid-cols-3 gap-3'>
-          <StatCard label='Upcoming' value={stats.upcoming} />
-          <StatCard label='Collected' value={stats.collected} />
-          <StatCard label='Tier' value={stats.tier} />
+          <StatCard label='Upcoming' value={tickets.upcoming.length} />
+          <StatCard label='Tickets' value={tickets.totalTickets} />
+          <StatCard label='Past' value={tickets.past.length} />
         </div>
 
         <nav
@@ -98,25 +84,32 @@ export default function MyTicketsV2() {
         </nav>
 
         <section className='mt-6'>
-          <Outlet />
+          {tickets.error ? (
+            <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
+              <div className='font-display text-base font-semibold text-white'>
+                We couldn&apos;t load your tickets
+              </div>
+              <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
+                {tickets.error}
+              </p>
+            </GlassCard>
+          ) : !tickets.loading && !tickets.email ? (
+            <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
+              <div className='font-display text-base font-semibold text-white'>
+                Sign in to see your tickets
+              </div>
+              <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
+                Your purchased tickets live in your account.
+              </p>
+            </GlassCard>
+          ) : (
+            <Outlet context={tickets satisfies MyTicketsContext} />
+          )}
         </section>
       </main>
     </LayoutV2>
   )
 }
-
-const WalletPill = () => (
-  <Pill state='normal' size='md' className='shrink-0'>
-    <span className='inline-flex items-center gap-2'>
-      <span
-        aria-hidden
-        className='h-3.5 w-3.5 rounded-pill shrink-0'
-        style={{ background: 'linear-gradient(135deg, #0052FF, #6E8FFF)' }}
-      />
-      <span className='font-display tabular-nums'>0x3f2a…b91d</span>
-    </span>
-  </Pill>
-)
 
 const StatCard = ({
   label,

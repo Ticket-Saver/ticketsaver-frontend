@@ -240,3 +240,60 @@ export interface HiEventsListParams {
   eventsStatus?: 'upcoming' | 'past' | 'ended' | string
   only_live?: boolean
 }
+
+// --- Tickets del usuario (GET /public/user/tickets) ---
+
+export type HiUserTicketStatus = 'ACTIVE' | 'USED' | 'CANCELLED' | string
+
+/** Un ticket emitido del usuario. `ticketId` es el `public_id` (QR + ruta pública). */
+export interface HiUserTicket {
+  ticketId: string
+  zone?: string | null
+  section?: string | null
+  seatNumber?: string | null
+  price?: string | null
+  priceType?: string | null
+  status: HiUserTicketStatus
+}
+
+/** Un evento del usuario con todos sus tickets. `eventIdNumber` es el id numérico de HiEvents. */
+export interface HiUserTicketsEvent {
+  eventId: string
+  eventName: string
+  venue?: string | null
+  venueId?: string | null
+  date?: string | null
+  endDate?: string | null
+  location?: string | null
+  locationDetails?: HiLocationDetails | null
+  description?: string | null
+  imageUrl?: string | null
+  currency?: string | null
+  timezone?: string | null
+  status?: string | null
+  organizer?: HiOrganizer | null
+  publicId?: string | null
+  eventIdNumber: number
+  tickets: HiUserTicket[]
+}
+
+/** Respuesta de GET /public/user/tickets (tickets agrupados por evento). */
+export interface HiUserTicketsResponse {
+  success: boolean
+  page?: number
+  per_page?: number
+  totalEvents: number
+  totalTickets: number
+  data: HiUserTicketsEvent[]
+}
+
+/** Parámetros del endpoint de tickets del usuario. `email` requerido si no hay token. */
+export interface HiUserTicketsParams {
+  email: string
+  status?: HiUserTicketStatus
+  from?: string
+  to?: string
+  venueId?: string
+  page?: number
+  per_page?: number
+}

@@ -16,7 +16,7 @@ interface TicketCardProps {
     row?: string
     seat?: string
   }
-  /** Número del NFT para mostrar en el hero ("No. 042"). */
+  /** Número de ticket para mostrar en el hero ("No. 042"). */
   ticketNumber?: string | number
   /** Valor del QR REAL (el public_id de HiEvents). Sin esto, dibuja un QR decorativo. */
   qrValue?: string
@@ -29,9 +29,9 @@ interface TicketCardProps {
 
 /**
  * TicketCard — dos variants:
- *  - `hero` (default en `TicketReceivedV2`): NFT card grande con gradient
- *    animado, perforación, QR procedural, fields de seat. La estrella del
- *    post-purchase.
+ *  - `hero` (default en `TicketReceivedV2`): ticket card grande con gradient
+ *    animado, perforación, QR (real o procedural), fields de seat. La estrella
+ *    del post-purchase.
  *  - `list` (default en `TicketGrid`): horizontal compacta con date strip
  *    + cover + info, opcionalmente envuelta en un `<Link>`.
  */
@@ -68,7 +68,7 @@ export default function TicketCard({
   return card
 }
 
-/* ─────────────── Hero (NFT card) ─────────────── */
+/* ─────────────── Hero (ticket card) ─────────────── */
 
 const HeroTicket = ({
   event,
@@ -129,12 +129,6 @@ const HeroTicket = ({
           </div>
           <div className='text-[11.5px] text-white/80 mt-1'>{event.subtitle}</div>
         </div>
-        <span
-          className='shrink-0 px-2 py-1 rounded-pill text-[9px] font-display font-bold uppercase tracking-[0.14em] text-white border border-white/20 backdrop-blur-glass'
-          style={{ background: 'rgba(0,0,0,0.4)' }}
-        >
-          NFT · Base
-        </span>
       </div>
 
       {/* Big date */}
@@ -195,8 +189,7 @@ const HeroTicket = ({
             Scan at entry
           </div>
           <p className='mt-1 text-[11px] text-white/85 leading-snug'>
-            Your ticket is bound to your wallet — only you can use it. After
-            the show it lives on as a collectible.
+            Show this code at the entrance. It&apos;s unique to your ticket.
           </p>
         </div>
       </div>
@@ -328,7 +321,6 @@ const ListTicket = ({
             <Tag>
               {event.time || 'TBA'}
             </Tag>
-            <Tag dim>NFT · Base</Tag>
           </div>
         </div>
       </div>

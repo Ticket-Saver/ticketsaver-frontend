@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import LayoutV2 from '../../layouts/LayoutV2'
 import TicketCard from '../../components/v2/ticket/TicketCard'
-import NFTPreview from '../../components/v2/ticket/NFTPreview'
 import AppleWalletButton from '../../components/v2/ticket/AppleWalletButton'
 import GoogleWalletButton from '../../components/v2/ticket/GoogleWalletButton'
 import ShareSheet from '../../components/v2/ticket/ShareSheet'
@@ -70,8 +69,8 @@ const parseSeatLabel = (label?: string): { row?: string; seat?: string } => {
 
 /**
  * TicketReceivedV2 — landing post-checkout (return de Stripe), con la estética
- * de Claude Design: hero de confirmación + `TicketCard` (NFT) + `NFTPreview` +
- * Apple Wallet + Share.
+ * de Claude Design: hero de confirmación + `TicketCard` (QR real) + Apple/Google
+ * Wallet + Share.
  *
  * Datos: el evento y los asientos vienen del `cart_checkout` (snapshot que
  * setea CheckoutV2 antes de ir a Stripe) → el ticket se muestra al instante,
@@ -286,7 +285,7 @@ export default function TicketReceivedV2() {
           </h1>
           <p className='mt-2 text-sm text-white/65'>
             {cartCount > 0
-              ? `${cartCount} ${cartCount === 1 ? 'ticket' : 'tickets'} minted to your wallet`
+              ? `${cartCount} ${cartCount === 1 ? 'ticket' : 'tickets'} added to your account`
               : 'Your order is confirmed'}
           </p>
           {customerEmail && (
@@ -337,9 +336,8 @@ export default function TicketReceivedV2() {
           ))}
         </div>
 
-        {/* Wallet del comprador + compartir, a nivel de la compra. */}
+        {/* Compartir, a nivel de la compra. */}
         <div className='mt-8 space-y-2.5'>
-          <NFTPreview walletAddress='0x3f2ad14ed2bcdbef91f8e15f88b91d' />
           <ShareSheet
             input={{
               ticketId: tickets[0]?.ticketId ?? displayEvent.id.slice(0, 6),
