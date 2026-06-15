@@ -49,6 +49,20 @@ const inferCategory = (title: string): Category => {
   return 'Music'
 }
 
+const VALID_CATEGORIES: readonly Category[] = [
+  'Music', 'Theatre', 'Comedy', 'Sports', 'Family', 'Other'
+]
+
+/**
+ * Categoría REAL de HiEvents (Fase 6.2) si viene y es válida; si no, cae a la
+ * heurística por título. Así el organizador la controla desde el admin y deja
+ * de inventarse en el front.
+ */
+const resolveCategory = (raw: string | null | undefined, title: string): Category =>
+  raw && (VALID_CATEGORIES as readonly string[]).includes(raw)
+    ? (raw as Category)
+    : inferCategory(title)
+
 const inferAvailability = (key: string): Availability => {
   // El listado de HiEvents no trae disponibilidad; heurística determinista por
   // slug hasta que el detalle (C2) la traiga real desde availability/tickets.
@@ -163,7 +177,7 @@ export const hiEventToUIEvent = (
   context: { hero?: boolean } = {}
 ): UIEvent => {
   const parts = toDateParts(hi.start_date, hi.timezone)
-  const category = inferCategory(hi.title)
+  const category = resolveCategory(hi.category, hi.title)
   const venueName = hi.location_details?.venue_name ?? ''
   const city = hi.location_details?.city ?? ''
   const country = hi.location_details?.country ?? ''

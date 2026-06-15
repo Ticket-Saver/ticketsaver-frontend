@@ -90,6 +90,8 @@ export interface HiEventPublic {
   map: string | null
   /** 'general' | 'enumerado' (custom TicketSaver, presente en el listado). */
   tipoticket?: string | null
+  /** Categoría editorial (Music/Theatre/Comedy/Sports/Family/Other) — custom TicketSaver. */
+  category?: string | null
   location_details: HiLocationDetails | null
   availability?: HiAvailability | null
   settings: HiEventSettings | null
