@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { releaseAllSeatsForSession, getSessionId } from '../services/sessionCleanupService'
 
 /**
  * Hook para manejar el timer de sesión de compra
@@ -26,6 +25,8 @@ export interface SessionTimerState {
   startTimer: () => void // Iniciar el timer manualmente
   resetTimer: () => void // Reiniciar el timer
   extendTimer: (minutes: number) => void // Extender tiempo
+  /** Ata el contador a un vencimiento absoluto del servidor (reserved_until de la orden). */
+  syncToServerExpiry: (expiresAtMs: number) => void
 }
 
 /**
@@ -136,6 +137,28 @@ export function useSessionTimer(
   )
 
   /**
+   * Ata el contador al vencimiento REAL de la reserva en HiEvents (reserved_until).
+   * Se llama al crear la orden (hold al confirmar): el reloj que ve el usuario pasa
+   * a reflejar los minutos reales que tiene para pagar, no el contador local.
+   */
+  const syncToServerExpiry = useCallback(
+    (expiresAtMs: number) => {
+      if (!expiresAtMs || Number.isNaN(expiresAtMs)) return
+      const now = Date.now()
+      setExpiresAt(expiresAtMs)
+      setHasStarted(true)
+      setIsExpired(expiresAtMs <= now)
+      setTimeRemaining(Math.max(0, Math.floor((expiresAtMs - now) / 1000)))
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ expiresAt: expiresAtMs, startedAt: now })
+      )
+      broadcastSync(STORAGE_KEY)
+    },
+    [STORAGE_KEY]
+  )
+
+  /**
    * Recuperar timer de localStorage al montar — y re-hidratar cuando
    * otra instancia del hook (misma pestaña) o cambios externos
    * (cross-tab) modifican la clave.
@@ -204,24 +227,11 @@ export function useSessionTimer(
       if (remaining === 0) {
         setIsExpired(true)
         clearInterval(interval)
-
-        // Liberar asientos automáticamente
-        const sessionId = getSessionId()
-        if (sessionId && eventLabel) {
-          if (import.meta.env.DEV) {
-            console.log('⏰ Sesión expirada, liberando asientos...')
-          }
-
-          releaseAllSeatsForSession(sessionId, eventLabel)
-            .then(() => {
-              if (import.meta.env.DEV) {
-                console.log('✅ Asientos liberados por expiración')
-              }
-            })
-            .catch((error) => {
-              console.error('Error liberando asientos:', error)
-            })
-        }
+        // La liberación real del asiento la hace el backend: HiEvents cancela la
+        // orden RESERVED vencida con su cron (cada minuto) y devuelve el asiento
+        // al pool. El front sólo marca la expiración; el cartContext limpia el
+        // carrito local al detectar isExpired. (Antes esto pegaba al sistema de
+        // locks Supabase, que ya no existe.)
       }
     }, 1000)
 
@@ -250,6 +260,7 @@ export function useSessionTimer(
     formattedTime,
     startTimer,
     resetTimer,
-    extendTimer
+    extendTimer,
+    syncToServerExpiry
   }
 }

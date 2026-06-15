@@ -35,10 +35,29 @@ const genSessionId = () =>
 const seatIdsOf = (cart: CartItem[]) =>
   cart.map((c) => Number(c.seatId)).filter((n) => Number.isFinite(n) && n > 0)
 
+interface CheckoutSnapshot {
+  orderShortId?: string
+  priceIds?: number[]
+  sessionIdentifier?: string
+}
+
+/** Lee la orden que el seat-picker pudo haber creado (hold al confirmar, B2). */
+const readCheckoutSnapshot = (): CheckoutSnapshot | null => {
+  try {
+    const raw = localStorage.getItem('cart_checkout')
+    return raw ? (JSON.parse(raw) as CheckoutSnapshot) : null
+  } catch {
+    return null
+  }
+}
+
 function humanizeError(e: unknown): string {
   if (e instanceof HiEventsApiError) {
     if (e.status === 409 || e.status === 422) {
-      return 'Uno o más lugares ya no están disponibles. Volvé atrás y elegí de nuevo.'
+      return 'Uno o más de tus asientos acaban de ser tomados por otra persona. Volvé al mapa para elegir otros y continuar.'
+    }
+    if (e.status === 0) {
+      return 'No pudimos conectar para reservar tus asientos. Reintentá en unos segundos.'
     }
     return 'No pudimos procesar tu orden. Probá de nuevo en unos segundos.'
   }
@@ -113,13 +132,26 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
       try {
         if (!eventId) throw new Error('Falta el identificador del evento.')
         if (cart.length === 0) throw new Error('El carrito está vacío.')
-        const { tickets, priceIds } = await buildOrderTickets()
-        priceIdsRef.current = priceIds
-        const order = await hiEventsService.createOrder(eventId, {
-          tickets,
-          session_identifier: sessionIdRef.current
-        })
-        setOrderShortId(order.short_id)
+        // Si el seat-picker ya reservó (hold al confirmar), reusamos esa orden en
+        // vez de crear otra — evita una segunda reserva del mismo asiento.
+        const snap = readCheckoutSnapshot()
+        if (
+          snap?.orderShortId &&
+          Array.isArray(snap.priceIds) &&
+          snap.priceIds.length === cart.length
+        ) {
+          priceIdsRef.current = snap.priceIds
+          if (snap.sessionIdentifier) sessionIdRef.current = snap.sessionIdentifier
+          setOrderShortId(snap.orderShortId)
+        } else {
+          const { tickets, priceIds } = await buildOrderTickets()
+          priceIdsRef.current = priceIds
+          const order = await hiEventsService.createOrder(eventId, {
+            tickets,
+            session_identifier: sessionIdRef.current
+          })
+          setOrderShortId(order.short_id)
+        }
       } catch (e) {
         setError(humanizeError(e))
       } finally {
@@ -197,7 +229,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
       <div className='py-10 text-center'>
         <p className='mx-auto max-w-sm text-[13px] font-semibold text-red-400'>{error}</p>
         <Button variant='primary' size='md' className='mt-4' onClick={() => navigate(-1)}>
-          Volver a elegir
+          Volver al mapa a elegir otro asiento
         </Button>
       </div>
     )

@@ -211,6 +211,8 @@ export interface HiOrder {
   email?: string | null
   total_gross?: number
   currency?: string
+  reserved_until?: string | null
+  is_expired?: boolean
   attendees?: HiAttendee[]
   order_items?: Array<{ item_name?: string; quantity?: number; price?: number }>
   [key: string]: unknown

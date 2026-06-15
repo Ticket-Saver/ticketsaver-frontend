@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlassCard, Pill, useToast } from '../../ui'
 import SeatLegend from './SeatLegend'
@@ -11,7 +11,7 @@ import {
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { validateSeatAddByNumber, type RowSeatInfo } from '../../../hooks/useSeatContiguity'
 import { useCart } from '../../../router/cartContext'
-import { hiEventsService, type HiSeatPricing } from '../../../services/hiEventsService'
+import { hiEventsService, HiEventsApiError, type HiSeatPricing } from '../../../services/hiEventsService'
 import type { PricingBreakdown } from '../../../lib/pricing'
 import type { UIEvent } from '../../../types/uiEvent'
 import type { SeatItem } from './seatTypes'
@@ -55,7 +55,13 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
   const { items: cart, addItem, removeItem } = useCart()
   const timerState = useSessionTimer(event.id, 10)
   const [warning, setWarning] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
   const wasEmptyRef = useRef(cart.length === 0)
+  // session_identifier ESTABLE para toda la sesión de compra (idempotencia de
+  // reintentos de la orden). Se comparte con el checkout vía el snapshot.
+  const sessionIdRef = useRef(
+    `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+  )
 
   // El mapa masivo NO trae precio (performance). Al abrir la sección traemos el precio
   // + impuestos SOLO de sus asientos (pocos → <0.6s) vía /tickets/by-seat-ids.
@@ -83,6 +89,64 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
       controller.abort()
     }
   }, [section.seats, event.eventId])
+
+  // B1 · Disponibilidad EN VIVO. Refrescamos los asientos de la sección cada ~11s
+  // (pausado si la pestaña está oculta). Si un asiento que tenías seleccionado lo
+  // tomó otra persona, lo quitamos del carrito y avisamos. `liveAvail` overridea
+  // la disponibilidad inicial de la prop `section.seats`.
+  const [liveAvail, setLiveAvail] = useState<Map<number, boolean>>(new Map())
+  const cartRef = useRef(cart)
+  useEffect(() => {
+    cartRef.current = cart
+  }, [cart])
+
+  const isSeatAvailable = useCallback(
+    (seat: SeatItem): boolean => {
+      const live = liveAvail.get(seat.id)
+      return live !== undefined ? live : seat.is_available && !seat.is_sold_out
+    },
+    [liveAvail]
+  )
+
+  useEffect(() => {
+    if (!section.groupId) return
+    let cancelled = false
+    const poll = async () => {
+      if (document.visibilityState === 'hidden') return
+      try {
+        const fresh = (await hiEventsService.getSeats(
+          event.eventId,
+          section.groupId
+        )) as unknown as SeatItem[]
+        if (cancelled) return
+        const next = new Map<number, boolean>()
+        for (const s of fresh) {
+          next.set(s.id, s.is_available === true && s.is_sold_out !== true)
+        }
+        setLiveAvail(next)
+        // ¿Algún asiento del carrito se ocupó mientras tanto?
+        const lost = cartRef.current.filter((c) => next.get(Number(c.seatId)) === false)
+        if (lost.length > 0) {
+          lost.forEach((it) => removeItem(it.ticketId))
+          toast.show({
+            variant: 'warn',
+            title: lost.length === 1 ? 'Asiento ya no disponible' : 'Asientos ya no disponibles',
+            message: `${lost.map((l) => l.seatLabel).join(', ')} ${
+              lost.length === 1 ? 'fue tomado' : 'fueron tomados'
+            } por otra persona. Lo quitamos de tu selección; elegí otro para continuar.`,
+            duration: 7000
+          })
+        }
+      } catch {
+        /* error de red en el polling → se reintenta en el próximo tick */
+      }
+    }
+    const interval = setInterval(poll, 11000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [section.groupId, event.eventId, removeItem, toast])
 
   const seatsByRow = useMemo(() => {
     const acc: Record<string, SeatItem[]> = {}
@@ -148,7 +212,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
   }, [timerState.isExpired, cart.length, toast])
 
   const handleSeatClick = (seat: SeatItem) => {
-    if (!(seat.is_available && !seat.is_sold_out)) return
+    if (!isSeatAvailable(seat)) return
 
     // Ya seleccionado → quitar (siempre permitido).
     if (selectedSeatIds.has(seat.id)) {
@@ -173,7 +237,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     const rowList = seatsByRow[seat.row] || []
     const rowSeats: RowSeatInfo[] = rowList.map((s) => ({
       num: SEAT_NUM(s),
-      available: s.is_available && !s.is_sold_out
+      available: isSeatAvailable(s)
     }))
     const selectedNums = rowList.filter((s) => selectedSeatIds.has(s.id)).map(SEAT_NUM)
     const res = validateSeatAddByNumber(SEAT_NUM(seat), rowSeats, selectedNums)
@@ -229,29 +293,77 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     }
   }, [cart])
 
-  const handleCheckout = () => {
-    if (cart.length === 0 || cart.length > MAX_SEATS) return
-    localStorage.setItem(
-      'cart_checkout',
-      JSON.stringify({
-        cart,
-        eventInfo: {
-          id: event.id,
-          eventId: event.eventId,
-          name: event.title,
-          venue: event.venueName,
-          venueId: event.venueLabel,
-          date: event.raw.event_date,
-          location: event.city
-        }
-      })
-    )
-    navigate('/checkout')
+  const eventInfo = {
+    id: event.id,
+    eventId: event.eventId,
+    name: event.title,
+    venue: event.venueName,
+    venueId: event.venueLabel,
+    date: event.raw.event_date,
+    location: event.city
   }
 
-  const disabledCta = cart.length === 0 || cart.length > MAX_SEATS
-  const ctaLabel =
-    cart.length === 0
+  // B2 · HOLD AL CONFIRMAR. Al tocar "Checkout" reservamos los asientos en HiEvents
+  // (POST /order) ANTES de ir al pago. Si otro comprador se adelantó, la reserva
+  // rebota acá mismo (409/422) y el usuario sigue en el mapa (el realtime ya marca
+  // el asiento como ocupado). Si todo va bien, el contador pasa a reflejar el
+  // tiempo REAL de la reserva (10 min frescos para pagar) y pasamos la orden ya
+  // creada al checkout.
+  const handleCheckout = async () => {
+    if (cart.length === 0 || cart.length > MAX_SEATS || confirming) return
+    setConfirming(true)
+    setWarning(null)
+    try {
+      const seatIds = cart
+        .map((c) => Number(c.seatId))
+        .filter((n) => Number.isFinite(n) && n > 0)
+      const rows = await hiEventsService.getTicketsBySeatIds(event.eventId, seatIds)
+      const priceIds: number[] = []
+      const tickets = cart.map((c, i) => {
+        const row = rows[i]
+        if (!row) throw new Error(`No se pudo resolver el asiento ${c.seatLabel}.`)
+        const priceId = row.prices?.[0]?.id ?? row.id
+        priceIds.push(priceId)
+        return { ticket_id: row.id, quantities: [{ price_id: priceId, quantity: 1 }] }
+      })
+
+      const order = await hiEventsService.createOrder(event.eventId, {
+        tickets,
+        session_identifier: sessionIdRef.current
+      })
+
+      const reservedMs = Date.parse((order.reserved_until || '').replace(' ', 'T') + 'Z')
+      if (!Number.isNaN(reservedMs)) timerState.syncToServerExpiry(reservedMs)
+
+      localStorage.setItem(
+        'cart_checkout',
+        JSON.stringify({
+          cart,
+          eventInfo,
+          orderShortId: order.short_id,
+          reservedUntil: order.reserved_until,
+          priceIds,
+          sessionIdentifier: sessionIdRef.current
+        })
+      )
+      navigate('/checkout')
+    } catch (e) {
+      const conflict =
+        e instanceof HiEventsApiError && (e.status === 409 || e.status === 422)
+      setWarning(
+        conflict
+          ? 'Uno o más de tus asientos acaban de ser tomados por otra persona. Elegí otros para continuar.'
+          : 'No pudimos reservar tus asientos. Reintentá en unos segundos.'
+      )
+    } finally {
+      setConfirming(false)
+    }
+  }
+
+  const disabledCta = cart.length === 0 || cart.length > MAX_SEATS || confirming
+  const ctaLabel = confirming
+    ? 'Reservando tus asientos…'
+    : cart.length === 0
       ? 'Pick at least one seat'
       : `Checkout · $${breakdown.total.toFixed(2)} (${cart.length})`
 
@@ -311,7 +423,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
                               return (
                                 <SeatIcon
                                   key={col}
-                                  isAvailable={seat.is_available && !seat.is_sold_out}
+                                  isAvailable={isSeatAvailable(seat)}
                                   isSelected={selectedSeatIds.has(seat.id)}
                                   seatNumber={seat.seat_number}
                                   row={seat.row}
@@ -323,7 +435,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
                           : (seatsByRow[row] ?? []).map((seat) => (
                               <SeatIcon
                                 key={seat.id}
-                                isAvailable={seat.is_available && !seat.is_sold_out}
+                                isAvailable={isSeatAvailable(seat)}
                                 isSelected={selectedSeatIds.has(seat.id)}
                                 seatNumber={seat.seat_number}
                                 row={seat.row}

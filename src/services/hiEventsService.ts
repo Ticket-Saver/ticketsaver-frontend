@@ -37,11 +37,17 @@ export interface HiSeatPricing {
 export class HiEventsApiError extends Error {
   readonly status: number
   readonly path: string
-  constructor(status: number, path: string, message?: string) {
-    super(message ?? `HiEvents API respondió ${status} en ${path}`)
+  /** Mensaje del backend (campo `message` del JSON de error), si vino. */
+  readonly apiMessage?: string
+  /** Body crudo del error (JSON parseado) — p.ej. { message, errors }. */
+  readonly body?: unknown
+  constructor(status: number, path: string, apiMessage?: string, body?: unknown) {
+    super(apiMessage ?? `HiEvents API respondió ${status} en ${path}`)
     this.name = 'HiEventsApiError'
     this.status = status
     this.path = path
+    this.apiMessage = apiMessage
+    this.body = body
   }
 }
 
@@ -73,7 +79,20 @@ async function request<T>(
     throw new HiEventsApiError(0, path, `Fallo de red hacia HiEvents en ${path}: ${(err as Error).message}`)
   }
   if (!res.ok) {
-    throw new HiEventsApiError(res.status, path)
+    // Conservamos el cuerpo del error para mostrar el mensaje del backend
+    // (p.ej. "The ticket Asiento A1 is sold out") e identificar el asiento.
+    let body: unknown
+    let apiMessage: string | undefined
+    try {
+      const errText = await res.text()
+      if (errText) {
+        body = JSON.parse(errText)
+        apiMessage = (body as { message?: string } | null)?.message
+      }
+    } catch {
+      /* cuerpo no-JSON → queda el mensaje por defecto */
+    }
+    throw new HiEventsApiError(res.status, path, apiMessage, body)
   }
   // 204 / cuerpos vacíos
   const text = await res.text()
