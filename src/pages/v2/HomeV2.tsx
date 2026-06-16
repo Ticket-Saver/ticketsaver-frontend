@@ -7,6 +7,7 @@ import EventCarousel from '../../components/v2/EventCarousel'
 import CoverFlow3D from '../../components/v2/CoverFlow3D'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
+import { useHomeConfig } from '../../hooks/useHomeConfig'
 import gradients from '../../styles/effects/gradients.module.css'
 import type { Category, CategoryFilter, UIEvent } from '../../types/uiEvent'
 
@@ -36,7 +37,30 @@ const pickFeaturedCategory = (events: UIEvent[]): Category => {
 
 export default function HomeV2() {
   const navigate = useNavigate()
-  const { loading, hero, thisWeek, tonight, visible, byCategory } = useUIEvents()
+  const { loading, hero, thisWeek, tonight, visible, byCategory, byId } = useUIEvents()
+  const { config: homeConfig } = useHomeConfig()
+
+  // Hero: si el admin curó eventos destacados, se usan esos (en orden); si no,
+  // cae al hero automático. Mismo criterio para los carruseles.
+  const heroEvents = useMemo(() => {
+    const curated = (homeConfig?.featured_event_ids ?? [])
+      .map((id) => byId(String(id)))
+      .filter((e): e is UIEvent => !!e && !e.expired && !e.hidden)
+    return curated.length > 0 ? curated : hero
+  }, [homeConfig, byId, hero])
+
+  const curatedCarousels = useMemo(
+    () =>
+      (homeConfig?.carousels ?? [])
+        .map((c) => ({
+          title: c.title,
+          events: c.event_ids
+            .map((id) => byId(String(id)))
+            .filter((e): e is UIEvent => !!e && !e.expired && !e.hidden)
+        }))
+        .filter((c) => c.events.length > 0),
+    [homeConfig, byId]
+  )
 
   const now = useMemo(() => new Date(), [])
   const greetingDate = DATE_FMT.format(now)
@@ -48,29 +72,29 @@ export default function HomeV2() {
   )
 
   const trending = useMemo(
-    () => visible.filter((e) => !hero.some((h) => h.id === e.id)).slice(0, 8),
-    [visible, hero]
+    () => visible.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 8),
+    [visible, heroEvents]
   )
 
   const thisWeekRow = useMemo(
-    () => thisWeek.filter((e) => !hero.some((h) => h.id === e.id)).slice(0, 10),
-    [thisWeek, hero]
+    () => thisWeek.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 10),
+    [thisWeek, heroEvents]
   )
 
   const featuredRow = useMemo(
     () =>
       byCategory(featuredCategory)
-        .filter((e) => !hero.some((h) => h.id === e.id))
+        .filter((e) => !heroEvents.some((h) => h.id === e.id))
         .slice(0, 10),
-    [byCategory, featuredCategory, hero]
+    [byCategory, featuredCategory, heroEvents]
   )
 
   // Selección para el cover-flow 3D — eventos visibles que no estén en
   // el hero, capados a 6 para que el efecto 3D no se sature.
   const closerLook = useMemo(
     () =>
-      visible.filter((e) => !hero.some((h) => h.id === e.id)).slice(0, 6),
-    [visible, hero]
+      visible.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 6),
+    [visible, heroEvents]
   )
 
   const handleCategory = (cat: CategoryFilter) => {
@@ -107,12 +131,12 @@ export default function HomeV2() {
 
         {loading ? (
           <LoadingState />
-        ) : hero.length === 0 ? (
+        ) : heroEvents.length === 0 ? (
           <EmptyState />
         ) : (
           <>
             <HeroEvent
-              events={hero.slice(0, 5)}
+              events={heroEvents.slice(0, 5)}
               autoPlayMs={9000}
               className='mx-auto w-full max-w-[1280px]'
             />
@@ -124,40 +148,56 @@ export default function HomeV2() {
               />
             )}
 
-            {trending.length > 0 && (
-              <EventCarousel
-                className='mx-auto w-full max-w-[1280px]'
-                title='Trending now'
-                subtitle='Picks selling fast across cities'
-                events={trending}
-                variant='poster'
-                cardWidth={260}
-                seeAllHref='/events'
-              />
-            )}
+            {curatedCarousels.length > 0 ? (
+              curatedCarousels.map((c, i) => (
+                <EventCarousel
+                  key={`${c.title}-${i}`}
+                  className='mx-auto w-full max-w-[1280px]'
+                  title={c.title}
+                  events={c.events}
+                  variant='poster'
+                  cardWidth={260}
+                  seeAllHref='/events'
+                />
+              ))
+            ) : (
+              <>
+                {trending.length > 0 && (
+                  <EventCarousel
+                    className='mx-auto w-full max-w-[1280px]'
+                    title='Trending now'
+                    subtitle='Picks selling fast across cities'
+                    events={trending}
+                    variant='poster'
+                    cardWidth={260}
+                    seeAllHref='/events'
+                  />
+                )}
 
-            {thisWeekRow.length > 0 && (
-              <EventCarousel
-                className='mx-auto w-full max-w-[1280px]'
-                title='This week'
-                subtitle='Next 7 days, all categories'
-                events={thisWeekRow}
-                variant='cinema'
-                cardWidth={320}
-                seeAllHref='/events'
-              />
-            )}
+                {thisWeekRow.length > 0 && (
+                  <EventCarousel
+                    className='mx-auto w-full max-w-[1280px]'
+                    title='This week'
+                    subtitle='Next 7 days, all categories'
+                    events={thisWeekRow}
+                    variant='cinema'
+                    cardWidth={320}
+                    seeAllHref='/events'
+                  />
+                )}
 
-            {featuredRow.length > 0 && (
-              <EventCarousel
-                className='mx-auto w-full max-w-[1280px]'
-                title={`${featuredCategory} highlights`}
-                subtitle='Curated by what you love'
-                events={featuredRow}
-                variant='poster'
-                cardWidth={260}
-                seeAllHref={`/events?cat=${encodeURIComponent(featuredCategory)}`}
-              />
+                {featuredRow.length > 0 && (
+                  <EventCarousel
+                    className='mx-auto w-full max-w-[1280px]'
+                    title={`${featuredCategory} highlights`}
+                    subtitle='Curated by what you love'
+                    events={featuredRow}
+                    variant='poster'
+                    cardWidth={260}
+                    seeAllHref={`/events?cat=${encodeURIComponent(featuredCategory)}`}
+                  />
+                )}
+              </>
             )}
           </>
         )}

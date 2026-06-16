@@ -22,7 +22,8 @@ import type {
   HiPaginated,
   HiEventsListParams,
   HiUserTicketsParams,
-  HiUserTicketsResponse
+  HiUserTicketsResponse,
+  HiHomeConfig
 } from '../types/hievents'
 
 /** Precio + impuestos de un asiento, traído on-demand vía /tickets/by-seat-ids. */
@@ -274,6 +275,11 @@ export const hiEventsService = {
       `${HIEVENTS_CONFIG.endpoints.userTickets()}${query}`,
       signal
     )
+  },
+
+  /** Curaduría de la Home del sitio público (destacados + carruseles). */
+  async getHomeConfig(signal?: AbortSignal): Promise<HiHomeConfig> {
+    return getJson<HiHomeConfig>(HIEVENTS_CONFIG.endpoints.homeConfig(), signal)
   }
 }
 

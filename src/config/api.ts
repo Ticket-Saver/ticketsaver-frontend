@@ -53,7 +53,10 @@ export const HIEVENTS_CONFIG = {
       `/public/events/${eventId}/attendees/${publicId}`,
 
     // --- Usuario ---
-    userTickets: () => `/public/user/tickets`
+    userTickets: () => `/public/user/tickets`,
+
+    // --- Curaduría de la Home (Admin TicketSaver) ---
+    homeConfig: () => `/public/home-config`
   }
 }
 

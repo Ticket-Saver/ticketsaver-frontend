@@ -291,6 +291,12 @@ export interface HiUserTicketsResponse {
   data: HiUserTicketsEvent[]
 }
 
+/** Curaduría de la Home (GET /public/home-config). */
+export interface HiHomeConfig {
+  featured_event_ids: number[]
+  carousels: Array<{ title: string; event_ids: number[] }>
+}
+
 /** Parámetros del endpoint de tickets del usuario. `email` requerido si no hay token. */
 export interface HiUserTicketsParams {
   email: string
