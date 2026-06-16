@@ -67,11 +67,11 @@
 
 | Sub‑hito | Alcance | Toca back HiEvents | Estado / riesgo |
 |---|---|---|---|
-| **6.1 · Roles & precio** | Verificar reportes (HECHOS). **Decidir** si se quiere precio por rol en la UI del panel; si sí, hook de display. | Solo front admin (si aplica) | 🟢 mayormente hecho |
-| **6.2 · category** | Columna `category` en eventos → form admin + EventResourcePublic + listado → v2 usa categoría real (saca `inferCategory`). | Sí (migración aditiva) | 🟡 medio |
-| **6.3 · Auditoría de inputs** | Checklist completo: cada input que el v2 muestra (vibe, gallery, sale_start, support, etc.) se carga y se consume. Cerrar gaps menores. | Mixto | 🟡 medio |
-| **6.4 · Panel de Home (ADMIN)** | Tabla `account_home_config` (destacados, carruseles, orden de secciones) + endpoints + **panel admin nuevo solo‑ADMIN** + v2 Home consume config real (saca heurísticas de hero/carruseles). | Sí (tabla + UI admin) | 🔴 alto |
-| **6.5 · Multi‑fecha** | `series_id` + switch "multifecha" en creación → clonado por fecha en back + v2 agrupa por `series_id` + verificar scope de asiento por `event_id`. | Sí (migración + clone) | 🔴 alto |
+| **6.1 · Roles & precio** | Verificar reportes (HECHOS). **Decidir** si se quiere precio por rol en la UI del panel; si sí, hook de display. | Front admin + reportes ya existían | ✅ hecho |
+| **6.2 · category** | Columna `category` en eventos → form admin + EventResourcePublic + listado → v2 usa categoría real (saca `inferCategory`). | Sí (migración aditiva) | ✅ hecho |
+| **6.3 · Auditoría de inputs** | Checklist completo: cada input que el v2 muestra (vibe, gallery, sale_start, support, etc.) se carga y se consume. Cerrar gaps menores. | Mixto | ✅ hecho (incl. alineación Figma: sin datos inventados) |
+| **6.4 · Panel de Home (ADMIN)** | Tabla `account_home_config` (destacados, carruseles, orden de secciones) + endpoints + **panel admin nuevo solo‑ADMIN** + v2 Home consume config real (saca heurísticas de hero/carruseles). | Sí (tabla + UI admin) | ✅ hecho (shell + backend + admin UI + v2) |
+| **6.5 · Multi‑fecha** | `series_id` + switch "multifecha" en creación → clonado por fecha en back + v2 agrupa por `series_id` + verificar scope de asiento por `event_id`. | Sí (migración + clone) | ⏳ PENDIENTE (último de la fase) |
 
 **Orden recomendado:** 6.1 (cerrar/decidir) → 6.2 → 6.3 → 6.4 → 6.5.
 
@@ -83,4 +83,28 @@
 - Creación/edición de evento: `frontend/src/components/modals/CreateEventModal/` + `routes/event/Settings/Sections/`. Back: `Http/Request/Event/*`, `Services/Handlers/Event/DTO/*`, `DomainObjects/EventDomainObject*`, `Resources/Event/*`.
 
 ### Decisión abierta
-- **Precio por rol en la UI del panel del evento**: ¿se quiere además de los reportes? (Admin=bruto / Organizador=neto en pantalla.) Si no, el frente "roles/precio" queda cerrado con los reportes existentes.
+- **Precio por rol en la UI del panel del evento**: ¿se quiere además de los reportes? (Admin=bruto / Organizador=neto en pantalla.) **RESUELTO 2026-06-16:** el cliente lo quiere → implementado (hook `useRolePrice` en SortableTicket: admin ve bruto, organizador neto).
+
+---
+
+## ✅ Estado / dónde quedamos (2026-06-16)
+
+**Fase 6: 6.1 → 6.4 HECHAS. Falta solo 6.5 (multi-fecha).**
+
+Lo construido y verificado:
+- **6.1 Precio por rol** — `useRolePrice` (admin=bruto / organizador=neto) en la tabla de tickets del panel. (Reportes neto/bruto ya existían en HiEvents — no se tocaron.)
+- **6.2 `category`** — columna en HiEvents (back: migración + DTO/Request/Resource/Model/Handlers/DomainObject; forms admin crear+editar) y el v2 la consume (sin `inferCategory`).
+- **Roles — crear evento solo ADMIN** — `CreateEventAction`/`DuplicateEventAction` con `minimumAllowedRole(ADMIN)` (organizer → 403) + UI oculta crear para no-admin. (Visibilidad organizador = sus eventos: ya existía en `GetManageEventsAction`.)
+- **6.3 Inputs + alineación Figma** — el detalle del v2 muestra organizador, hora-fin, dirección completa, contacto/web y **campos custom** (attributes públicos) como pills en "Good to know" (editor `EventAttributesEditor` en crear+editar). Se quitaron datos inventados (slug-as-venue, subtítulo duplicado, "· Tour", disponibilidad fake en cards).
+- **6.4 Panel de Home** — sección **Admin TicketSaver** (`/admin`, solo ADMIN, acceso header+avatar, sidebar extensible con Home/Usuarios/Reventas) + backend `account_home_config` (GET/PUT admin + GET público) + admin UI (picker de destacados + editor de carruseles) + el v2 consume `/public/home-config` (hero + carruseles curados, fallback al automático). Verificado end-to-end por captura.
+
+**Commits:**
+- `ticketsaver-frontend` (rama `Ticket-Saver-NewFront`, PUSHEADO): hasta `d26c786`.
+- `hievents` (rama `seats-lazy-performance`, **commits LOCALES** — coordinar con el colega antes de pushear; main es de él): category back+forms+6.1+roles (`ffdcd5f`), editor attributes 6.3 (`3679116`), shell Admin TS 6.4 (commit), backend home-config 6.4 (commit), admin UI home 6.4 (commit).
+
+**Pendiente — 6.5 Multi-fecha (arrancar con análisis fino):**
+- Backend HiEvents: campo `series_id` en events + switch "multifecha" en creación → clonar el evento una vez por fecha (copia venue/tipoticket/map/desc/imágenes/tickets; varía fecha+slug; en enumerados corre el auto-generador por fecha).
+- v2: `MultiDateSelector` agrupa por `series_id` (hoy agrupa por título normalizado, frágil — ver `getDatesForArtist`).
+- CRÍTICO: el código de asiento se identifica por (`event_id` + código), nunca solo por código (cada fecha = event_id distinto). Ver memorias `modelo_eventos_asientos` y `deuda_tecnica`.
+
+**Notas de entorno:** Avast intercepta el SSL → para pushear hay que desactivarlo. `frontend-csr` (admin, Docker) no detecta cambios por bind-mount → reiniciar el contenedor para que vite los sirva. Datos de prueba dejados: evento 6 con 2 attributes públicos + config de Home (featured [6,1] + 1 carrusel) para ver la curaduría.

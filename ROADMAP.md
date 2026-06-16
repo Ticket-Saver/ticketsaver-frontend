@@ -17,7 +17,7 @@ plan de datos en la memoria del proyecto (`plan_conexion_hievents`).
 | **3 — Mapa + asientos** | SVG real de HiEvents, zoom/pan, contigüidad, anti‑colisión (hold + realtime) | ✅ Hecho y validado |
 | **4 — Pago** | Checkout HiEvents → Stripe (cuenta única TicketSaver, sin Connect) → emisión → QR | ✅ Hecho y probado |
 | **5 — Post‑compra** | Mis Tickets con datos reales + ticketera/QR público + dashboard | ✅ Hecho y verificado |
-| **6 — Admin / HiEvents** | Campos del evento (category, featured, multifecha) + panel de Home (admin) + roles/precio + multifecha | 🔵 En curso |
+| **6 — Admin / HiEvents** | Campos del evento (category, featured, multifecha) + panel de Home (admin) + roles/precio + multifecha | 🔵 En curso (6.1–6.4 ✅; falta 6.5 multi‑fecha) |
 | **7 — Extras** | Sala de espera (queue) real + Apple/Google Wallet passes + login custom | ⏳ Pendiente |
 | *Addon* | Reventa de tickets | ⛔ Fuera de alcance (se cotiza aparte) |
 
