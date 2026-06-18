@@ -9,7 +9,7 @@ import VenueMap from '../../components/v2/eventDetail/VenueMap'
 import StickyCTA from '../../components/v2/eventDetail/StickyCTA'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
-import { getDatesForArtist } from '../../services/multiDateAdapter'
+import { getDatesForEvent } from '../../services/multiDateAdapter'
 import { hiEventsService } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
@@ -161,8 +161,8 @@ export default function EventDetailV2() {
   const organizerName = detail?.organizer?.name
 
   const dates = useMemo(
-    () => getDatesForArtist(visible, event?.title),
-    [visible, event?.title]
+    () => getDatesForEvent(visible, event),
+    [visible, event]
   )
   const datesForArtist = dates.length > 0 ? dates : event ? [event] : []
 

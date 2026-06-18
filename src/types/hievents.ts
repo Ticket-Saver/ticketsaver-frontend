@@ -92,6 +92,8 @@ export interface HiEventPublic {
   tipoticket?: string | null
   /** Categoría editorial (Music/Theatre/Comedy/Sports/Family/Other) — custom TicketSaver. */
   category?: string | null
+  /** Multi-fecha: id del evento "plantilla" de la serie. null = evento de una sola fecha. */
+  series_id?: number | null
   /** Atributos custom PÚBLICos (name/value) — se muestran en "Good to know". */
   attributes?: Array<{ name: string; value: unknown; is_public?: boolean }> | null
   location_details: HiLocationDetails | null

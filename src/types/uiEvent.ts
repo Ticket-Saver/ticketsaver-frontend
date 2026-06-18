@@ -67,6 +67,13 @@ export interface UIEvent {
   /** Mapa de asientos de HiEvents ('map1'|'map2'). Presente ⇒ evento enumerado (asientos); ausente/null ⇒ general. */
   map?: string | null
 
+  /**
+   * Multi-fecha: id del evento "plantilla" de la serie. Todas las funciones del
+   * mismo evento comparten este valor. null/undefined ⇒ evento de una sola fecha.
+   * Se usa para agrupar fechas en el selector (en vez de la heurística por título).
+   */
+  seriesId?: number | null
+
   /** Ruta interna a la página de detalle (B3 la reemplazará). */
   detailHref: string
 

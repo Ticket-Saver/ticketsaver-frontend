@@ -211,6 +211,7 @@ export const hiEventToUIEvent = (
     expired,
     requiresQueue: false,
     map: hi.map ?? null,
+    seriesId: hi.series_id ?? null,
 
     detailHref: buildDetailHref(hi),
 
