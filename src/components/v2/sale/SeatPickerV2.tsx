@@ -329,7 +329,11 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
 
       const order = await hiEventsService.createOrder(event.eventId, {
         tickets,
-        session_identifier: sessionIdRef.current
+        session_identifier: sessionIdRef.current,
+        // Preventa: si se validó un código en el detalle, viaja para que el back
+        // permita la compra anticipada (red de seguridad además del gate visual).
+        presale_code:
+          sessionStorage.getItem(`presale_code_${event.eventId}`) || undefined
       })
 
       const reservedMs = Date.parse((order.reserved_until || '').replace(' ', 'T') + 'Z')

@@ -74,6 +74,19 @@ export interface UIEvent {
    */
   seriesId?: number | null
 
+  /**
+   * Preventa con código de acceso. El código nunca llega al front; solo el estado.
+   * - active: ventana de preventa abierta ahora → al comprar se exige el código.
+   * - salesStarted: la venta general ya arrancó → compra libre.
+   */
+  presale?: {
+    enabled: boolean
+    startsAt: string | null
+    active: boolean
+    salesStarted: boolean
+    generalSaleAt: string | null
+  }
+
   /** Ruta interna a la página de detalle (B3 la reemplazará). */
   detailHref: string
 

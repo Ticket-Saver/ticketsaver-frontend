@@ -15,13 +15,23 @@ interface StickyCTAProps {
    * redirige a /queue/:label en B7).
    */
   overrideHref?: string
+  /**
+   * Preventa abierta ahora: habilita el botón aunque la venta general no haya
+   * empezado. Al tocarlo se pide el código (vía onChooseSeats) en vez de navegar.
+   */
+  presaleActive?: boolean
+  /**
+   * Si está definido, el botón "Choose seats" llama esto en vez de navegar directo
+   * (lo usa el gate de preventa para pedir el código antes de entrar a /sale).
+   */
+  onChooseSeats?: () => void
 }
 
 /**
  * Construye la ruta legacy /sale/:name/:venue/:city/:date/:label/:delete?
  * que el SalePage espera.
  */
-const buildSaleHref = (event: UIEvent): string => {
+export const buildSaleHref = (event: UIEvent): string => {
   const safe = (s: string | undefined | null) => encodeURIComponent(s ?? '')
   const cityForRoute = event.city || event.venueLabel
   const deleteParam = event.raw.event_deleted_at ?? 'null'
@@ -33,17 +43,22 @@ export default function StickyCTA({
   priceFrom,
   isSaleActive,
   saleStartsLabel,
-  overrideHref
+  overrideHref,
+  presaleActive,
+  onChooseSeats
 }: StickyCTAProps) {
   const isSoldOut = event.availability === 'sold-out'
-  const disabled = !isSaleActive || event.expired || isSoldOut
+  // La preventa activa también habilita la compra (con código).
+  const effectiveActive = isSaleActive || !!presaleActive
+  const disabled = !effectiveActive || event.expired || isSoldOut
 
   const ctaLabel = (() => {
     if (event.expired) return 'Event ended'
     // La pre-venta tiene prioridad: 0 disponibles antes de abrir ≠ agotado.
-    if (!isSaleActive) return saleStartsLabel ?? 'Coming soon'
+    if (!effectiveActive) return saleStartsLabel ?? 'Coming soon'
     if (isSoldOut) return 'Sold out'
     if (event.requiresQueue) return 'Join queue'
+    if (presaleActive && !isSaleActive) return 'Choose seats · Presale'
     return 'Choose seats'
   })()
 
@@ -117,6 +132,11 @@ export default function StickyCTA({
           >
             {content}
           </a>
+        ) : onChooseSeats && !event.requiresQueue && !overrideHref ? (
+          // Gate: el handler decide si pedir el código (preventa) o navegar directo.
+          <button type='button' onClick={onChooseSeats} className={btnClass}>
+            {content}
+          </button>
         ) : (
           <Link to={targetHref} className={btnClass}>
             {content}

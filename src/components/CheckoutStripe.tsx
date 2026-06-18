@@ -148,7 +148,9 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
           priceIdsRef.current = priceIds
           const order = await hiEventsService.createOrder(eventId, {
             tickets,
-            session_identifier: sessionIdRef.current
+            session_identifier: sessionIdRef.current,
+            presale_code:
+              sessionStorage.getItem(`presale_code_${eventId}`) || undefined
           })
           setOrderShortId(order.short_id)
         }

@@ -94,6 +94,15 @@ export interface HiEventPublic {
   category?: string | null
   /** Multi-fecha: id del evento "plantilla" de la serie. null = evento de una sola fecha. */
   series_id?: number | null
+  /** Preventa: fecha de inicio (para el cartel). El código NUNCA se expone en público. */
+  presale_enabled?: boolean | null
+  presale_starts_at?: string | null
+  /** true = ventana de preventa abierta ahora (se requiere código para comprar). */
+  presale_active?: boolean | null
+  /** true = la venta general ya arrancó (compra libre). */
+  sales_started?: boolean | null
+  /** Inicio de la venta general (ya existía en HiEvents). */
+  ticket_sales_start_date?: string | null
   /** Atributos custom PÚBLICos (name/value) — se muestran en "Good to know". */
   attributes?: Array<{ name: string; value: unknown; is_public?: boolean }> | null
   location_details: HiLocationDetails | null

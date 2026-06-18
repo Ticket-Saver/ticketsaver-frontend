@@ -129,6 +129,15 @@ export const hiEventsService = {
     return body.data
   },
 
+  /** Valida un código de preventa. Devuelve si es válido y la fase de venta. */
+  async validatePresaleCode(
+    eventId: string | number,
+    code: string,
+    signal?: AbortSignal
+  ): Promise<{ valid: boolean; presale_active?: boolean; sales_started?: boolean }> {
+    return getJson(HIEVENTS_CONFIG.endpoints.presaleValidate(eventId, code), signal)
+  },
+
   /**
    * Tickets y precios de un evento. Pide hasta 100 por página (un general puede
    * tener muchos tipos). No pagina de más a propósito: en un enumerado los asientos

@@ -6,7 +6,7 @@ import MultiDateSelector from '../../components/v2/eventDetail/MultiDateSelector
 import TagList from '../../components/v2/eventDetail/TagList'
 import Gallery from '../../components/v2/eventDetail/Gallery'
 import VenueMap from '../../components/v2/eventDetail/VenueMap'
-import StickyCTA from '../../components/v2/eventDetail/StickyCTA'
+import StickyCTA, { buildSaleHref } from '../../components/v2/eventDetail/StickyCTA'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import { getDatesForEvent } from '../../services/multiDateAdapter'
@@ -178,6 +178,50 @@ export default function EventDetailV2() {
     navigate(newEvent.detailHref, { replace: true })
   }
 
+  // Gate de preventa: si la ventana está abierta y la venta general no arrancó,
+  // al tocar "Choose seats" se pide el código antes de entrar a /sale.
+  const presaleGateActive = !!event?.presale?.active && !event?.presale?.salesStarted
+  const [presaleModalOpen, setPresaleModalOpen] = useState(false)
+  const [presaleCode, setPresaleCode] = useState('')
+  const [presaleError, setPresaleError] = useState('')
+  const [presaleChecking, setPresaleChecking] = useState(false)
+
+  const handleChooseSeats = () => {
+    if (!event) return
+    if (presaleGateActive) {
+      setPresaleError('')
+      setPresaleCode('')
+      setPresaleModalOpen(true)
+    } else {
+      navigate(buildSaleHref(event))
+    }
+  }
+
+  const submitPresaleCode = async () => {
+    if (!event) return
+    const code = presaleCode.trim()
+    if (!code) {
+      setPresaleError('Ingresá el código de preventa.')
+      return
+    }
+    setPresaleChecking(true)
+    setPresaleError('')
+    try {
+      const res = await hiEventsService.validatePresaleCode(event.eventId, code)
+      if (res.valid) {
+        // Se guarda para que el flujo de compra lo mande al crear la orden.
+        sessionStorage.setItem(`presale_code_${event.eventId}`, code.toUpperCase())
+        navigate(buildSaleHref(event))
+      } else {
+        setPresaleError('Código inválido o vencido.')
+      }
+    } catch {
+      setPresaleError('No se pudo validar el código. Intentá de nuevo.')
+    } finally {
+      setPresaleChecking(false)
+    }
+  }
+
   if (!event) {
     return (
       <LayoutV2 hideMobileTabBar hideFooter meshSeed={1}>
@@ -289,10 +333,82 @@ export default function EventDetailV2() {
         priceFrom={priceFrom}
         isSaleActive={isSaleActive}
         saleStartsLabel={saleStartsLabel}
+        presaleActive={presaleGateActive}
+        onChooseSeats={handleChooseSeats}
       />
+
+      {presaleModalOpen && (
+        <PresaleGateModal
+          code={presaleCode}
+          error={presaleError}
+          checking={presaleChecking}
+          onChange={setPresaleCode}
+          onSubmit={submitPresaleCode}
+          onClose={() => setPresaleModalOpen(false)}
+        />
+      )}
     </LayoutV2>
   )
 }
+
+const PresaleGateModal = ({
+  code,
+  error,
+  checking,
+  onChange,
+  onSubmit,
+  onClose
+}: {
+  code: string
+  error: string
+  checking: boolean
+  onChange: (v: string) => void
+  onSubmit: () => void
+  onClose: () => void
+}) => (
+  <div
+    className='fixed inset-0 z-50 flex items-center justify-center p-5'
+    style={{ background: 'rgba(10,4,24,0.7)' }}
+    onClick={onClose}
+  >
+    <GlassCard
+      className='w-full max-w-sm p-6'
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+    >
+      <h3 className='font-display text-lg font-bold text-white'>Acceso a preventa</h3>
+      <p className='mt-1.5 text-[13px] text-white/65'>
+        Esta función está en preventa. Ingresá tu código de acceso para continuar.
+      </p>
+      <input
+        autoFocus
+        value={code}
+        onChange={(e) => onChange(e.target.value.toUpperCase())}
+        onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+        placeholder='CÓDIGO'
+        maxLength={12}
+        className='mt-4 w-full px-4 py-3 rounded-glass-md bg-white/[0.06] border border-white/15 text-white text-center font-display text-lg tracking-[0.2em] uppercase placeholder:text-white/30 focus:outline-none focus:border-brand-hi/60'
+      />
+      {error && <p className='mt-2 text-[12.5px] text-accent-coral'>{error}</p>}
+      <div className='mt-5 flex gap-2'>
+        <button
+          type='button'
+          onClick={onClose}
+          className='flex-1 px-4 py-3 rounded-glass-md border border-white/15 text-white/75 font-display text-sm hover:bg-white/5 transition'
+        >
+          Cancelar
+        </button>
+        <button
+          type='button'
+          onClick={onSubmit}
+          disabled={checking}
+          className='flex-1 px-4 py-3 rounded-glass-md bg-gradient-to-b from-white to-white/85 text-brand-ink font-display font-semibold text-sm hover:brightness-95 transition disabled:opacity-60'
+        >
+          {checking ? 'Validando…' : 'Continuar'}
+        </button>
+      </div>
+    </GlassCard>
+  </div>
+)
 
 const TitleBlock = ({ event, organizer }: { event: UIEvent; organizer?: string }) => (
   <div className='min-w-0'>
@@ -339,9 +455,21 @@ const SelectedDateHighlight = ({ event, endTime }: { event: UIEvent; endTime?: s
           {event.city && `, ${event.city}`}
         </span>
       </div>
+      {event.presale?.enabled && (
+        <div className='text-[10.5px] text-brand-hi mt-1 flex flex-wrap gap-x-2 gap-y-0.5'>
+          {event.presale.startsAt && (
+            <span>Preventa {SALE_DATE_FMT.format(new Date(event.presale.startsAt))}</span>
+          )}
+          {event.presale.generalSaleAt && (
+            <span>· Venta general {SALE_DATE_FMT.format(new Date(event.presale.generalSaleAt))}</span>
+          )}
+        </div>
+      )}
     </div>
     <span className='shrink-0 px-2 py-1 rounded-glass-sm bg-accent-coral/20 text-accent-coral font-display text-[9.5px] font-bold uppercase tracking-[0.10em]'>
-      {event.availability.replace('-', ' ')}
+      {event.presale?.active && !event.presale?.salesStarted
+        ? 'presale'
+        : event.availability.replace('-', ' ')}
     </span>
   </div>
 )

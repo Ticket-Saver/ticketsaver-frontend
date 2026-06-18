@@ -27,6 +27,9 @@ export const HIEVENTS_CONFIG = {
     events: () => `/events`,
     /** Detalle público de un evento. */
     publicEvent: (eventId: string | number) => `/public/events/${eventId}`,
+    /** Valida un código de preventa (público). */
+    presaleValidate: (eventId: string | number, code: string) =>
+      `/public/events/${eventId}/presale/${encodeURIComponent(code)}`,
     eventTickets: (eventId: string | number) => `/public/events/${eventId}/tickets`,
 
     // --- Mapa de asientos (C3) ---

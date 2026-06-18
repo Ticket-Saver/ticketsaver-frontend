@@ -212,6 +212,13 @@ export const hiEventToUIEvent = (
     requiresQueue: false,
     map: hi.map ?? null,
     seriesId: hi.series_id ?? null,
+    presale: {
+      enabled: hi.presale_enabled ?? false,
+      startsAt: hi.presale_starts_at ?? null,
+      active: hi.presale_active ?? false,
+      salesStarted: hi.sales_started ?? true,
+      generalSaleAt: hi.ticket_sales_start_date ?? null
+    },
 
     detailHref: buildDetailHref(hi),
 
