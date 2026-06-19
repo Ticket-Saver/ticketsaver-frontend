@@ -204,10 +204,10 @@ const SortSelect = ({
         backgroundSize: '10px 10px'
       }}
     >
-      <option className='bg-brand-ink' value='date'>
+      <option className='bg-[#15151A]' value='date'>
         {SORT_LABEL.date}
       </option>
-      <option className='bg-brand-ink' value='name'>
+      <option className='bg-[#15151A]' value='name'>
         {SORT_LABEL.name}
       </option>
     </select>

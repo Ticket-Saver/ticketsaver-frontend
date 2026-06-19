@@ -4,8 +4,11 @@ import type { Availability, UIEvent } from '../../../types/uiEvent'
 interface MultiDateSelectorProps {
   /** Lista completa de fechas del artista. Si tiene <=1 el componente no renderiza. */
   dates: UIEvent[]
-  /** event_label de la fecha activa. */
-  selectedId: string
+  /**
+   * eventId (numérico, ÚNICO por fecha) de la fecha activa. NO usar el slug: en
+   * multifecha todas las fechas comparten el mismo slug y no se distinguirían.
+   */
+  selectedEventId: string
   onSelect: (event: UIEvent) => void
   /** Heading custom — default "Pick your date". */
   title?: string
@@ -20,7 +23,7 @@ const STATUS_LABEL: Record<Availability, string> = {
 
 export default function MultiDateSelector({
   dates,
-  selectedId,
+  selectedEventId,
   onSelect,
   title = 'Pick your date'
 }: MultiDateSelectorProps) {
@@ -49,9 +52,9 @@ export default function MultiDateSelector({
       >
         {dates.map((d) => (
           <DateCard
-            key={d.id}
+            key={d.eventId}
             event={d}
-            active={d.id === selectedId}
+            active={d.eventId === selectedEventId}
             onClick={() => onSelect(d)}
           />
         ))}

@@ -66,8 +66,8 @@ const drawTicket = (
 
   // Dark overlay bottom for legibility
   const bottomGrad = ctx.createLinearGradient(0, H * 0.6, 0, H)
-  bottomGrad.addColorStop(0, 'rgba(10,4,24,0)')
-  bottomGrad.addColorStop(1, 'rgba(10,4,24,0.85)')
+  bottomGrad.addColorStop(0, 'rgba(10,10,12,0)')
+  bottomGrad.addColorStop(1, 'rgba(10,10,12,0.85)')
   ctx.fillStyle = bottomGrad
   ctx.fillRect(0, H * 0.5, W, H * 0.5)
 

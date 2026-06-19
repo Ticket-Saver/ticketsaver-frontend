@@ -74,7 +74,7 @@ export default function Banner({ event, images, tourName }: BannerProps) {
         className='absolute inset-x-0 bottom-0 h-3/5'
         style={{
           background:
-            'linear-gradient(to top, rgba(10,4,24,1) 0%, rgba(10,4,24,0.55) 50%, transparent 100%)'
+            'linear-gradient(to top, rgba(10,10,12,1) 0%, rgba(10,10,12,0.55) 50%, transparent 100%)'
         }}
       />
 

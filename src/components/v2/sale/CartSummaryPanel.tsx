@@ -240,7 +240,7 @@ export const CartMobileSheet = (props: BaseProps) => {
         className='absolute inset-x-0 bottom-0 h-40 pointer-events-none'
         style={{
           background:
-            'linear-gradient(to top, rgba(10,4,24,0.92) 50%, rgba(10,4,24,0))'
+            'linear-gradient(to top, rgba(10,10,12,0.92) 50%, rgba(10,10,12,0))'
         }}
       />
       <div

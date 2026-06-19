@@ -145,7 +145,19 @@ export default function EventDetailV2() {
       priceFrom: priceFrom ?? baseEvent.priceFrom,
       // Si la venta aún no abrió, no mostramos "sold-out" (0 disponibles ≠ agotado).
       availability: !isSaleActive ? 'available' : realAvailability ?? baseEvent.availability,
-      vibe: detail?.description_preview ?? baseEvent.vibe
+      vibe: detail?.description_preview ?? baseEvent.vibe,
+      // Preventa del DETALLE (fresca): el listado no trae presale_active/sales_started
+      // (campos computados que solo expone EventResourcePublic). Sin esto, el gate del
+      // código y la agenda de venta no reflejarían el estado real.
+      presale: detail
+        ? {
+            enabled: detail.presale_enabled ?? false,
+            startsAt: detail.presale_starts_at ?? null,
+            active: detail.presale_active ?? false,
+            salesStarted: detail.sales_started ?? true,
+            generalSaleAt: detail.ticket_sales_start_date ?? null
+          }
+        : baseEvent.presale
     }
   }, [baseEvent, priceFrom, detail, isSaleActive])
 
@@ -174,7 +186,8 @@ export default function EventDetailV2() {
   }, [loading, eventFromList, detailError, navigate])
 
   const handleDateChange = (newEvent: UIEvent) => {
-    if (newEvent.id === event?.id) return
+    // Distinguir por eventId (único): en multifecha el slug se repite entre fechas.
+    if (newEvent.eventId === event?.eventId) return
     navigate(newEvent.detailHref, { replace: true })
   }
 
@@ -246,7 +259,7 @@ export default function EventDetailV2() {
       <div className='mt-6 max-w-7xl mx-auto'>
         <MultiDateSelector
           dates={datesForArtist}
-          selectedId={event.id}
+          selectedEventId={event.eventId}
           onSelect={handleDateChange}
         />
       </div>
@@ -255,7 +268,8 @@ export default function EventDetailV2() {
         <SelectedDateHighlight event={event} endTime={endTime} />
       </div>
 
-      {!isSaleActive && saleStartsAt && (
+      <SaleSchedule event={event} />
+      {!event.presale && !isSaleActive && saleStartsAt && (
         <div className='mt-5 px-5 lg:px-10 max-w-7xl mx-auto'>
           <CountdownBanner date={saleStartsAt} />
         </div>
@@ -368,7 +382,7 @@ const PresaleGateModal = ({
 }) => (
   <div
     className='fixed inset-0 z-50 flex items-center justify-center p-5'
-    style={{ background: 'rgba(10,4,24,0.7)' }}
+    style={{ background: 'rgba(10,10,12,0.7)' }}
     onClick={onClose}
   >
     <GlassCard
@@ -455,16 +469,6 @@ const SelectedDateHighlight = ({ event, endTime }: { event: UIEvent; endTime?: s
           {event.city && `, ${event.city}`}
         </span>
       </div>
-      {event.presale?.enabled && (
-        <div className='text-[10.5px] text-brand-hi mt-1 flex flex-wrap gap-x-2 gap-y-0.5'>
-          {event.presale.startsAt && (
-            <span>Preventa {SALE_DATE_FMT.format(new Date(event.presale.startsAt))}</span>
-          )}
-          {event.presale.generalSaleAt && (
-            <span>· Venta general {SALE_DATE_FMT.format(new Date(event.presale.generalSaleAt))}</span>
-          )}
-        </div>
-      )}
     </div>
     <span className='shrink-0 px-2 py-1 rounded-glass-sm bg-accent-coral/20 text-accent-coral font-display text-[9.5px] font-bold uppercase tracking-[0.10em]'>
       {event.presale?.active && !event.presale?.salesStarted
@@ -488,18 +492,28 @@ const Description = ({ text, expanded, onToggle }: DescriptionProps) => {
       </p>
     )
 
-  const limit = 320
-  const isLong = text.length > limit
-  const display = expanded || !isLong ? text : `${text.slice(0, limit)}…`
+  // `text` es HTML ya purificado por el backend (HTMLPurifier). Se renderiza como
+  // HTML real (antes se mostraban los tags <p> literales). El truncado es por CSS
+  // (line-clamp): no se puede cortar HTML por caracteres sin romper los tags.
+  const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const isLong = plain.length > 320
 
   return (
     <div>
-      <p
-        className='text-[13px] leading-[1.55] text-white/78 whitespace-pre-wrap'
-        style={{ textWrap: 'pretty' as never }}
-      >
-        {display}
-      </p>
+      <div
+        className='text-[13px] leading-[1.55] text-white/78 [&_p]:mb-2 [&_p:last-child]:mb-0 [&_a]:text-brand-hi [&_a]:underline [&_strong]:text-white [&_b]:text-white [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1'
+        style={
+          !expanded && isLong
+            ? {
+                display: '-webkit-box',
+                WebkitLineClamp: 6,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }
+            : undefined
+        }
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
       {isLong && (
         <button
           type='button'
@@ -582,6 +596,108 @@ const FactPill = ({ label, value }: { label: string; value: string }) => (
     </div>
   </div>
 )
+
+// Formato corto para fechas de venta: "vie 18 jul, 20:00".
+const SALE_SCHED_FMT = new Intl.DateTimeFormat('es-AR', {
+  weekday: 'short',
+  day: '2-digit',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit'
+})
+const fmtSaleDate = (iso: string | null): string => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : SALE_SCHED_FMT.format(d)
+}
+
+/**
+ * Agenda de venta del evento. Muestra hasta dos filas claras y separadas:
+ *  - Preventa (solo si hay código): "Abierta ahora" o la fecha de apertura.
+ *  - Venta general ("para todo el público"): la fecha en que salen las entradas.
+ * Caso clave: evento publicado pero con la venta anunciada para otro día → aunque
+ * NO haya preventa, se muestra "Entradas a la venta el [día]".
+ */
+const SaleSchedule = ({ event }: { event: UIEvent }) => {
+  const ps = event.presale
+  if (!ps) return null
+
+  type Row = {
+    key: string
+    label: string
+    value: string
+    note?: string
+    tone: 'presale' | 'general'
+    live?: boolean
+  }
+  const rows: Row[] = []
+
+  if (ps.enabled) {
+    rows.push({
+      key: 'presale',
+      label: 'Preventa',
+      tone: 'presale',
+      value: ps.active ? 'Abierta ahora' : fmtSaleDate(ps.startsAt) || 'Próximamente',
+      note: 'Acceso con código',
+      live: ps.active
+    })
+  }
+
+  if (ps.salesStarted) {
+    // Venta general abierta: solo se anuncia si NO hay nada más que mostrar arriba.
+    if (!ps.enabled) return null
+    rows.push({
+      key: 'general',
+      label: 'Venta general',
+      tone: 'general',
+      value: 'A la venta ahora',
+      note: 'Para todo el público',
+      live: true
+    })
+  } else if (ps.generalSaleAt) {
+    rows.push({
+      key: 'general',
+      label: ps.enabled ? 'Venta general' : 'Entradas a la venta',
+      tone: 'general',
+      value: fmtSaleDate(ps.generalSaleAt),
+      note: 'Para todo el público'
+    })
+  }
+
+  if (rows.length === 0) return null
+
+  return (
+    <div className='mt-5 px-5 lg:px-10 max-w-7xl mx-auto'>
+      <div className='rounded-glass-md border border-white/[0.08] bg-white/[0.03] backdrop-blur-glass divide-y divide-white/[0.06]'>
+        {rows.map((r) => (
+          <div key={r.key} className='flex items-center gap-3 px-4 py-3'>
+            <span
+              className={
+                'h-2 w-2 rounded-full shrink-0 ' +
+                (r.tone === 'presale' ? 'bg-brand-hi' : 'bg-accent-mint') +
+                (r.live ? ' animate-pulse' : '')
+              }
+            />
+            <div className='flex-1 min-w-0'>
+              <div className='font-display text-[12.5px] font-semibold text-white'>
+                {r.label}
+              </div>
+              {r.note && <div className='text-[10.5px] text-white/50'>{r.note}</div>}
+            </div>
+            <div
+              className={
+                'font-display text-[12.5px] font-semibold tabular-nums text-right ' +
+                (r.live ? 'text-accent-mint' : 'text-white/85')
+              }
+            >
+              {r.value}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 const CountdownBanner = ({ date }: { date: Date }) => {
   const days = Math.max(

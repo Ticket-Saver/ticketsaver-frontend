@@ -13,6 +13,9 @@ import { coverSeed } from '../../lib/covers/coverHash'
 interface SaleV2Props {
   /** event_label (slug) del evento. */
   eventLabel: string
+  /** eventId numérico (único por fecha). Si viene, manda sobre el slug — clave
+   *  para multifecha, donde varias fechas comparten el mismo slug. */
+  eventId?: string
 }
 
 /**
@@ -24,11 +27,12 @@ interface SaleV2Props {
  * entradas generales (SaleNoSeatsV2). El SVG/ranges salen del registry de assets;
  * los asientos (con precio + tax/fee reales) de HiEvents.
  */
-export default function SaleV2({ eventLabel }: SaleV2Props) {
-  const { loading: eventsLoading, byLabel } = useUIEvents()
+export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
+  const { loading: eventsLoading, byLabel, byId } = useUIEvents()
   const navigate = useNavigate()
 
-  const event = byLabel(eventLabel)
+  // Prioriza eventId (único por fecha); cae al slug por compatibilidad.
+  const event = (eventId ? byId(eventId) : undefined) ?? byLabel(eventLabel)
   const mapAsset = useMemo(() => (event ? getSeatMapAsset(event.map) : null), [event])
   const mapLayout = useMemo(() => (event ? getSeatMapLayout(event.map) : null), [event])
 

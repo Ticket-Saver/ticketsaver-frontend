@@ -7,7 +7,7 @@ interface BackgroundLayerProps {
   palette?: MeshPalette
   intensity?: number
   paused?: boolean
-  /** Opacidad del mesh (default 0.35 — violeta sutil sobre el fondo carbón). */
+  /** Opacidad del mesh (default 0.35 — gris sutil sobre el fondo carbón). */
   meshOpacity?: number
   /**
    * URL de cover blureado encima del mesh (usado por banners full-bleed
@@ -31,7 +31,9 @@ interface BackgroundLayerProps {
 
 export default function BackgroundLayer({
   seed = 0,
-  palette = 'violet',
+  // Fondo base charcoal neutro (#0A0A0C). El violeta es solo acento (botones,
+  // pills, covers), nunca el fondo. Ver memoria feedback_fondo_charcoal.
+  palette = 'charcoal',
   intensity = 1,
   paused = false,
   meshOpacity = 0.35,

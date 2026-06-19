@@ -35,7 +35,10 @@ export const buildSaleHref = (event: UIEvent): string => {
   const safe = (s: string | undefined | null) => encodeURIComponent(s ?? '')
   const cityForRoute = event.city || event.venueLabel
   const deleteParam = event.raw.event_deleted_at ?? 'null'
-  return `/sale/${safe(event.title)}/${safe(event.venueLabel)}/${safe(cityForRoute)}/${safe(event.raw.event_date)}/${safe(event.id)}/${safe(deleteParam)}`
+  // ?eid lleva el eventId numérico (único por fecha) para que /sale resuelva la
+  // fecha correcta en multifecha (el slug del path se repite entre fechas).
+  const eid = encodeURIComponent(event.eventId)
+  return `/sale/${safe(event.title)}/${safe(event.venueLabel)}/${safe(cityForRoute)}/${safe(event.raw.event_date)}/${safe(event.id)}/${safe(deleteParam)}?eid=${eid}`
 }
 
 export default function StickyCTA({
@@ -115,7 +118,7 @@ export default function StickyCTA({
         className='absolute inset-x-0 bottom-0 h-32 pointer-events-none'
         style={{
           background:
-            'linear-gradient(to top, rgba(10,4,24,0.95) 50%, rgba(10,4,24,0))'
+            'linear-gradient(to top, rgba(10,10,12,0.95) 50%, rgba(10,10,12,0))'
         }}
       />
       <div className='relative max-w-3xl mx-auto pointer-events-auto'>

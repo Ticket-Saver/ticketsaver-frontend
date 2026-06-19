@@ -161,7 +161,7 @@ const Select = ({
         }}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value} className='bg-brand-ink'>
+          <option key={o.value} value={o.value} className='bg-[#15151A]'>
             {o.label}
           </option>
         ))}

@@ -150,11 +150,11 @@ const HeroTicket = ({
       <div className='relative'>
         <div
           aria-hidden
-          className='absolute -left-2 -top-2 h-4 w-4 rounded-full bg-brand-ink'
+          className='absolute -left-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]'
         />
         <div
           aria-hidden
-          className='absolute -right-2 -top-2 h-4 w-4 rounded-full bg-brand-ink'
+          className='absolute -right-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]'
         />
         <div
           aria-hidden

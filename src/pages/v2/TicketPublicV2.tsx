@@ -146,7 +146,7 @@ export default function TicketPublicV2() {
 
   return (
     <LayoutV2 hideHeader hideFooter meshSeed={(coverSeed(String(eventId)) % 8) + 4}>
-      <header className='sticky top-0 z-30 backdrop-blur-glass-strong border-b border-white/[0.08] bg-brand-ink/55'>
+      <header className='sticky top-0 z-30 backdrop-blur-glass-strong border-b border-white/[0.08] bg-[#0A0A0C]/55'>
         <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 flex items-center justify-between'>
           <button
             type='button'

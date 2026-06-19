@@ -95,7 +95,7 @@ export default function QueueV2() {
       hideHeader
       hideFooter
       meshSeed={(coverSeed(event.id) % 8) + 5}
-      meshPalette={stateKind === 'released' ? 'violet' : 'violet'}
+      meshPalette='charcoal'
     >
       {/* Cover blureado del evento como fondo ambiental */}
       <div
@@ -117,7 +117,7 @@ export default function QueueV2() {
         className='fixed inset-0 -z-10 pointer-events-none'
         style={{
           background:
-            'linear-gradient(180deg, rgba(10,4,24,0.30) 0%, rgba(10,4,24,0.88) 100%)'
+            'linear-gradient(180deg, rgba(10,10,12,0.30) 0%, rgba(10,10,12,0.88) 100%)'
         }}
       />
 
@@ -170,7 +170,7 @@ const TopBar = ({
   event: UIEvent
   state: 'far' | 'close' | 'next' | 'released'
 }) => (
-  <header className='sticky top-0 z-30 backdrop-blur-glass-strong border-b border-white/[0.08] bg-brand-ink/55'>
+  <header className='sticky top-0 z-30 backdrop-blur-glass-strong border-b border-white/[0.08] bg-[#0A0A0C]/55'>
     <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 lg:h-16 flex items-center gap-3'>
       <div className='flex items-center gap-2.5 shrink-0'>
         <div className='h-7 w-7 rounded-glass-sm bg-gradient-to-br from-brand-hi to-brand-mid' />

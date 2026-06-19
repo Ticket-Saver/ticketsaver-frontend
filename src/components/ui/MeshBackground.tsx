@@ -13,15 +13,16 @@ interface MeshBackgroundProps {
   seed?: number
   intensity?: number
   /**
-   * 'violet' (default): dark ambient violet — brand.ink dominates.
+   * 'charcoal' (default): neutral grayscale mesh over the charcoal surface —
+   * the page background must read as dark gray, not violet.
+   * 'violet': dark ambient violet (brand.ink) — opt-in accent only.
    * 'vivid': original bright aurora — for hero/drama moments only.
-   * 'charcoal': monochrome grayscale variant.
    */
   palette?: MeshPalette
   paused?: boolean
   /** 0–1 multiplier applied to the canvas. Default 0.35 so the charcoal
-   *  surface underneath dominates and the violet mesh reads as a subtle
-   *  ambient accent, not the page background. */
+   *  surface underneath dominates and the mesh reads as a subtle ambient
+   *  texture, not the page background. */
   opacity?: number
   className?: string
   fallbackClassName?: string
@@ -48,11 +49,12 @@ const FALLBACK_GRADIENT: Record<FallbackKey, string> = {
 const resolvePalette = (
   palette: MeshPalette | undefined
 ): { rgb: RGB[]; key: FallbackKey } => {
-  if (palette === 'charcoal') return { rgb: CHARCOAL_PALETTE, key: 'charcoal' }
+  if (palette === 'violet') return { rgb: DARK_VIOLET_PALETTE, key: 'violet' }
   if (palette === 'vivid') return { rgb: VIVID_VIOLET_PALETTE, key: 'vivid' }
   if (Array.isArray(palette) && palette.length === 6)
-    return { rgb: palette, key: 'violet' }
-  return { rgb: DARK_VIOLET_PALETTE, key: 'violet' }
+    return { rgb: palette, key: 'charcoal' }
+  // Default: charcoal neutro. El violeta solo se usa si se pide explícito.
+  return { rgb: CHARCOAL_PALETTE, key: 'charcoal' }
 }
 
 export default function MeshBackground({

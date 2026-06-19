@@ -39,7 +39,7 @@ export default function LayoutV2({
   hideFooter = false,
   hideHeader = false,
   meshSeed = 0,
-  meshPalette = 'violet',
+  meshPalette = 'charcoal',
   meshPaused = false,
   coverImage,
   mainClassName,

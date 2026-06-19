@@ -98,7 +98,7 @@ export default function MobileTabBar() {
   return (
     <nav
       aria-label='Primary mobile navigation'
-      className='md:hidden fixed inset-x-3 bottom-3 z-nav p-1.5 rounded-[22px] bg-brand-ink/55 backdrop-blur-glass-hero border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+      className='md:hidden fixed inset-x-3 bottom-3 z-nav p-1.5 rounded-[22px] bg-[#0A0A0C]/55 backdrop-blur-glass-hero border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
       style={{
         paddingBottom: 'calc(0.375rem + env(safe-area-inset-bottom, 0px))'
       }}

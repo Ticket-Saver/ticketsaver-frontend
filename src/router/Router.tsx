@@ -35,7 +35,9 @@ import { useLocation } from 'react-router-dom'
 
 const SaleRoute = () => {
   const { label } = useParams<{ label: string }>()
-  return label ? <SaleV2 eventLabel={label} /> : <Navigate to='/events' />
+  // eid (query) = eventId numérico único; en multifecha desambigua la fecha.
+  const eid = new URLSearchParams(useLocation().search).get('eid') ?? undefined
+  return label ? <SaleV2 eventLabel={label} eventId={eid} /> : <Navigate to='/events' />
 }
 
 // Auth0 sólo se exige si está configurado (producción). Mientras no haya
