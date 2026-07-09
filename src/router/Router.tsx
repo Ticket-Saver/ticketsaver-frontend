@@ -31,7 +31,6 @@ import { useParams } from 'react-router-dom'
 import { VenuesProvider } from '../router/venuesContext'
 import { EventsProvider } from '../router/eventsContext'
 import { CartProvider } from '../router/cartContext'
-import { useLocation } from 'react-router-dom'
 
 const SaleRoute = () => {
   const { label } = useParams<{ label: string }>()
