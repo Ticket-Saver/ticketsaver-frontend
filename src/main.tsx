@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, useNavigate } from 'react-router-dom'
 import { Auth0Provider } from '@auth0/auth0-react'
 import { AppRouter } from './router/Router'
+import { ToastProvider } from './components/ui/Toast'
 import './index.css'
 import 'unfonts.css'
 
@@ -34,11 +35,13 @@ const Auth0ProviderWithNavigate: React.FC<React.PropsWithChildren<{}>> = ({ chil
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  // <React.StrictMode>
-  <BrowserRouter>
-    <Auth0ProviderWithNavigate>
-      <AppRouter />
-    </Auth0ProviderWithNavigate>
-  </BrowserRouter>
-  // </React.StrictMode>
+  <React.StrictMode>
+    <BrowserRouter>
+      <Auth0ProviderWithNavigate>
+        <ToastProvider>
+          <AppRouter />
+        </ToastProvider>
+      </Auth0ProviderWithNavigate>
+    </BrowserRouter>
+  </React.StrictMode>
 )

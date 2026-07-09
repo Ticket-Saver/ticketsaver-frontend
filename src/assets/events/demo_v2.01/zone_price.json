@@ -1,0 +1,22 @@
+{
+  "prices": {
+    "P1": {
+      "2026-08-01": { "price_base": 4500, "price_final": 5500 }
+    },
+    "P2": {
+      "2026-08-01": { "price_base": 5500, "price_final": 6700 }
+    },
+    "P3": {
+      "2026-08-01": { "price_base": 7500, "price_final": 9100 }
+    },
+    "P4": {
+      "2026-08-01": { "price_base": 9500, "price_final": 11500 }
+    }
+  },
+  "zones": {
+    "Blue": { "P1": {} },
+    "Pink": { "P2": {} },
+    "Green": { "P3": {} },
+    "Purple": { "P4": {} }
+  }
+}

@@ -1,0 +1,94 @@
+.base {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 0.5px solid var(--border-soft);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  transition: background 200ms ease, color 200ms ease, box-shadow 200ms ease;
+  user-select: none;
+}
+
+.normal {
+  background: var(--pill-normal-bg);
+  color: var(--pill-normal-fg);
+}
+
+.warn {
+  background: var(--pill-warn-bg);
+  color: var(--pill-warn-fg);
+  border-color: rgba(255, 177, 200, 0.30);
+  box-shadow: 0 4px 16px rgba(255, 177, 200, 0.25);
+  animation: pillWarnBlink 1.4s ease-in-out infinite;
+}
+
+.critical {
+  background: var(--pill-critical-bg);
+  color: var(--pill-critical-fg);
+  border-color: rgba(255, 90, 110, 0.45);
+  box-shadow: 0 4px 18px rgba(255, 90, 110, 0.40);
+  animation: pillWarnBlink 1s ease-in-out infinite;
+}
+
+.expired {
+  background: rgba(255, 90, 110, 0.30);
+  color: #FFB3BD;
+  border-color: rgba(255, 90, 110, 0.55);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 179, 189, 0.6);
+}
+
+.sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.md {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.lg {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.dotPulse {
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pillWarnBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.25);
+  }
+}

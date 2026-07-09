@@ -1,0 +1,32 @@
+{
+  "prices": {
+    "P1": {
+      "2026-01-19": {
+        "price_base": 2999,
+        "price_final": 3881
+      },
+      "2026-03-08": {
+        "price_base": 3999,
+        "price_final": 4999
+      }
+    },
+    "P2": {
+      "2026-01-19": {
+        "price_base": 4999,
+        "price_final": 6121
+      },
+      "2026-03-08": {
+        "price_base": 5999,
+        "price_final": 7239
+      }
+    }
+  },
+  "zones": {
+    "General Admission": {
+      "P1": {}
+    },
+    "VIP": {
+      "P2": {}
+    }
+  }
+}

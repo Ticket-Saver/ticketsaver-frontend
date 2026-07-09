@@ -1,4 +1,5 @@
 import { SHA256, enc } from 'crypto-js'
+import { cacheService } from '../services/cacheService'
 
 export function getToken(text: string, length: number = 16): string {
   const hash = SHA256(enc.Latin1.parse(text)).toString()
@@ -26,12 +27,12 @@ export async function fetchDataFromGitHub(data: string) {
     }
   }
   try {
-    const response = await fetch(githubApiUrl, options)
-    if (!response.ok) {
-      throw new Error('Error en la respuesta de la API')
-    }
-    const data = await response.json()
-    return data
+    // Usar caché con TTL de 10 minutos
+    const result = await cacheService.fetchWithCache<any>(githubApiUrl, options, {
+      ttl: 10 * 60 * 1000,
+      useLocalStorage: true
+    })
+    return result
   } catch (error) {
     console.error('Error al obtener los eventos:', error)
     throw error

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TicketSaver · Print</title>
+<style>
+  html, body { margin:0; padding:0; background:#000; color:#fff; font-family:Inter, system-ui, sans-serif; }
+  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  .print-page {
+    width: 1400px;
+    height: 900px;
+    background: radial-gradient(ellipse at center, #1a0a30 0%, #050111 100%);
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 16px;
+  }
+  .print-page:last-child { page-break-after: auto; break-after: auto; }
+
+  /* Mobile pages: phone centered, label above */
+  .print-mobile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px 0; }
+  .print-mobile .phone-shell { transform: scale(0.92); transform-origin: center; }
+
+  /* Desktop pages: full 1400×900 canvas */
+  .print-desktop > div { width:1400px; height:900px; overflow:hidden; }
+
+  .page-label {
+    position:absolute; top:18px; left:24px;
+    padding:6px 14px; border-radius:99px;
+    background:rgba(255,255,255,0.10);
+    border:0.5px solid rgba(255,255,255,0.18);
+    backdrop-filter:blur(14px);
+    font-family:"Space Grotesk", system-ui;
+    font-size:11px; font-weight:600;
+    letter-spacing:0.14em; text-transform:uppercase;
+    color:#fff; z-index:5000;
+  }
+  .page-label .num { color:#D4A8F0; margin-right:8px; }
+  .page-label .mode { opacity:0.55; margin-left:8px; }
+
+  /* Cover page */
+  .cover {
+    display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+    padding: 120px;
+    background: linear-gradient(135deg, #2A1554 0%, #5B3FA8 50%, #1A0F33 100%);
+  }
+
+  @page {
+    size: 1400px 900px;
+    margin: 0;
+  }
+
+  @media print {
+    body { background:#000; }
+    .print-page { margin:0; box-shadow:none; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="ts-events.js"></script>
+<script src="ts-mesh.js"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="ts-cover.jsx"></script>
+<script type="text/babel" src="ts-home.jsx"></script>
+<script type="text/babel" src="ts-screens.jsx"></script>
+<script type="text/babel" src="ts-event-detail.jsx"></script>
+<script type="text/babel" src="ts-purchase-flow.jsx"></script>
+<script type="text/babel" src="ts-info-pages.jsx"></script>
+<script type="text/babel" src="ts-legal-pages.jsx"></script>
+<script type="text/babel" src="ts-desktop-shop.jsx"></script>
+<script type="text/babel" src="ts-desktop-info.jsx"></script>
+
+<script type="text/babel">
+const noop = () => {};
+
+const SCREENS = [
+  { id:'home',      label:'Home',             mobile: () => <window.HomeFull/>,                                   desktop: () => <window.DesktopHome onNav={noop}/> },
+  { id:'event',     label:'Event detail',     mobile: () => <window.EventDetail/>,                                desktop: () => <window.DesktopEventDetail onNav={noop}/> },
+  { id:'section',   label:'Section select',   mobile: () => <window.SeatPicker onComplete={noop} onBack={noop}/>, desktop: () => <window.DesktopSectionSelect onNav={noop}/> },
+  { id:'seats',     label:'Seat picker',      mobile: () => <window.SeatPicker initialStep="seats" onComplete={noop} onBack={noop}/>, desktop: () => <window.DesktopSeatSelect onNav={noop}/> },
+  { id:'ticket',    label:'Ticket received',  mobile: () => <window.TicketReceived/>,                             desktop: () => <window.DesktopTicketReceived onNav={noop}/> },
+  { id:'mytickets', label:'My tickets',       mobile: () => <window.MyTickets/>,                                  desktop: () => <window.DesktopMyTickets onNav={noop}/> },
+  { id:'about',     label:'About',            mobile: () => <window.AboutPage/>,                                  desktop: () => <window.DesktopAbout onNav={noop}/> },
+  { id:'contact',   label:'Contact',          mobile: () => <window.ContactPage/>,                                desktop: () => <window.DesktopContact onNav={noop}/> },
+  { id:'faqs',      label:'FAQs',             mobile: () => <window.FaqsPage/>,                                   desktop: () => <window.DesktopFaqs onNav={noop}/> },
+  { id:'terms',     label:'Terms',            mobile: () => <window.TermsPage/>,                                  desktop: () => <window.DesktopLegal kind="terms" onNav={noop}/> },
+  { id:'privacy',   label:'Privacy',          mobile: () => <window.PrivacyPage/>,                                desktop: () => <window.DesktopLegal kind="privacy" onNav={noop}/> },
+];
+
+function MobilePage({ idx, label, render }){
+  return (
+    <div className="print-page print-mobile">
+      <div className="page-label"><span className="num">{String(idx).padStart(2, '0')}</span>{label}<span className="mode">· Mobile</span></div>
+      <div className="phone-shell">
+        <window.IOSDevice width={390} height={844} dark={true} statusBar="dark">
+          {render()}
+        </window.IOSDevice>
+      </div>
+    </div>
+  );
+}
+
+function DesktopPage({ idx, label, render }){
+  return (
+    <div className="print-page print-desktop">
+      <div className="page-label"><span className="num">{String(idx).padStart(2, '0')}</span>{label}<span className="mode">· Desktop</span></div>
+      {render()}
+    </div>
+  );
+}
+
+function Cover(){
+  return (
+    <div className="print-page cover">
+      <div style={{ fontSize:12, color:'#E0C0FF', fontWeight:700, letterSpacing:'0.24em', textTransform:'uppercase' }}>Clickable prototype · v1</div>
+      <div style={{ fontFamily:'"Space Grotesk", system-ui', fontSize:160, fontWeight:700, letterSpacing:'-0.045em', lineHeight:0.92, marginTop:40 }}>TicketSaver.</div>
+      <div style={{ fontSize:22, color:'rgba(255,255,255,0.78)', marginTop:32, maxWidth:880, lineHeight:1.5 }}>
+        A redesign of the TicketSaver platform — face-value tickets, NFT collectibles, fair resales. This document captures every screen across mobile and desktop.
+      </div>
+      <div style={{ marginTop:64, display:'flex', gap:14, flexWrap:'wrap' }}>
+        {['11 screens','Mobile + Desktop','22 pages','Glass · mesh · violet'].map(t => (
+          <div key={t} style={{ padding:'10px 18px', borderRadius:99, background:'rgba(255,255,255,0.10)', border:'0.5px solid rgba(255,255,255,0.18)', fontSize:13, fontWeight:600 }}>{t}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrintDeck(){
+  const pages = [];
+  SCREENS.forEach((s, i) => {
+    pages.push(<MobilePage  key={s.id + '-m'} idx={i*2 + 1} label={s.label} render={s.mobile}/>);
+    pages.push(<DesktopPage key={s.id + '-d'} idx={i*2 + 2} label={s.label} render={s.desktop}/>);
+  });
+  return (
+    <>
+      <Cover/>
+      {pages}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<PrintDeck/>);
+
+// Auto-print after fonts + JSX-rendered content settle
+(async () => {
+  try { await document.fonts.ready; } catch (e) {}
+  // Wait for React tree to render
+  await new Promise(r => setTimeout(r, 1500));
+  window.print();
+})();
+</script>
+</body>
+</html>

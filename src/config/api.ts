@@ -1,72 +1,81 @@
 /**
- * Configuración del API
- * Permite cambiar la URL base del API entre desarrollo local y producción
+ * Configuración de acceso a la API de HiEvents (panel admin).
+ *
+ * `VITE_API_BASE_URL` define la base sin el segmento de ruta:
+ *   - DEV local:  http://localhost:1234       → `${base}/events`, `${base}/public/events/1`
+ *   - PROD:       /.netlify/functions/proxy-api → el proxy normaliza agregando
+ *                 /api → panel.ticketsaver.net/api/events, .../api/public/events/1
+ *
+ * Así la construcción de rutas es idéntica en ambos entornos; solo cambia la base.
+ * El listado (`/events`) es PRIVADO y requiere `VITE_TOKEN_HIEVENTS` (token de
+ * organizador). Los endpoints `/public/...` NO requieren token.
  */
 
-// URL base del API - usa el proxy de Netlify para evitar problemas de CORS
-// En producción, el redirect /proxy-api/* redirige a /.netlify/functions/proxy-api/:splat
-// Puede ser sobrescrita por variables de entorno para desarrollo local
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/.netlify/functions/proxy-api'
-// const API_BASE_URL = ''
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
+const API_BASE_URL = (RAW_BASE && RAW_BASE.trim() ? RAW_BASE : 'http://localhost:1234').replace(/\/+$/, '')
 
-// Configuración completa del API
-export const API_CONFIG = {
-  BASE_URL: API_BASE_URL,
-  ENDPOINTS: {
-    // Endpoints principales
-    API: '/api/',
-    EVENTS: '/api/events/',
-    PUBLIC_EVENTS: '/api/public/events/',
-    SETTINGS: '/api/events/',
-    LOCK_SEAT: '/api/lockSeat/',
-    USER_TICKETS: '/api/public/user/tickets',
+const RAW_TOKEN = import.meta.env.VITE_TOKEN_HIEVENTS as string | undefined
+const API_TOKEN = RAW_TOKEN && RAW_TOKEN.trim() ? RAW_TOKEN.trim() : undefined
 
-    // Endpoints específicos
-    getEventSettings: (venue: string) => `/api/events/${venue}/settings/`,
-    getPublicEvent: (venue: string) => `/api/public/events/${venue}/`,
-    getPublicEventImages: (venue: string) => `/api/public/events/${venue}/`,
-    getEventImages: (venue: string) => `/api/events/${venue}/images/`,
-    getSeatsAvailability: (eventId: string, group: string) =>
-      `/api/public/events/${eventId}/seats/availability/group?group=${group}`
+export const HIEVENTS_CONFIG = {
+  baseUrl: API_BASE_URL,
+  /** Bearer token. Requerido por el listado privado `/events`. */
+  token: API_TOKEN,
+  endpoints: {
+    // --- Catálogo ---
+    /** Listado privado de eventos (requiere token). */
+    events: () => `/events`,
+    /** Detalle público de un evento. */
+    publicEvent: (eventId: string | number) => `/public/events/${eventId}`,
+    /** Valida un código de preventa (público). */
+    presaleValidate: (eventId: string | number, code: string) =>
+      `/public/events/${eventId}/presale/${encodeURIComponent(code)}`,
+    eventTickets: (eventId: string | number) => `/public/events/${eventId}/tickets`,
+
+    // --- Mapa de asientos (C3) ---
+    seatingMap: (eventId: string | number) => `/public/events/${eventId}/seating-map`,
+    seats: (eventId: string | number, group?: string) =>
+      `/public/events/${eventId}/seats${group ? `?group=${encodeURIComponent(group)}` : ''}`,
+    seatsAvailabilityGroup: (eventId: string | number, group: string) =>
+      `/public/events/${eventId}/seats/availability/group?group=${encodeURIComponent(group)}`,
+
+    // --- Órdenes / checkout (C5) ---
+    order: (eventId: string | number) => `/public/events/${eventId}/order`,
+    orderByShortId: (eventId: string | number, shortId: string) =>
+      `/public/events/${eventId}/order/${shortId}`,
+    ticketsBySeatIds: (eventId: string | number) =>
+      `/public/events/${eventId}/tickets/by-seat-ids`,
+    stripeCheckoutSession: (eventId: string | number, shortId: string) =>
+      `/public/events/${eventId}/order/${shortId}/stripe/checkout_session`,
+    confirmPayment: (eventId: string | number, shortId: string) =>
+      `/public/events/${eventId}/order/${shortId}/confirm_payment`,
+
+    // --- Attendee / ticketera pública ---
+    /** Attendee público por public_id (el backend busca por PUBLIC_ID pese al nombre del param de ruta). */
+    attendee: (eventId: string | number, publicId: string) =>
+      `/public/events/${eventId}/attendees/${publicId}`,
+
+    // --- Usuario ---
+    userTickets: () => `/public/user/tickets`,
+
+    // --- Curaduría de la Home (Admin TicketSaver) ---
+    homeConfig: () => `/public/home-config`
   }
 }
 
-// Función helper para construir URLs completas
-export const buildApiUrl = (endpoint: string): string => {
-  return `${API_CONFIG.BASE_URL}${endpoint}`
+/** Construye la URL absoluta a partir de un path que empieza con `/`. */
+export const buildApiUrl = (path: string): string =>
+  `${HIEVENTS_CONFIG.baseUrl}${path.startsWith('/') ? path : `/${path}`}`
+
+/** Serializa un objeto a query string, omitiendo undefined/null/''. */
+export const toQuery = (params: Record<string, unknown>): string => {
+  const usp = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === '') continue
+    usp.append(k, String(v))
+  }
+  const s = usp.toString()
+  return s ? `?${s}` : ''
 }
 
-// URLs pre-construidas para uso común
-export const API_URLS = {
-  API: buildApiUrl(API_CONFIG.ENDPOINTS.API),
-  EVENTS: buildApiUrl(API_CONFIG.ENDPOINTS.EVENTS),
-  PUBLIC_EVENTS: buildApiUrl(API_CONFIG.ENDPOINTS.PUBLIC_EVENTS),
-  LOCK_SEAT: buildApiUrl(API_CONFIG.ENDPOINTS.LOCK_SEAT),
-  USER_TICKETS: buildApiUrl(API_CONFIG.ENDPOINTS.USER_TICKETS),
-
-  // Funciones para URLs dinámicas
-  getEventSettings: (venue: string) => buildApiUrl(API_CONFIG.ENDPOINTS.getEventSettings(venue)),
-  getPublicEvent: (venue: string) => buildApiUrl(API_CONFIG.ENDPOINTS.getPublicEvent(venue)),
-  getPublicEventImages: (venue: string) =>
-    buildApiUrl(API_CONFIG.ENDPOINTS.getPublicEventImages(venue)),
-  getEventImages: (venue: string) => buildApiUrl(API_CONFIG.ENDPOINTS.getEventImages(venue)),
-  getSeatsAvailability: (eventId: string, group: string) =>
-    buildApiUrl(API_CONFIG.ENDPOINTS.getSeatsAvailability(eventId, group))
-}
-
-// Configuración para desarrollo local
-// export const DEV_CONFIG = {
-//   // URL para desarrollo local (cuando VITE_API_BASE_URL no está definida)
-//   LOCAL_API_URL: 'http://localhost:3001', // Ajusta el puerto según tu configuración local
-
-//   // Función para obtener la URL correcta según el entorno
-//   getApiUrl: () => {
-//     if (import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL) {
-//       return DEV_CONFIG.LOCAL_API_URL
-//     }
-//     return API_CONFIG.BASE_URL
-//   }
-// }
-
-// Exportar la configuración por defecto
-export default API_CONFIG
+export default HIEVENTS_CONFIG

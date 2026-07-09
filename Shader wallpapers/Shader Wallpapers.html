@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Shader Wallpapers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  :root {
+    --ui: rgba(255,255,255,0.78);
+    --ui-dim: rgba(255,255,255,0.42);
+    --ui-glass: rgba(20,22,28,0.42);
+    --ui-glass-strong: rgba(20,22,28,0.62);
+    --ui-stroke: rgba(255,255,255,0.10);
+    --ui-stroke-strong: rgba(255,255,255,0.22);
+    --font: ui-sans-serif, -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: #000; color: var(--ui);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    overscroll-behavior: none;
+    user-select: none;
+    cursor: crosshair;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    display: block;
+  }
+  canvas#gl {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  /* OS-y top-left hint */
+  .corner-meta {
+    position: fixed;
+    top: 22px; left: 24px;
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .corner-meta .eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ui-dim);
+  }
+  .corner-meta .title {
+    font-family: var(--font);
+    font-weight: 300;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    color: var(--ui);
+    text-shadow: 0 1px 24px rgba(0,0,0,0.35);
+  }
+
+  /* top-right tip */
+  .tip {
+    position: fixed;
+    top: 22px; right: 24px;
+    z-index: 10;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ui-dim);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    text-align: right;
+    line-height: 1.7;
+  }
+  .tip .k {
+    display: inline-block;
+    border: 1px solid var(--ui-stroke-strong);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin: 0 2px;
+    color: var(--ui);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* bottom switcher */
+  .switcher {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    background: var(--ui-glass);
+    border: 1px solid var(--ui-stroke);
+    border-radius: 999px;
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 12px 40px rgba(0,0,0,0.5);
+  }
+  .switcher button {
+    appearance: none;
+    background: transparent;
+    color: var(--ui-dim);
+    border: 0;
+    padding: 8px 14px 8px 12px;
+    border-radius: 999px;
+    font: 500 12px/1 var(--font);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: color .18s ease, background .18s ease;
+  }
+  .switcher button:hover { color: var(--ui); }
+  .switcher button .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    transition: opacity .18s, box-shadow .18s;
+  }
+  .switcher button[aria-selected="true"] {
+    color: #fff;
+    background: rgba(255,255,255,0.10);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+  }
+  .switcher button[aria-selected="true"] .dot {
+    opacity: 1;
+    box-shadow: 0 0 12px 1px currentColor;
+  }
+  .switcher .sep {
+    width: 1px; height: 18px; background: var(--ui-stroke); margin: 0 2px;
+  }
+  .switcher .arrow {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: var(--ui-dim);
+    width: 30px; height: 30px;
+    border-radius: 999px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: color .18s, background .18s;
+  }
+  .switcher .arrow:hover { color: #fff; background: rgba(255,255,255,0.08); }
+  .switcher .arrow svg { width: 12px; height: 12px; }
+
+  /* readout cluster (bottom-left) */
+  .readout {
+    position: fixed;
+    bottom: 28px; left: 24px;
+    z-index: 10;
+    display: flex; gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ui-dim);
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .readout .chip {
+    border: 1px solid var(--ui-stroke);
+    border-radius: 4px;
+    padding: 5px 8px;
+    background: rgba(0,0,0,0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--ui);
+  }
+  .readout .chip b { color: var(--ui-dim); font-weight: 400; margin-right: 6px; }
+
+  /* click ripple visual feedback (DOM, in addition to shader) */
+  .click-ring {
+    position: fixed;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.7);
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+    animation: ring 0.9s ease-out forwards;
+    z-index: 5;
+    mix-blend-mode: screen;
+  }
+  @keyframes ring {
+    0%   { width: 14px; height: 14px; opacity: 0.9; }
+    100% { width: 220px; height: 220px; opacity: 0; }
+  }
+
+  @media (max-width: 640px) {
+    .switcher button .label { display: none; }
+    .switcher button { padding: 8px 10px; }
+    .corner-meta .title { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage" data-screen-label="01 Shader Wallpaper">
+    <canvas id="gl"></canvas>
+  </div>
+
+  <div class="corner-meta">
+    <div class="eyebrow" id="eyebrow">Wallpaper 01 / 05</div>
+    <div class="title" id="title">Liquid Aurora</div>
+  </div>
+
+  <div class="tip">
+    Move <span class="k">cursor</span> · <span class="k">click</span> to pulse<br/>
+    <span class="k">←</span> <span class="k">→</span> or <span class="k">1</span>–<span class="k">5</span> to switch
+  </div>
+
+  <div class="readout">
+    <div class="chip"><b>cursor</b><span id="r-mouse">0.50, 0.50</span></div>
+    <div class="chip"><b>fps</b><span id="r-fps">—</span></div>
+  </div>
+
+  <nav class="switcher" id="switcher" aria-label="Wallpaper selector">
+    <button class="arrow" id="prev" aria-label="Previous"><svg viewBox="0 0 12 12" fill="none"><path d="M7.5 2 3.5 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <!-- buttons injected -->
+    <div class="sep" aria-hidden="true"></div>
+    <button class="arrow" id="next" aria-label="Next"><svg viewBox="0 0 12 12" fill="none"><path d="M4.5 2 8.5 6l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </nav>
+
+<script>
+/* ---------- shader sources ---------- */
+
+const VERT = `
+attribute vec2 a_pos;
+void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+
+/* shared fragment header — common uniforms + helpers */
+const FRAG_HEAD = `
+precision highp float;
+uniform vec2  u_res;
+uniform float u_time;
+uniform vec2  u_mouse;       // 0..1 (smoothed)
+uniform vec2  u_mouseRaw;    // 0..1 (instant)
+uniform float u_mouseDown;   // 1 while pressed
+uniform vec4  u_clicks[8];   // xy = uv, z = age (sec), w = strength
+uniform float u_aspect;
+
+#define PI 3.14159265359
+#define TAU 6.28318530718
+
+float hash11(float p){ p = fract(p*0.1031); p *= p+33.33; p *= p+p; return fract(p); }
+float hash21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+vec2  hash22(vec2 p){
+  p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)));
+  return fract(sin(p)*43758.5453);
+}
+float noise2(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f*f*(3.0-2.0*f);
+  float a = hash21(i);
+  float b = hash21(i+vec2(1,0));
+  float c = hash21(i+vec2(0,1));
+  float d = hash21(i+vec2(1,1));
+  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+}
+float fbm(vec2 p){
+  float s = 0.0, a = 0.5;
+  for (int i = 0; i < 5; i++){
+    s += a * noise2(p);
+    p = mat2(1.6,1.2,-1.2,1.6) * p;
+    a *= 0.5;
+  }
+  return s;
+}
+
+/* OKLab-ish smooth palette */
+vec3 pal(float t, vec3 a, vec3 b, vec3 c, vec3 d){
+  return a + b * cos(TAU * (c*t + d));
+}
+`;
+
+/* ===== 1. LIQUID AURORA =====
+   Domain-warped FBM, iridescent ribbons. Mouse warps flow center;
+   clicks push expanding ripples through the field. */
+const FRAG_AURORA = FRAG_HEAD + `
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = uv;
+  p.x *= u_aspect;
+  vec2 m = u_mouse; m.x *= u_aspect;
+
+  float t = u_time * 0.08;
+
+  /* radial pull toward mouse */
+  vec2 to = p - m;
+  float d = length(to);
+  vec2 pull = -to * (0.25 / (0.20 + d*d));
+
+  /* click ripples */
+  float ripple = 0.0;
+  for (int i = 0; i < 8; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    vec2 cp = c.xy; cp.x *= u_aspect;
+    float rd = length(p - cp);
+    float age = c.z;
+    float r = age * 0.55;
+    float ring = exp(-pow((rd - r)*7.0, 2.0)) * exp(-age*1.4) * c.w;
+    ripple += ring;
+    pull += normalize(p - cp + 0.0001) * ring * 0.35;
+  }
+
+  /* domain warp */
+  vec2 q = p*1.4 + pull;
+  vec2 w1 = vec2(fbm(q + t), fbm(q + vec2(5.2, 1.3) + t));
+  vec2 w2 = vec2(fbm(q + 4.0*w1 + vec2(1.7,9.2) - t*0.7),
+                 fbm(q + 4.0*w1 + vec2(8.3,2.8) - t*0.7));
+  float f = fbm(q + 4.0*w2);
+
+  /* iridescent palette */
+  float hue = f + 0.25*sin(u_time*0.2) + ripple*0.6;
+  vec3 col = pal(hue,
+                 vec3(0.50, 0.50, 0.55),
+                 vec3(0.50, 0.50, 0.50),
+                 vec3(1.00, 1.00, 1.00),
+                 vec3(0.00, 0.20, 0.55));
+
+  /* fold into ribbons */
+  float ribbons = 0.5 + 0.5*sin(8.0*f + u_time*0.4);
+  ribbons = smoothstep(0.35, 1.0, ribbons);
+  col *= 0.55 + 0.75*ribbons;
+  col += 0.6 * ripple * vec3(0.7, 0.85, 1.0);
+
+  /* deep base */
+  vec3 base = vec3(0.02, 0.025, 0.05);
+  col = mix(base, col, 0.92);
+
+  /* gentle vignette */
+  float vg = smoothstep(1.15, 0.45, length(uv - 0.5));
+  col *= mix(0.78, 1.02, vg);
+
+  /* film grain */
+  col += (hash21(gl_FragCoord.xy + u_time)-0.5)*0.012;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+/* ===== 2. PLASMA FIELD =====
+   Metaballs orbit; one tracks the mouse, clicks spawn temporary blobs. */
+const FRAG_PLASMA = FRAG_HEAD + `
+float ball(vec2 p, vec2 c, float r){
+  return r*r / max(dot(p-c, p-c), 0.0001);
+}
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = uv;
+  p.x *= u_aspect;
+  vec2 m = u_mouse; m.x *= u_aspect;
+
+  float t = u_time*0.45;
+  float sum = 0.0;
+
+  /* orbiting blobs */
+  for (int i = 0; i < 6; i++){
+    float fi = float(i);
+    float ang = t*(0.5 + 0.13*fi) + fi*1.7;
+    float rad = 0.30 + 0.10*sin(t*0.6 + fi);
+    vec2 c = vec2(0.5*u_aspect, 0.5) + vec2(cos(ang), sin(ang))*rad;
+    sum += ball(p, c, 0.085 + 0.02*sin(t+fi));
+  }
+
+  /* one tracks the cursor */
+  sum += ball(p, m, 0.11 + 0.04*u_mouseDown);
+
+  /* click blobs */
+  for (int i = 0; i < 8; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    vec2 cp = c.xy; cp.x *= u_aspect;
+    float life = exp(-c.z*1.2);
+    sum += ball(p, cp, 0.10 * life) * (0.6 + 0.4*life);
+  }
+
+  /* threshold + color */
+  float field = sum;
+  float core  = smoothstep(1.6, 6.0, field);
+  float edge  = smoothstep(0.85, 1.6, field) - core;
+  float halo  = smoothstep(0.45, 0.95, field);
+
+  vec3 cBg   = vec3(0.04, 0.02, 0.08);
+  vec3 cHalo = vec3(0.55, 0.20, 0.85);   /* magenta */
+  vec3 cEdge = vec3(0.95, 0.45, 0.35);   /* coral   */
+  vec3 cCore = vec3(1.00, 0.95, 0.70);   /* warm    */
+
+  /* shift palette w/ time */
+  float h = 0.5 + 0.5*sin(u_time*0.13);
+  cHalo = mix(cHalo, vec3(0.20, 0.55, 0.95), h);
+  cEdge = mix(cEdge, vec3(0.40, 0.90, 0.85), h);
+
+  vec3 col = cBg;
+  col = mix(col, cHalo*0.7, halo);
+  col = mix(col, cEdge, edge);
+  col = mix(col, cCore, core);
+
+  /* inner glow streaks */
+  float streak = 0.5 + 0.5*sin( (p.x*8.0 + p.y*6.0)*1.0 + u_time*0.8 );
+  col += 0.04 * streak * halo;
+
+  /* vignette + grain */
+  float vg = smoothstep(1.1, 0.4, length(uv - 0.5));
+  col *= mix(0.75, 1.0, vg);
+  col += (hash21(gl_FragCoord.xy + u_time)-0.5)*0.010;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+/* ===== 3. CRYSTAL VORONOI =====
+   Voronoi cells with chromatic edges; mouse is an extra cell, clicks send shatter waves. */
+const FRAG_VORONOI = FRAG_HEAD + `
+/* returns: x = F1, y = F2, zw = cell id (random) */
+vec4 voronoi(vec2 x, float jitter, vec2 mp, float mInfluence,
+             float shatter, vec2 shatterCenter){
+  vec2 n = floor(x);
+  vec2 f = fract(x);
+  float F1 = 8.0, F2 = 8.0;
+  vec2 id = vec2(0);
+  for (int j = -1; j <= 1; j++){
+    for (int i = -1; i <= 1; i++){
+      vec2 g = vec2(float(i), float(j));
+      vec2 o = hash22(n + g);
+      o = 0.5 + (sin(u_time*0.6 + 6.2831*o) * 0.5) * jitter;
+      /* shatter — points drift radially outward from click for a moment */
+      vec2 cellWorld = n + g;
+      float sd = length(cellWorld - shatterCenter);
+      o += shatter * normalize(cellWorld - shatterCenter + 0.001) * exp(-sd*0.4) * 0.4;
+      vec2 r = g + o - f;
+      float d = dot(r, r);
+      if (d < F1){ F2 = F1; F1 = d; id = n+g; }
+      else if (d < F2){ F2 = d; }
+    }
+  }
+  /* mouse acts as an additional cell point */
+  {
+    vec2 r = mp - x;
+    float d = dot(r,r) / max(mInfluence, 0.001);
+    if (d < F1){ F2 = F1; F1 = d; id = vec2(-99.0); }
+    else if (d < F2){ F2 = d; }
+  }
+  return vec4(F1, F2, id);
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = uv; p.x *= u_aspect;
+  vec2 m = u_mouse; m.x *= u_aspect;
+
+  /* aggregate click "shatter" — use the freshest click */
+  float shatter = 0.0;
+  vec2 shatterC = vec2(-999.0);
+  for (int i = 0; i < 8; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    float s = exp(-c.z*1.6) * c.w;
+    if (s > shatter){
+      shatter = s;
+      vec2 cp = c.xy; cp.x *= u_aspect;
+      shatterC = cp * 6.0;
+    }
+  }
+
+  float scale = 6.0;
+  vec2 pp = p * scale;
+  vec2 mp = m * scale;
+
+  vec4 v = voronoi(pp, 1.0, mp, 0.6 + 0.6*u_mouseDown + shatter*1.5,
+                   shatter, shatterC);
+  float F1 = sqrt(v.x);
+  float F2 = sqrt(v.y);
+  float edge = F2 - F1;     /* small near cell borders */
+
+  /* base color from cell id */
+  float idH = hash21(v.zw)*0.7 + 0.1;
+  vec3 base = pal(idH + u_time*0.02,
+                  vec3(0.55, 0.45, 0.65),
+                  vec3(0.45, 0.40, 0.35),
+                  vec3(1.0, 1.0, 1.0),
+                  vec3(0.00, 0.25, 0.55));
+  base *= 0.45;
+
+  /* chromatic edge — split RGB by edge proximity */
+  float e = smoothstep(0.06, 0.0, edge);
+  vec3 col = base + e * vec3(0.95, 0.85, 1.0) * 0.9;
+
+  /* secondary thin line at F1 = const for crystal facets */
+  float facet = smoothstep(0.02, 0.0, abs(F1 - 0.30));
+  col += facet * vec3(0.25, 0.65, 0.95) * 0.6;
+
+  /* highlight cells touched by the cursor */
+  float md = length(p - m);
+  col += smoothstep(0.35, 0.0, md) * 0.18 * vec3(0.5, 0.8, 1.0);
+
+  /* shatter shock */
+  if (shatterC.x > -100.0){
+    vec2 sc = shatterC / 6.0;
+    float sd = length(p - sc);
+    float wave = exp(-pow((sd - shatter*0.8)*7.0, 2.0)) * shatter;
+    col += wave * vec3(1.0, 0.95, 0.9) * 1.2;
+  }
+
+  /* deep bg */
+  vec3 bg = vec3(0.015, 0.02, 0.045);
+  col = mix(bg, col, 0.95);
+
+  /* vignette + grain */
+  float vg = smoothstep(1.1, 0.4, length(uv - 0.5));
+  col *= mix(0.75, 1.02, vg);
+  col += (hash21(gl_FragCoord.xy + u_time)-0.5)*0.010;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+/* ===== 4. NEBULA DRIFT =====
+   Layered FBM clouds, parallax with mouse, click sparkles. */
+const FRAG_NEBULA = FRAG_HEAD + `
+float layer(vec2 p, float t, float scale, float warpAmt){
+  vec2 q = p*scale + t*0.05;
+  vec2 w = vec2(fbm(q + vec2(0.0, t*0.2)), fbm(q + vec2(5.2, 1.3)));
+  return fbm(q + warpAmt*w);
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = uv - 0.5; p.x *= u_aspect;
+  vec2 m = (u_mouse - 0.5); m.x *= u_aspect;
+
+  float t = u_time;
+
+  /* parallax — each layer shifts by its own factor of mouse offset */
+  vec2 par1 = -m * 0.08;
+  vec2 par2 = -m * 0.18;
+  vec2 par3 = -m * 0.32;
+
+  float n1 = layer(p + par1, t*0.6, 1.0, 1.0);
+  float n2 = layer(p + par2 + vec2(3.1, 1.7), t*0.9, 1.8, 1.6);
+  float n3 = layer(p + par3 + vec2(-2.3, 4.4), t*1.3, 3.6, 2.4);
+
+  /* color: deep teal -> magenta -> warm cream highlights */
+  vec3 cA = vec3(0.02, 0.04, 0.10);
+  vec3 cB = vec3(0.10, 0.22, 0.45);
+  vec3 cC = vec3(0.65, 0.25, 0.55);
+  vec3 cD = vec3(1.00, 0.85, 0.70);
+
+  vec3 col = cA;
+  col = mix(col, cB, smoothstep(0.25, 0.85, n1));
+  col = mix(col, cC, smoothstep(0.45, 0.95, n2) * 0.85);
+  col += cD * pow(smoothstep(0.78, 1.0, n3), 2.2) * 0.9;
+
+  /* stars — sparse hash field */
+  vec2 sp = (uv + par3*0.15) * vec2(u_res.x/u_res.y, 1.0) * 280.0;
+  vec2 si = floor(sp);
+  float s = hash21(si);
+  if (s > 0.992){
+    float tw = 0.6 + 0.4*sin(u_time*3.0 + s*40.0);
+    float r = length(fract(sp)-0.5);
+    col += smoothstep(0.5, 0.0, r) * tw * 0.9;
+  }
+
+  /* click sparkles — bright flare at click pos */
+  for (int i = 0; i < 8; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    vec2 cp = (c.xy - 0.5); cp.x *= u_aspect;
+    float d = length(p - cp);
+    float life = exp(-c.z*1.4);
+    float core = exp(-pow(d*30.0, 2.0)) * life;
+    float ring = exp(-pow((d - c.z*0.35)*12.0, 2.0)) * life * 0.7;
+    col += (core*1.6 + ring) * vec3(1.0, 0.92, 0.78);
+  }
+
+  /* subtle radial light around cursor */
+  float md = length(p - m);
+  col += smoothstep(0.55, 0.0, md) * vec3(0.18, 0.10, 0.22) * 0.5;
+
+  /* vignette + grain */
+  float vg = smoothstep(1.15, 0.4, length(uv - 0.5));
+  col *= mix(0.78, 1.02, vg);
+  col += (hash21(gl_FragCoord.xy + u_time)-0.5)*0.010;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+/* ===== 5. HEX PULSE GRID =====
+   Hex tiling with brightness pulses radiating from cursor + click shockwaves. */
+const FRAG_HEX = FRAG_HEAD + `
+/* hex grid — returns: xy = local pos in cell, zw = cell center (world) */
+vec4 hexCoord(vec2 p){
+  vec2 s = vec2(1.0, 1.7320508);
+  vec2 a = mod(p, s) - s*0.5;
+  vec2 b = mod(p + s*0.5, s) - s*0.5;
+  vec2 gv = dot(a,a) < dot(b,b) ? a : b;
+  vec2 id = p - gv;
+  return vec4(gv, id);
+}
+float hexDist(vec2 p){
+  p = abs(p);
+  return max(dot(p, normalize(vec2(1.0, 1.7320508))), p.x);
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p = (uv - 0.5); p.x *= u_aspect;
+  vec2 m = (u_mouse - 0.5); m.x *= u_aspect;
+
+  float scale = 18.0;
+  vec4 h = hexCoord(p * scale);
+  vec2 cellWorld = h.zw / scale;     /* in screen units */
+  float hd = hexDist(h.xy);          /* 0 at center, 0.5 at flat edge */
+
+  /* base cell brightness from distance to cursor */
+  float d = length(cellWorld - m);
+  float pulse = 0.5 + 0.5 * sin(d*16.0 - u_time*3.0);
+  float falloff = exp(-d*1.8);
+  float baseBright = falloff * pulse;
+
+  /* click shockwaves */
+  float shock = 0.0;
+  for (int i = 0; i < 8; i++){
+    vec4 c = u_clicks[i];
+    if (c.w <= 0.0) continue;
+    vec2 cp = (c.xy - 0.5); cp.x *= u_aspect;
+    float rd = length(cellWorld - cp);
+    float age = c.z;
+    float r = age * 0.9;
+    shock += exp(-pow((rd - r)*9.0, 2.0)) * exp(-age*1.0) * c.w;
+  }
+
+  /* per-cell random shimmer */
+  float idHash = hash21(h.zw);
+  float shimmer = 0.5 + 0.5*sin(u_time*1.2 + idHash*40.0);
+
+  float bright = baseBright*1.4 + shock*1.8 + shimmer*0.04*falloff;
+
+  /* hex outline */
+  float edge = smoothstep(0.50, 0.46, hd) - smoothstep(0.46, 0.42, hd);
+  float fill = smoothstep(0.50, 0.46, hd);
+
+  /* colors — cool cyan grid on near-black; warm pulse */
+  vec3 bg = vec3(0.012, 0.018, 0.035);
+  vec3 gridCol = mix(vec3(0.10, 0.30, 0.55), vec3(0.95, 0.85, 0.55),
+                     clamp(bright*1.2, 0.0, 1.0));
+  vec3 fillCol = mix(vec3(0.02, 0.04, 0.08),
+                     vec3(0.95, 0.55, 0.25),
+                     clamp(bright, 0.0, 1.0));
+
+  vec3 col = bg;
+  col = mix(col, fillCol, fill * (0.18 + bright*0.7));
+  col += edge * gridCol * (0.45 + bright);
+
+  /* scanline-ish soft horizontal sweep */
+  float sweep = 0.5 + 0.5*sin(p.y*5.0 + u_time*0.6);
+  col += sweep * 0.015;
+
+  /* cursor inner glow */
+  col += smoothstep(0.12, 0.0, length(p-m)) * vec3(1.0, 0.85, 0.55) * 0.5;
+
+  /* vignette + grain */
+  float vg = smoothstep(1.15, 0.4, length(uv - 0.5));
+  col *= mix(0.7, 1.03, vg);
+  col += (hash21(gl_FragCoord.xy + u_time)-0.5)*0.012;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+const SHADERS = [
+  { name: "Liquid Aurora",  hint: "Iridescent ribbons warp around the cursor",            frag: FRAG_AURORA },
+  { name: "Plasma Field",   hint: "Metaballs orbit and merge into the cursor",            frag: FRAG_PLASMA },
+  { name: "Crystal Voronoi",hint: "Cells refract — click to shatter",                     frag: FRAG_VORONOI },
+  { name: "Nebula Drift",   hint: "Parallax clouds — click to spark stars",               frag: FRAG_NEBULA },
+  { name: "Hex Pulse Grid", hint: "Honeycomb resonates — click to shockwave",             frag: FRAG_HEX },
+];
+
+/* ---------- WebGL plumbing ---------- */
+
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false, alpha: false });
+if (!gl) {
+  document.body.innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif">WebGL not supported on this device.</div>';
+  throw new Error('no webgl');
+}
+
+function compile(type, src){
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+    const log = gl.getShaderInfoLog(sh);
+    console.error('shader compile error', log, src);
+    throw new Error(log);
+  }
+  return sh;
+}
+function link(vs, fs){
+  const p = gl.createProgram();
+  gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+  gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)){
+    console.error('program link error', gl.getProgramInfoLog(p));
+    throw new Error('link');
+  }
+  return p;
+}
+
+/* fullscreen triangle */
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1, 3]), gl.STATIC_DRAW);
+
+const programs = SHADERS.map(s => {
+  const prog = link(VERT, s.frag);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  return {
+    prog,
+    aPos,
+    u_res:       gl.getUniformLocation(prog, 'u_res'),
+    u_time:      gl.getUniformLocation(prog, 'u_time'),
+    u_mouse:     gl.getUniformLocation(prog, 'u_mouse'),
+    u_mouseRaw:  gl.getUniformLocation(prog, 'u_mouseRaw'),
+    u_mouseDown: gl.getUniformLocation(prog, 'u_mouseDown'),
+    u_clicks:    gl.getUniformLocation(prog, 'u_clicks'),
+    u_aspect:    gl.getUniformLocation(prog, 'u_aspect'),
+  };
+});
+
+/* ---------- state ---------- */
+const state = {
+  current: 0,
+  startTime: performance.now(),
+  mouse: { x: 0.5, y: 0.5 },          // smoothed (0..1, y up)
+  mouseRaw: { x: 0.5, y: 0.5 },
+  mouseDown: 0,
+  clicks: [], // {x, y, t (start), strength}
+  dpr: Math.min(window.devicePixelRatio || 1, 2),
+};
+
+function resize(){
+  state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(window.innerWidth  * state.dpr);
+  const h = Math.floor(window.innerHeight * state.dpr);
+  if (canvas.width !== w || canvas.height !== h){
+    canvas.width = w; canvas.height = h;
+  }
+  gl.viewport(0, 0, w, h);
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* mouse — store with y flipped to GL convention (0 bottom -> 1 top) */
+function setMouseFromEvent(e){
+  const rect = canvas.getBoundingClientRect();
+  const cx = ('touches' in e && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+  const cy = ('touches' in e && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+  state.mouseRaw.x = (cx - rect.left) / rect.width;
+  state.mouseRaw.y = 1.0 - (cy - rect.top) / rect.height;
+}
+window.addEventListener('mousemove', setMouseFromEvent, { passive: true });
+window.addEventListener('touchmove', setMouseFromEvent, { passive: true });
+
+window.addEventListener('mousedown', e => {
+  state.mouseDown = 1;
+  setMouseFromEvent(e);
+  pushClick(state.mouseRaw.x, state.mouseRaw.y, 1.0);
+  spawnDomRing(e.clientX, e.clientY);
+});
+window.addEventListener('mouseup',   () => state.mouseDown = 0);
+window.addEventListener('touchstart', e => {
+  state.mouseDown = 1;
+  setMouseFromEvent(e);
+  pushClick(state.mouseRaw.x, state.mouseRaw.y, 1.0);
+  const t = e.touches[0];
+  if (t) spawnDomRing(t.clientX, t.clientY);
+}, { passive: true });
+window.addEventListener('touchend',  () => state.mouseDown = 0);
+
+function pushClick(x, y, strength){
+  state.clicks.push({ x, y, t: performance.now()/1000, strength });
+  if (state.clicks.length > 8) state.clicks.shift();
+}
+function spawnDomRing(cx, cy){
+  const r = document.createElement('div');
+  r.className = 'click-ring';
+  r.style.left = cx + 'px';
+  r.style.top  = cy + 'px';
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 950);
+}
+
+/* keyboard */
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') setShader((state.current+1) % SHADERS.length);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') setShader((state.current-1+SHADERS.length) % SHADERS.length);
+  else if (e.key >= '1' && e.key <= String(SHADERS.length)) setShader(parseInt(e.key,10)-1);
+});
+
+/* ---------- switcher ---------- */
+const switcherEl = document.getElementById('switcher');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const buttons = SHADERS.map((s, i) => {
+  const b = document.createElement('button');
+  b.setAttribute('role', 'tab');
+  b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+  b.innerHTML = `<span class="dot"></span><span class="label">${s.name}</span>`;
+  b.addEventListener('click', () => setShader(i));
+  return b;
+});
+buttons.forEach(b => switcherEl.insertBefore(b, switcherEl.querySelector('.sep')));
+prevBtn.addEventListener('click', () => setShader((state.current-1+SHADERS.length) % SHADERS.length));
+nextBtn.addEventListener('click', () => setShader((state.current+1) % SHADERS.length));
+
+const titleEl = document.getElementById('title');
+const eyebrowEl = document.getElementById('eyebrow');
+function setShader(i){
+  state.current = i;
+  buttons.forEach((b, idx) => b.setAttribute('aria-selected', idx === i ? 'true' : 'false'));
+  titleEl.textContent = SHADERS[i].name;
+  eyebrowEl.textContent = `Wallpaper 0${i+1} / 0${SHADERS.length} · ${SHADERS[i].hint}`;
+  /* per-shader hue accent for the dot */
+  const hues = ['#9bc1ff','#ff7ad0','#a8e9ff','#ffcf9b','#ffa869'];
+  buttons.forEach((b, idx) => { b.querySelector('.dot').style.color = hues[idx]; });
+}
+setShader(0);
+
+/* ---------- render loop ---------- */
+const fpsEl = document.getElementById('r-fps');
+const mEl   = document.getElementById('r-mouse');
+let fpsAcc = 0, fpsCount = 0, fpsLast = performance.now();
+
+function frame(now){
+  /* smooth mouse */
+  const k = 0.12;
+  state.mouse.x += (state.mouseRaw.x - state.mouse.x) * k;
+  state.mouse.y += (state.mouseRaw.y - state.mouse.y) * k;
+
+  resize();
+
+  const t = (now - state.startTime) / 1000;
+  const aspect = canvas.width / canvas.height;
+
+  /* pack clicks into vec4[8] : x,y,age,strength */
+  const data = new Float32Array(8*4);
+  const tNow = now/1000;
+  for (let i = 0; i < state.clicks.length; i++){
+    const c = state.clicks[i];
+    const age = tNow - c.t;
+    const alive = age < 4.0 ? 1.0 : 0.0;
+    data[i*4+0] = c.x;
+    data[i*4+1] = c.y;
+    data[i*4+2] = age;
+    data[i*4+3] = alive ? c.strength : 0.0;
+  }
+  /* cull dead */
+  state.clicks = state.clicks.filter(c => tNow - c.t < 4.0);
+
+  const p = programs[state.current];
+  gl.useProgram(p.prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.enableVertexAttribArray(p.aPos);
+  gl.vertexAttribPointer(p.aPos, 2, gl.FLOAT, false, 0, 0);
+
+  gl.uniform2f(p.u_res, canvas.width, canvas.height);
+  gl.uniform1f(p.u_time, t);
+  gl.uniform2f(p.u_mouse,    state.mouse.x, state.mouse.y);
+  gl.uniform2f(p.u_mouseRaw, state.mouseRaw.x, state.mouseRaw.y);
+  gl.uniform1f(p.u_mouseDown, state.mouseDown);
+  gl.uniform4fv(p.u_clicks, data);
+  gl.uniform1f(p.u_aspect, aspect);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  /* readouts */
+  mEl.textContent = state.mouseRaw.x.toFixed(2) + ', ' + state.mouseRaw.y.toFixed(2);
+  fpsCount++;
+  if (now - fpsLast > 500){
+    const fps = Math.round(1000 * fpsCount / (now - fpsLast));
+    fpsEl.textContent = fps + ' fps';
+    fpsLast = now; fpsCount = 0;
+  }
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { hiEventsService } from '../services/hiEventsService'
+import type { HiEventPublic } from '../types/hievents'
 
-// Define la interfaz para un evento
+/**
+ * Schema viejo (GitHub). Se CONSERVA aunque la fuente ahora sea HiEvents:
+ * `hiEventsAdapter` lo usa para rellenar `UIEvent.raw` (Event sintético), y lo
+ * importan `eventAdapter`/`uiEvent`. No eliminar sin migrar esos consumidores.
+ */
 export interface Event {
   eventId: string
   event_date: string
@@ -13,42 +19,33 @@ export interface Event {
   tricket_url: string
 }
 
-interface EventsData {
-  [key: string]: Event
-}
-
 interface EventsContextValue {
-  events: EventsData | null
+  /** Eventos crudos del listado de HiEvents (LIVE, upcoming). */
+  events: HiEventPublic[] | null
 }
 
 const EventsContext = createContext<EventsContextValue>({ events: null })
 
 export const EventsProvider = ({ children }: { children: any }) => {
-  const [events, setEvents] = useState<EventsData | null>(null)
-  const token = import.meta.env.VITE_GITHUB_TOKEN
-  const githubApiUrl = `${import.meta.env.VITE_GITHUB_API_URL as string}/events.json`
-  const options = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3.raw'
-    }
-  }
+  const [events, setEvents] = useState<HiEventPublic[] | null>(null)
 
   useEffect(() => {
+    let cancelled = false
     const fetchEvents = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data: EventsData = await response.json()
-        setEvents(data)
+        // Listado de producción: HiEvents /events (LIVE, upcoming). Requiere token.
+        const list = await hiEventsService.listEvents({ eventsStatus: 'upcoming', only_live: true })
+        if (!cancelled) setEvents(list)
       } catch (error) {
-        console.error('Error fetching events: ', error)
+        console.error('Error listando eventos de HiEvents:', error)
+        if (!cancelled) setEvents([])
       }
     }
     fetchEvents()
-  }, [githubApiUrl, token])
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return <EventsContext.Provider value={{ events }}>{children}</EventsContext.Provider>
 }

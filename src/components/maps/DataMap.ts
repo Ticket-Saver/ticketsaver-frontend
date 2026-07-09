@@ -5,6 +5,7 @@ import OrchestraMap2 from '../../assets/maps/IndiaYuridia/ticketeraMapa3.png'
 import LogeMapPng from '../../assets/maps/IndiaYuridia/Loge.png'
 import ManuelArtTimePng from '../../assets/maps/Leonas/manuelartime_fl.svg'
 import RichmondsMapSvg from '../../assets/maps/Marisela/richmonds_ca.png'
+import CopernicusCenterSvg from '../../assets/maps/Alucines/CHICAGO ALUCINES.svg'
 
 import LogeMap from './IndiaYuridia/LogeMap'
 import OrchestraMap from './IndiaYuridia/OrchestraMap'
@@ -14,6 +15,7 @@ import CalifoniaTheatreMap from './Leonas/californiatheatre_ca'
 import Unioncountry from './Leonas/unioncounty_nj'
 import ManuelArtTime from './Leonas/ManuelArtTimeMap'
 import richmondMap from './Marisela/richmond_ca'
+import copernicusCenterMap from './Alucines/copernicus_center_il'
 
 type EventZoneData = {
   zones: string[]
@@ -73,6 +75,12 @@ export const eventData: EventData = {
       zones: ['Yellow', 'Blue', 'Orange', 'Purple', 'Gray'],
       priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
     }
+  },
+  las_alucines01: {
+    Map: {
+      zones: ['Orange', 'Blue', 'Pink', 'Green', 'Purple'],
+      priceTag: ['P1', 'P2', 'P3', 'P4', 'P5']
+    }
   }
 }
 export const mapConfig: MapConfig = {
@@ -81,6 +89,14 @@ export const mapConfig: MapConfig = {
       Map: {
         defaultMap: richmondMap,
         src: RichmondsMapSvg
+      }
+    }
+  },
+  'las_alucines.01': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
       }
     }
   },
@@ -125,6 +141,32 @@ export const mapConfig: MapConfig = {
       Map: {
         defaultMap: SanJoseMap,
         src: SanJoseMapPng
+      }
+    }
+  },
+  // Eventos demo para verificación del flujo v2 (Bloque 4b).
+  // Reutilizan el mapeo + SVG del Copernicus Center.
+  'demo_v2.01': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.02': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.03': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
       }
     }
   }

@@ -1,0 +1,232 @@
+{
+  "claytonbar_tx": {
+    "venue_label": "claytonbar_tx",
+    "venue_name": "Clayton's Beach Bar & Event Venue",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "6900 Padre Blvd",
+      "city": "South Padre Island, TX",
+      "zip_code": "78597",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/7BtKY6rTbuEyUsx78"
+    }
+  },
+  "lacatedral_tx": {
+    "venue_label": "lacatedral_tx",
+    "venue_name": "La Catedral",
+    "capacity": 0,
+    "seatmap": false,
+    "location": {
+      "address": "7500W W Expy 83",
+      "city": "Mission, TaX",
+      "zip_code": "78572",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/QTq2pdsNcXp81ZnHA"
+    }
+  },
+  "noxxnightclub_tx": {
+    "venue_label": "noxxnightclub_tx",
+    "venue_name": "NOXX Nightclub",
+    "capacity": 0,
+    "seatmap": false,
+    "location": {
+      "address": "200 S 17th St",
+      "city": "McAllen, TX",
+      "zip_code": "78501",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/5CZL91vLA4mLRcGb9"
+    }
+  },
+  "ritztheatre_nj": {
+    "venue_label": "ritztheatre_nj",
+    "venue_name": "Ritz Theatre & Performing Arts Center",
+    "capacity": 0,
+    "seatmap": true,
+    "location": {
+      "street": "1148 E Jersey St",
+      "city": "Elizabeth, NJ",
+      "zip_code": "07201",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/GnqmSD3c1NqXnRQUA"
+    }
+  },
+  "sanjose_ca": {
+    "venue_label": "sanjose_ca",
+    "venue_name": "San Jose Civic",
+    "capacity": 0,
+    "seatmap": true,
+    "location": {
+      "address": "135 W San Carlos St",
+      "city": "San Jose, CA",
+      "zip_code": "95113",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/1g5Cegvo9qo2LEF48"
+    }
+  },
+  "manuelartime_fl": {
+    "venue_label": "manuelartime_fl",
+    "venue_name": "Manuel Artime Theater",
+    "capacity": 0,
+    "seatmap": true,
+    "location": {
+      "address": "900 SW 1st St",
+      "city": "Miami, FL",
+      "zip_code": "33130",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/THiY4uW1bLjvq9CaA"
+    }
+  },
+  "unioncounty_nj": {
+    "venue_label": "unioncounty_nj",
+    "venue_name": "Union County Performing Arts Center",
+    "capacity": {
+      "orchestra": 599,
+      "loge": 255,
+      "mezzanine": 472
+    },
+    "seatmap": true,
+    "location": {
+      "address": "1601 Irving St",
+      "city": "Rahway, NJ",
+      "zip_code": "07065",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/gaMAU9SB2W1er87T6"
+    }
+  },
+  "californiatheatre_ca": {
+    "venue_label": "californiatheatre_ca",
+    "venue_name": "California Theatre",
+    "capacity": {
+      "orchestra": 688,
+      "grand tier": 196,
+      "mezzanine": 239
+    },
+    "seatmap": true,
+    "location": {
+      "address": "345 S 1st St",
+      "city": "San Jose, CA",
+      "zip_code": "95113",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/q8GDPEkf1sPQFcPX6"
+    }
+  },
+  "mcallencc_tx": {
+    "venue_label": "mcallencc_tx",
+    "venue_name": "McAllen Convention Center (Festival Grounds)",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "700 Convention Center Blvd",
+      "city": "McAllen, TX",
+      "zip_code": "78501",
+      "country": "US",
+      "maps_url": "https://maps.app.goo.gl/oN57pf8QqbbFddCk6"
+    }
+  },
+  "roccapulco_sf": {
+    "venue_label": "roccapulco_sf",
+    "venue_name": "Roccapulco",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "3140 Mission St",
+      "city": "San Francisco, CA",
+      "zip_code": "94110",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/RGLihzY4zxjUrD6b6"
+    }
+  },
+  "capos_sj": {
+    "venue_label": "capos_sj",
+    "venue_name": "Capos Event Center",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "7588 Monterey Rd",
+      "city": "Gilroy, CA",
+      "zip_code": "95020",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/mXP9U5NBKRCUcXfs5"
+    }
+  },
+  "stratus_phx": {
+    "venue_label": "stratus_phx",
+    "venue_name": "Stratus Event Center",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "4344 W Indian School Rd Apt 32",
+      "city": "Phoenix, AZ",
+      "zip_code": "85031",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/Z311kdvQk6wYZrz67"
+    }
+  },
+  "lacatedral_mission": {
+    "venue_label": "lacatedral_mission",
+    "venue_name": "La Catedral",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "7500 W IH 2",
+      "city": "Mission, TX",
+      "zip_code": "78572",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/EWn4KEdXUEnWQu1N8"
+    }
+  },
+  "joeslive_il": {
+    "venue_label": "joeslive_il",
+    "venue_name": "Joe's Live",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "5441 Park Pl",
+      "city": "Rosemont, IL",
+      "zip_code": "60018",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/shf5BHtGWbHtXHs97"
+    }
+  },
+  "richmond_ca": {
+    "venue_label": "richmond_ca",
+    "venue_name": "Richmond Memorial Auditorium",
+    "capacity": 1000,
+    "seatmap": true,
+    "location": {
+      "address": "403 Civic Center Plaza",
+      "city": "Richmond, CA",
+      "zip_code": "94804",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/8gGAjgKPf3PUSXff9"
+    }
+  },
+
+  "presiclub_tx": {
+    "venue_label": "presiclub_tx",
+    "venue_name": "PRESI Night Club",
+    "capacity": 1000,
+    "seatmap": false,
+    "location": {
+      "address": "101 S 17th St ",
+      "city": " McAllen TX",
+      "zip_code": "78501",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/b8rNa8GrxerrCq246"
+    }
+  },
+  "Copernicus_Center_IL": {
+    "venue_label": "Copernicus_Center_IL",
+    "venue_name": "Copernicus Center",
+    "capacity": 1000,
+    "seatmap": true,
+    "location": {
+      "address": "5216 W Lawrence Ave",
+      "city": "Chicago, IL",
+      "zip_code": "60630",
+      "country": "United States",
+      "maps_url": "https://maps.app.goo.gl/vQYKVkYyoYquTaNN9"
+    }
+  }
+}

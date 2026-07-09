@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { cacheService } from '../services/cacheService'
+import { fallbackDataService } from '../services/fallbackDataService'
 
 // Define la interfaz para la ubicación de un venue
 export interface Location {
@@ -43,14 +45,33 @@ export const VenuesProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await fetch(githubApiUrl, options)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+        // El venue ahora viene embebido en HiEvents (location_details) vía
+        // hiEventsAdapter. venuesContext queda como fallback legacy: si no hay
+        // VITE_GITHUB_API_URL configurado, no se hace fetch (evita el 404 a
+        // /undefined/venues.json y el "Bearer undefined").
+        if (!import.meta.env.VITE_GITHUB_API_URL) {
+          setVenues({})
+          return
         }
-        const data: VenuesData = await response.json()
+        // Verificar si está en modo emergencia
+        if (fallbackDataService.isEmergencyMode()) {
+          console.warn('🚨 Modo emergencia: Usando venues locales')
+          const localVenues = await fallbackDataService.getLocalVenues()
+          setVenues(localVenues)
+          return
+        }
+
+        // Usar caché con TTL de 15 minutos para venues (cambian menos frecuentemente)
+        const data = await cacheService.fetchWithCache<VenuesData>(githubApiUrl, options, {
+          ttl: 15 * 60 * 1000, // 15 minutos
+          useLocalStorage: true
+        })
         setVenues(data)
       } catch (error) {
-        console.error('Error fetching venues: ', error)
+        console.error('Error fetching venues, usando fallback local: ', error)
+        // Si falla GitHub, usar datos locales como fallback
+        const localVenues = await fallbackDataService.getLocalVenues()
+        setVenues(localVenues)
       }
     }
     fetchVenues()
