@@ -103,6 +103,11 @@ export interface HiEventPublic {
   sales_started?: boolean | null
   /** Inicio de la venta general (ya existía en HiEvents). */
   ticket_sales_start_date?: string | null
+  /** Reventa: si el organizador la habilitó para este evento y sus % vigentes. */
+  resale_enabled?: boolean | null
+  resale_max_price_percent?: number | null
+  resale_seller_fee_percent?: number | null
+  resale_buyer_fee_percent?: number | null
   /** Atributos custom PÚBLICos (name/value) — se muestran en "Good to know". */
   attributes?: Array<{ name: string; value: unknown; is_public?: boolean }> | null
   location_details: HiLocationDetails | null
@@ -269,6 +274,55 @@ export interface HiUserTicket {
   price?: string | null
   priceType?: string | null
   status: HiUserTicketStatus
+}
+
+// --- Reventa (marketplace) ---
+
+/** Un listado de reventa propio del vendedor. */
+export interface HiResaleListing {
+  id: number
+  attendee_id: number
+  event_id: number
+  asking_price: number
+  currency: string
+  status: 'LISTED' | 'PENDING_PAYMENT' | 'SOLD' | 'CANCELLED' | 'EXPIRED' | string
+  created_at?: string
+  /** Comisión del vendedor ya calculada por el backend. */
+  seller_fee: number
+  /** Neto que recibe el vendedor (asking_price - seller_fee). */
+  seller_net: number
+  /** Estado del payout al vendedor. null = todavía no vendido / no aplica. */
+  payout_status: 'PENDING' | 'PAID' | null
+}
+
+/** Un listado disponible en el marketplace público de un evento. */
+export interface HiResaleMarketListing {
+  id: number
+  asking_price: number
+  buyer_fee: number
+  buyer_total: number
+  currency: string
+  ticket_name: string | null
+  seat_label: string | null
+}
+
+/** Un evento con reventas activas (marketplace global). */
+export interface HiResaleEvent {
+  event_id: number
+  title: string
+  start_date?: string | null
+  currency: string
+  listing_count: number
+  min_price: number
+}
+
+/** Porcentajes de reventa vigentes de un evento (para desglose de fees en la UI). */
+export interface HiResaleFees {
+  resale_enabled: boolean
+  seller_fee_percent: number
+  buyer_fee_percent: number
+  max_price_percent: number
+  currency: string
 }
 
 /** Un evento del usuario con todos sus tickets. `eventIdNumber` es el id numérico de HiEvents. */

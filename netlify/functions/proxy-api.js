@@ -17,6 +17,10 @@ const fetch = globalThis.fetch
 // Upstream configurable. Default: panel de producción.
 const API_ORIGIN = process.env.TICKETSAVER_API_ORIGIN || 'https://panel.ticketsaver.net'
 
+// Token de organizador: solo server-side (nunca en el bundle del front). Setear
+// HIEVENTS_ORGANIZER_TOKEN en las env vars de Netlify.
+const ORGANIZER_TOKEN = process.env.HIEVENTS_ORGANIZER_TOKEN || ''
+
 // Verificación TLS ACTIVA por defecto (seguro). Solo si el certificado del
 // upstream estuviera expirado se puede setear PROXY_INSECURE_TLS=true (NO
 // recomendado; saltea la verificación TLS a nivel de proceso para este fetch).
@@ -58,7 +62,16 @@ exports.handler = async (event) => {
 
   try {
     const headers = { 'Content-Type': 'application/json' }
-    if (event.headers.authorization) headers['Authorization'] = event.headers.authorization
+    if (event.headers.authorization) {
+      // JWT de Supabase del cliente (endpoints /public/... con auth:customer).
+      headers['Authorization'] = event.headers.authorization
+    } else if (normalizedPath === '/api/events' && ORGANIZER_TOKEN) {
+      // ponytail: el token de organizador solo se inyecta en el único endpoint
+      // privado que lo necesita (listado /api/events). Inyectarlo en todos haría
+      // que endpoints públicos vieran una sesión de organizador (p.ej.
+      // /public/user/tickets deriva el email del token si no viene por query).
+      headers['Authorization'] = `Bearer ${ORGANIZER_TOKEN}`
+    }
 
     const fetchOptions = { method: event.httpMethod, headers }
     if (event.body && event.httpMethod !== 'GET') fetchOptions.body = event.body

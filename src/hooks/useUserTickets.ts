@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../context/AuthContext'
 import { hiEventsService } from '../services/hiEventsService'
 import type { HiUserTicketsEvent } from '../types/hievents'
 
 export interface UseUserTicketsResult {
   loading: boolean
   error: string | null
-  /** Email con el que se consultó (Auth0 hoy; null si no se pudo resolver). */
-  email: string | null
+  /** true si hay un customer logueado (login obligatorio para tener tickets). */
+  authenticated: boolean
   /** Todos los eventos con tickets del usuario. */
   events: HiUserTicketsEvent[]
   /** Eventos futuros (fecha >= ahora) ordenados por fecha ascendente. */
@@ -26,25 +26,12 @@ const dateMs = (e: HiUserTicketsEvent): number => {
 }
 
 /**
- * useUserTickets — tickets emitidos del usuario, desde HiEvents
- * (GET /public/user/tickets), agrupados por evento.
- *
- * ⚠️ AUTH0 (TEMPORAL): identificamos al usuario por su email de Auth0. Esto se
- * reemplazará por el LOGIN CUSTOM — cuando eso pase, el ÚNICO cambio acá es de
- * dónde sale `email`; todo lo demás es agnóstico de la fuente. El backend
- * (`/user/tickets`) acepta el email por query param o un Bearer del usuario
- * (que hoy no tenemos). Ver memoria `auth0-login-custom`.
- *
- * En DEV no hay Auth0 (sin `VITE_AUTH0_DOMAIN`) → se usa `VITE_DEV_USER_EMAIL`
- * del `.env` (gitignored) para poder probar con un comprador real local.
+ * useUserTickets — tickets emitidos del usuario logueado, desde HiEvents
+ * (GET /customer-auth/my-tickets, Bearer del customer), agrupados por evento.
  */
 export function useUserTickets(): UseUserTicketsResult {
-  const { user } = useAuth0()
-
-  const devEmail = import.meta.env.DEV
-    ? (import.meta.env.VITE_DEV_USER_EMAIL as string | undefined)
-    : undefined
-  const email = user?.email ?? devEmail ?? null
+  const { status } = useAuth()
+  const authenticated = status === 'authenticated'
 
   const [events, setEvents] = useState<HiUserTicketsEvent[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,7 +41,8 @@ export function useUserTickets(): UseUserTicketsResult {
   const refresh = useCallback(() => setNonce((n) => n + 1), [])
 
   useEffect(() => {
-    if (!email) {
+    if (status === 'loading') return
+    if (!authenticated) {
       setEvents([])
       setLoading(false)
       setError(null)
@@ -64,7 +52,7 @@ export function useUserTickets(): UseUserTicketsResult {
     setLoading(true)
     setError(null)
     hiEventsService
-      .getUserTickets({ email }, controller.signal)
+      .getMyTickets(controller.signal)
       .then((res) => {
         setEvents(res.data ?? [])
       })
@@ -77,7 +65,7 @@ export function useUserTickets(): UseUserTicketsResult {
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [email, nonce])
+  }, [authenticated, status, nonce])
 
   return useMemo(() => {
     const now = Date.now()
@@ -92,7 +80,7 @@ export function useUserTickets(): UseUserTicketsResult {
     return {
       loading,
       error,
-      email,
+      authenticated,
       events,
       upcoming,
       past,
@@ -100,5 +88,5 @@ export function useUserTickets(): UseUserTicketsResult {
       totalTickets,
       refresh
     }
-  }, [events, loading, error, email, refresh])
+  }, [events, loading, error, authenticated, refresh])
 }

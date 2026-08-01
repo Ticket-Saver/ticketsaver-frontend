@@ -352,6 +352,14 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
       )
       navigate('/checkout')
     } catch (e) {
+      const queueRequired =
+        e instanceof HiEventsApiError &&
+        e.status === 403 &&
+        (e.body as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')
+      if (queueRequired) {
+        navigate(`/queue/${event.id}`)
+        return
+      }
       const conflict =
         e instanceof HiEventsApiError && (e.status === 409 || e.status === 422)
       setWarning(

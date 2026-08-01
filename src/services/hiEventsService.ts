@@ -11,6 +11,7 @@
  */
 
 import { HIEVENTS_CONFIG, buildApiUrl, toQuery } from '../config/api'
+import supabase from '../components/supabaseClient'
 import type {
   HiEventPublic,
   HiTicketPublic,
@@ -23,8 +24,19 @@ import type {
   HiEventsListParams,
   HiUserTicketsParams,
   HiUserTicketsResponse,
-  HiHomeConfig
+  HiHomeConfig,
+  HiResaleListing,
+  HiResaleMarketListing,
+  HiResaleFees,
+  HiResaleEvent
 } from '../types/hievents'
+
+/** Configuración pública de la cola de un evento (sin `admission_rate_per_minute`, privado). */
+export interface HiQueueSettingsPublic {
+  is_enabled: boolean
+  starts_at: string | null
+  ends_at: string | null
+}
 
 /** Precio + impuestos de un asiento, traído on-demand vía /tickets/by-seat-ids. */
 export interface HiSeatPricing {
@@ -104,6 +116,95 @@ async function request<T>(
 
 const getJson = <T>(path: string, signal?: AbortSignal) => request<T>('GET', path, undefined, signal)
 
+/**
+ * POST/PUT autenticado con el access_token de la sesión Supabase — usado por
+ * los endpoints de orden (`auth:customer` en el backend, no el token estático
+ * de organizador que manda `request()`).
+ */
+/** Extrae el event_id de un path tipo `/public/events/{id}/order`. */
+const extractEventIdFromPath = (path: string): string | null => {
+  const match = path.match(/\/events\/([^/]+)\//)
+  return match ? match[1] : null
+}
+
+async function requestAsCustomer<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null
+  const token = session?.access_token
+  const eventId = extractEventIdFromPath(path)
+  const queueToken = eventId ? sessionStorage.getItem(`queue_token:${eventId}`) : null
+
+  const res = await fetch(buildApiUrl(path), {
+    method,
+    headers: {
+      Accept: 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(queueToken ? { 'X-Queue-Token': queueToken } : {})
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  })
+
+  if (!res.ok) {
+    let apiMessage: string | undefined
+    let errBody: unknown
+    try {
+      const errText = await res.text()
+      if (errText) {
+        errBody = JSON.parse(errText)
+        apiMessage = (errBody as { message?: string } | null)?.message
+      }
+    } catch {
+      /* cuerpo no-JSON */
+    }
+    if (res.status === 401) {
+      window.dispatchEvent(new Event('customer-auth:logout'))
+    }
+    if (res.status === 403 && (errBody as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')) {
+      if (eventId) sessionStorage.removeItem(`queue_token:${eventId}`)
+    }
+    throw new HiEventsApiError(res.status, path, apiMessage, errBody)
+  }
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
+}
+
+/**
+ * GET autenticado con el access_token de la sesión Supabase, no el token
+ * estático de organizador. supabase-js refresca el token solo; si el backend
+ * igual responde 401 (sesión revocada/expirada), dispara `customer-auth:logout`
+ * para que AuthContext baje a `unauthenticated` (evita import circular).
+ */
+async function getJsonAsCustomer<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null
+  const token = session?.access_token
+
+  const res = await fetch(buildApiUrl(path), {
+    method: 'GET',
+    headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    signal
+  })
+
+  if (!res.ok) {
+    let apiMessage: string | undefined
+    let body: unknown
+    try {
+      const errText = await res.text()
+      if (errText) {
+        body = JSON.parse(errText)
+        apiMessage = (body as { message?: string } | null)?.message
+      }
+    } catch {
+      /* cuerpo no-JSON */
+    }
+    if (res.status === 401) {
+      window.dispatchEvent(new Event('customer-auth:logout'))
+    }
+    throw new HiEventsApiError(res.status, path, apiMessage, body)
+  }
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
+}
+
 export const hiEventsService = {
   // --- Catálogo (C1) ---
 
@@ -124,6 +225,18 @@ export const hiEventsService = {
   async getEvent(eventId: string | number, signal?: AbortSignal): Promise<HiEventPublic> {
     const body = await getJson<HiResource<HiEventPublic>>(
       HIEVENTS_CONFIG.endpoints.publicEvent(eventId),
+      signal
+    )
+    return body.data
+  },
+
+  /** Configuración pública de la cola de un evento (is_enabled + rango de fechas). */
+  async getQueueSettings(
+    eventId: string | number,
+    signal?: AbortSignal
+  ): Promise<HiQueueSettingsPublic> {
+    const body = await getJson<HiResource<HiQueueSettingsPublic>>(
+      HIEVENTS_CONFIG.endpoints.queueSettings(eventId),
       signal
     )
     return body.data
@@ -205,7 +318,7 @@ export const hiEventsService = {
   // --- Órdenes / checkout (C5; firmas listas, payloads se refinan al portar el checkout) ---
 
   async createOrder(eventId: string | number, payload: unknown): Promise<HiOrder> {
-    const body = await request<HiResource<HiOrder>>('POST', HIEVENTS_CONFIG.endpoints.order(eventId), payload)
+    const body = await requestAsCustomer<HiResource<HiOrder>>('POST', HIEVENTS_CONFIG.endpoints.order(eventId), payload)
     return body.data
   },
 
@@ -231,7 +344,7 @@ export const hiEventsService = {
   },
 
   async updateOrder(eventId: string | number, shortId: string, payload: unknown): Promise<HiOrder> {
-    const body = await request<HiResource<HiOrder>>('PUT', HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), payload)
+    const body = await requestAsCustomer<HiResource<HiOrder>>('PUT', HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), payload)
     return body.data
   },
 
@@ -240,7 +353,7 @@ export const hiEventsService = {
     shortId: string,
     payload: unknown
   ): Promise<{ checkout_url?: string; client_secret?: string; [key: string]: unknown }> {
-    const body = await request<HiResource<{ checkout_url?: string; client_secret?: string }>>(
+    const body = await requestAsCustomer<HiResource<{ checkout_url?: string; client_secret?: string }>>(
       'POST',
       HIEVENTS_CONFIG.endpoints.stripeCheckoutSession(eventId, shortId),
       payload
@@ -249,7 +362,7 @@ export const hiEventsService = {
   },
 
   async confirmPayment(eventId: string | number, shortId: string, sessionId: string): Promise<HiOrder> {
-    const body = await request<HiResource<HiOrder>>(
+    const body = await requestAsCustomer<HiResource<HiOrder>>(
       'POST',
       HIEVENTS_CONFIG.endpoints.confirmPayment(eventId, shortId),
       { session_id: sessionId }
@@ -258,7 +371,7 @@ export const hiEventsService = {
   },
 
   async getOrder(eventId: string | number, shortId: string, signal?: AbortSignal): Promise<HiOrder> {
-    const body = await getJson<HiResource<HiOrder>>(HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), signal)
+    const body = await getJsonAsCustomer<HiResource<HiOrder>>(HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), signal)
     return body.data
   },
 
@@ -286,9 +399,75 @@ export const hiEventsService = {
     )
   },
 
+  /**
+   * Tickets del customer logueado, agrupados por evento (GET /customer-auth/my-tickets).
+   * Mismo shape de respuesta que getUserTickets, pero identificado por el JWT
+   * (Bearer), nunca por email en query param.
+   */
+  async getMyTickets(signal?: AbortSignal): Promise<HiUserTicketsResponse> {
+    return getJsonAsCustomer<HiUserTicketsResponse>(HIEVENTS_CONFIG.endpoints.customerMyTickets(), signal)
+  },
+
   /** Curaduría de la Home del sitio público (destacados + carruseles). */
   async getHomeConfig(signal?: AbortSignal): Promise<HiHomeConfig> {
     return getJson<HiHomeConfig>(HIEVENTS_CONFIG.endpoints.homeConfig(), signal)
+  },
+
+  /** Actualiza first_name/last_name del customer logueado (PUT /customer-auth/me). */
+  async updateMyProfile(payload: { first_name?: string; last_name?: string }): Promise<void> {
+    await requestAsCustomer<unknown>('PUT', HIEVENTS_CONFIG.endpoints.customerMe(), payload)
+  },
+
+  // --- Reventa (marketplace) ---
+
+  /** Mis tickets listados en reventa. */
+  async getMyResaleListings(signal?: AbortSignal): Promise<{ data: HiResaleListing[] }> {
+    return getJsonAsCustomer<{ data: HiResaleListing[] }>(HIEVENTS_CONFIG.endpoints.resaleMyListings(), signal)
+  },
+
+  /** Pone un ticket propio en reventa. attendeePublicId = ticketId del ticket (public_id). */
+  async createResaleListing(attendeePublicId: string, askingPrice: number): Promise<HiResaleListing> {
+    const body = await requestAsCustomer<{ data: HiResaleListing }>(
+      'POST',
+      HIEVENTS_CONFIG.endpoints.resaleCreateListing(),
+      { attendee_public_id: attendeePublicId, asking_price: askingPrice }
+    )
+    return body.data
+  },
+
+  /** Cancela un listado propio (desbloquea el ticket). */
+  async cancelResaleListing(listingId: number): Promise<void> {
+    await requestAsCustomer<unknown>('DELETE', HIEVENTS_CONFIG.endpoints.resaleCancelListing(listingId))
+  },
+
+  /** Inicia la compra de una reventa: devuelve la checkout_url de Stripe. */
+  async createResaleCheckout(
+    listingId: number,
+    successUrl: string,
+    cancelUrl: string
+  ): Promise<{ checkout_url: string; session_id: string }> {
+    const body = await requestAsCustomer<{ data: { checkout_url: string; session_id: string } }>(
+      'POST',
+      HIEVENTS_CONFIG.endpoints.resaleCheckout(listingId),
+      { success_url: successUrl, cancel_url: cancelUrl }
+    )
+    return body.data
+  },
+
+  /** Marketplace global: eventos con reventas activas. */
+  async getResaleEvents(signal?: AbortSignal): Promise<{ data: HiResaleEvent[] }> {
+    return getJson<{ data: HiResaleEvent[] }>(HIEVENTS_CONFIG.endpoints.resaleEvents(), signal)
+  },
+
+  /** Marketplace público: reventas disponibles de un evento + fees vigentes. */
+  async getEventResaleListings(
+    eventId: string | number,
+    signal?: AbortSignal
+  ): Promise<{ data: HiResaleMarketListing[]; fees: HiResaleFees }> {
+    return getJson<{ data: HiResaleMarketListing[]; fees: HiResaleFees }>(
+      HIEVENTS_CONFIG.endpoints.resaleEventListings(eventId),
+      signal
+    )
   }
 }
 

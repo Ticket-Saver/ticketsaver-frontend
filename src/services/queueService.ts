@@ -1,19 +1,15 @@
 import supabase from '../components/supabaseClient'
 
 /**
- * queueService — Sala de espera virtual.
+ * queueService — Sala de espera virtual (Supabase Postgres + Realtime).
  *
- * En B7 corremos una **simulación in-memory** porque el cliente todavía
- * no expuso las tablas de queue en Supabase. La API pública del módulo
- * coincide con lo que la versión real necesitará (joinQueue / getPosition),
- * así que cuando enchufemos Supabase real basta con reemplazar la
- * implementación interna sin tocar al consumer.
+ * Cada join() inserta una fila nueva en `queue_entries` — salir de la cola
+ * y reentrar SIEMPRE da una posición nueva (anti-gaming, requisito explícito).
+ * La posición y el paso a "admitted" llegan por Realtime, con polling de
+ * respaldo (ver useQueuePosition) por si el websocket se cae.
  *
- * URL params para testing:
- *   ?queueSpeed=300   → 300 personas por segundo (más rápido).
- *   ?queueStart=200   → arranca con esa posición.
- *   ?queueTotal=5000  → total de la cola.
- *   ?queueForce=next  → fuerza el state.
+ * La policy de UPDATE de `queue_entries` fue eliminada: los cambios de
+ * estado pasan por RPCs (queue_heartbeat, queue_leave) en vez de update directo.
  */
 
 export type QueueStateKind = 'far' | 'close' | 'next' | 'released'
@@ -22,7 +18,7 @@ export interface QueueSnapshot {
   state: QueueStateKind
   /** Posición actual del usuario en la cola. 0 = puerta. */
   position: number
-  /** Total de personas en la cola (incluye al usuario). */
+  /** Total de personas esperando en la cola. */
   total: number
   /** Estimación humana del tiempo de espera. */
   eta: string
@@ -31,189 +27,138 @@ export interface QueueSnapshot {
 }
 
 export interface JoinQueueResult {
-  ticketId: string
-  joinedAt: number
-  initialPosition: number
-  total: number
+  entryId: string
+  admissionToken: string | null
 }
 
-interface QueueRecord {
-  ticketId: string
-  joinedAt: number
-  initialPosition: number
-  total: number
-  eventLabel: string
-  /** Override del state para testing. */
-  forcedState?: QueueStateKind
+export type QueueEntryRow = {
+  id: string
+  status: 'waiting' | 'admitted' | 'abandoned'
+  admission_token: string | null
 }
 
-const records = new Map<string, QueueRecord>()
+const HEARTBEAT_INTERVAL_MS = 10_000
 
-const DEFAULT_SPEED = 180 // personas por segundo
-const DEFAULT_START = 3800
-const DEFAULT_TOTAL = 12500
+// El backend ahora expone admission_rate_per_minute en el endpoint público
+// de queue-settings. Si no viene (o falla el fetch), usamos esta tasa asumida.
+const FALLBACK_RATE_PER_MINUTE = 100
 
-const getQueueParams = () => {
-  if (typeof window === 'undefined') {
-    return {
-      speed: DEFAULT_SPEED,
-      start: DEFAULT_START,
-      total: DEFAULT_TOTAL,
-      force: undefined as QueueStateKind | undefined
-    }
-  }
-  const sp = new URLSearchParams(window.location.search)
-  const speed = Number(sp.get('queueSpeed')) || DEFAULT_SPEED
-  const start = Number(sp.get('queueStart')) || DEFAULT_START
-  const total = Number(sp.get('queueTotal')) || DEFAULT_TOTAL
-  const force = sp.get('queueForce') as QueueStateKind | null
-  return {
-    speed,
-    start,
-    total,
-    force:
-      force === 'far' || force === 'close' || force === 'next' || force === 'released'
-        ? force
-        : undefined
-  }
-}
-
-const formatEta = (position: number, speed: number): string => {
+const formatEta = (position: number, ratePerMinute?: number): string => {
   if (position <= 0) return 'Go!'
-  const secs = Math.round(position / speed)
+  const rate = ratePerMinute ?? FALLBACK_RATE_PER_MINUTE
+  const secs = Math.round((position / rate) * 60)
   if (secs < 30) return '< 30 s'
   if (secs < 120) return `~${Math.round(secs / 10) * 10} s`
   const mins = Math.round(secs / 60)
   return `~${mins} min`
 }
 
-const classifyState = (
-  position: number,
-  initialPosition: number
-): QueueStateKind => {
+const classifyState = (position: number, initialPosition: number): QueueStateKind => {
   if (position <= 0) return 'released'
   if (position <= 5) return 'next'
-  const remainingPct = position / initialPosition
+  const remainingPct = position / Math.max(initialPosition, 1)
   if (remainingPct <= 0.3) return 'close'
   return 'far'
 }
 
-const computeSnapshotForRecord = (record: QueueRecord): QueueSnapshot => {
-  const { speed, force } = getQueueParams()
-  const elapsed = (Date.now() - record.joinedAt) / 1000
-  const rawPosition = record.initialPosition - elapsed * speed
-  const position = Math.max(0, Math.floor(rawPosition))
-  const baseState = classifyState(position, record.initialPosition)
-  const finalState: QueueStateKind = record.forcedState ?? force ?? baseState
-
-  const adjustedPosition =
-    finalState === 'released'
-      ? 0
-      : finalState === 'next'
-        ? Math.min(position, 3)
-        : finalState === 'close'
-          ? Math.max(position, Math.round(record.initialPosition * 0.05))
-          : position
-
-  const pct =
-    finalState === 'released'
-      ? 1
-      : Math.max(
-          0,
-          Math.min(0.99, 1 - adjustedPosition / record.initialPosition)
-        )
-
-  return {
-    state: finalState,
-    position: adjustedPosition,
-    total: record.total,
-    eta: formatEta(adjustedPosition, speed),
-    pct
-  }
+export const buildSnapshot = (
+  position: number,
+  total: number,
+  initialPosition: number,
+  ratePerMinute?: number
+): QueueSnapshot => {
+  const state = classifyState(position, initialPosition)
+  const pct = state === 'released' ? 1 : Math.max(0, Math.min(0.99, 1 - position / Math.max(initialPosition, 1)))
+  return { state, position, total, eta: formatEta(position, ratePerMinute), pct }
 }
 
 /* ─────────────── Public API ─────────────── */
 
-export const joinQueue = async (
-  eventLabel: string
-): Promise<JoinQueueResult> => {
-  // Reusamos un ticketId existente si el usuario ya joineó esta cola
-  // recientemente (evita re-shuffle al re-mount del hook).
-  for (const r of records.values()) {
-    if (r.eventLabel === eventLabel) {
-      return {
-        ticketId: r.ticketId,
-        joinedAt: r.joinedAt,
-        initialPosition: r.initialPosition,
-        total: r.total
-      }
-    }
-  }
+export const joinQueue = async (eventId: number): Promise<JoinQueueResult> => {
+  if (!supabase) throw new Error('Supabase no está configurado')
 
-  const { start, total } = getQueueParams()
-  const ticketId = `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  const record: QueueRecord = {
-    ticketId,
-    joinedAt: Date.now(),
-    initialPosition: start,
-    total,
-    eventLabel
-  }
-  records.set(ticketId, record)
-  if (import.meta.env.DEV) {
-    console.log('[queueService] joined', { ticketId, eventLabel, start, total })
-  }
-  return {
-    ticketId,
-    joinedAt: record.joinedAt,
-    initialPosition: start,
-    total
-  }
+  const { data: sessionData } = await supabase.auth.getSession()
+  const userId = sessionData.session?.user.id
+  if (!userId) throw new Error('Se requiere sesión para unirse a la cola')
+
+  const { data, error } = await supabase
+    .from('queue_entries')
+    .insert({ event_id: eventId, user_id: userId })
+    .select('id, status, admission_token')
+    .single()
+
+  if (error || !data) throw new Error(error?.message ?? 'No se pudo unir a la cola')
+
+  return { entryId: data.id, admissionToken: data.admission_token }
 }
 
 export const getPosition = async (
-  _eventLabel: string,
-  ticketId: string
-): Promise<QueueSnapshot> => {
-  const record = records.get(ticketId)
-  if (!record) {
-    return {
-      state: 'released',
-      position: 0,
-      total: 0,
-      eta: '—',
-      pct: 1
-    }
-  }
-  return computeSnapshotForRecord(record)
+  eventId: number,
+  entryId: string
+): Promise<{ position: number; total: number } | null> => {
+  if (!supabase) return null
+
+  // El total se contaba antes client-side con .select('id', {count:'exact'}),
+  // pero RLS sólo deja ver las filas propias del usuario: el count siempre
+  // daba ~1. Ahora usa la RPC get_queue_total, que corre con permisos elevados.
+  const [{ data: position }, { data: total }] = await Promise.all([
+    supabase.rpc('get_queue_position', { p_event_id: eventId, p_entry_id: entryId }),
+    supabase.rpc('get_queue_total', { p_event_id: eventId })
+  ])
+
+  if (position === null || position === undefined) return null
+  return { position, total: total ?? 0 }
 }
 
-export const leaveQueue = async (ticketId: string): Promise<void> => {
-  records.delete(ticketId)
+export const getEntry = async (entryId: string): Promise<QueueEntryRow | null> => {
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('queue_entries')
+    .select('id, status, admission_token')
+    .eq('id', entryId)
+    .maybeSingle()
+  if (error || !data) return null
+  return data
 }
 
-/* ─────────────── Supabase wiring (TODO real) ─────────────── */
+export const leaveQueue = async (entryId: string): Promise<void> => {
+  if (!supabase) return
+  await supabase.rpc('queue_leave', { p_entry_id: entryId })
+}
+
+export const sendHeartbeat = async (entryId: string): Promise<void> => {
+  if (!supabase) return
+  await supabase.rpc('queue_heartbeat', { p_entry_id: entryId })
+}
+
+export const startHeartbeat = (entryId: string): (() => void) => {
+  const interval = window.setInterval(() => {
+    sendHeartbeat(entryId).catch(() => {})
+  }, HEARTBEAT_INTERVAL_MS)
+  return () => window.clearInterval(interval)
+}
 
 /**
- * Suscripción al canal `queue:{eventLabel}` cuando exista server real.
- * Por ahora retorna un noop unsubscribe — el polling del hook cubre la
- * actualización.
+ * Suscripción Realtime a la propia fila en `queue_entries`. Llama a
+ * onUpdate en cada cambio de status/admission_token (RLS ya limita a
+ * las filas del propio usuario).
  */
-export const subscribeToQueue = (
-  eventLabel: string,
-  onUpdate: (snapshot: QueueSnapshot) => void
+export const subscribeToEntry = (
+  entryId: string,
+  onUpdate: (row: QueueEntryRow) => void
 ): (() => void) => {
-  if (!supabase || typeof supabase.channel !== 'function') {
-    void eventLabel
-    void onUpdate
-    return () => {}
+  if (!supabase) return () => {}
+
+  const channel = supabase
+    .channel(`queue_entry:${entryId}`)
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'queue_entries', filter: `id=eq.${entryId}` },
+      (payload) => onUpdate(payload.new as QueueEntryRow)
+    )
+    .subscribe()
+
+  return () => {
+    void supabase!.removeChannel(channel)
   }
-  // const channel = supabase
-  //   .channel(`queue:${eventLabel}`)
-  //   .on('broadcast', { event: 'position' }, ({ payload }) => onUpdate(payload as QueueSnapshot))
-  //   .subscribe()
-  // return () => { void supabase.removeChannel(channel) }
-  void eventLabel
-  void onUpdate
-  return () => {}
 }

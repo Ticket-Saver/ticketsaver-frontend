@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import { Button, CountdownPill } from '../ui'
 import { useCart } from '../../router/cartContext'
 import { cn } from '../../types/ui'
@@ -16,6 +16,7 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { to: '/', label: 'Home' },
   { to: '/events', label: 'Events', matchPrefix: '/events' },
+  { to: '/reventa', label: 'Reventa', matchPrefix: '/reventa' },
   { to: '/about', label: 'About', matchPrefix: '/about' },
   { to: '/faqs', label: 'FAQs', matchPrefix: '/faqs' }
 ]
@@ -29,17 +30,15 @@ interface HeaderProps {
 
 export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { count: cartCount, openDrawer: openCart } = useCart()
-  const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
+  const { status, user, logout } = useAuth()
+  const isAuthenticated = status === 'authenticated'
 
   const handleLogin = () =>
-    loginWithRedirect({
-      appState: { returnTo: location.pathname + location.search },
-      authorizationParams: { screen_hint: 'signup' }
-    })
+    navigate('/login', { state: { returnTo: location.pathname + location.search } })
 
-  const handleLogout = () =>
-    logout({ logoutParams: { returnTo: window.location.origin } })
+  const handleLogout = () => logout()
 
   return (
     <header
@@ -91,9 +90,8 @@ export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProp
 
         {isAuthenticated ? (
           <UserMenu
-            name={user?.name}
+            name={user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : undefined}
             email={user?.email}
-            picture={user?.picture}
             onLogout={handleLogout}
           />
         ) : (

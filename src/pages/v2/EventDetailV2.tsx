@@ -7,10 +7,12 @@ import TagList from '../../components/v2/eventDetail/TagList'
 import Gallery from '../../components/v2/eventDetail/Gallery'
 import VenueMap from '../../components/v2/eventDetail/VenueMap'
 import StickyCTA, { buildSaleHref } from '../../components/v2/eventDetail/StickyCTA'
+import EventResaleSection from '../../components/v2/resale/EventResaleSection'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import { getDatesForEvent } from '../../services/multiDateAdapter'
 import { hiEventsService } from '../../services/hiEventsService'
+import type { HiQueueSettingsPublic } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
 import type { Availability, UIEvent } from '../../types/uiEvent'
@@ -45,6 +47,15 @@ const fmtTimeInTz = (iso: string | null | undefined, tz: string | null | undefin
   }).format(d)
 }
 
+/** Cola activa: habilitada y (sin rango, o dentro del rango starts_at/ends_at). */
+const isQueueActiveNow = (q: HiQueueSettingsPublic | null): boolean => {
+  if (!q?.is_enabled) return false
+  const now = Date.now()
+  if (q.starts_at && now < new Date(q.starts_at).getTime()) return false
+  if (q.ends_at && now > new Date(q.ends_at).getTime()) return false
+  return true
+}
+
 /** Une location_details en una dirección legible (sin venue ni país). */
 const formatAddress = (loc: HiLocationDetails | null | undefined): string => {
   if (!loc) return ''
@@ -68,26 +79,30 @@ export default function EventDetailV2() {
 
   const [detail, setDetail] = useState<HiEventPublic | null>(null)
   const [tickets, setTickets] = useState<HiTicketPublic[]>([])
+  const [queueSettings, setQueueSettings] = useState<HiQueueSettingsPublic | null>(null)
   const [detailError, setDetailError] = useState(false)
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
-  // Detalle rico + tickets desde HiEvents. Sirve también de deep-link: si el
-  // evento no está en la lista cargada, igual se resuelve por su id.
+  // Detalle rico + tickets + queue-settings desde HiEvents. Sirve también de
+  // deep-link: si el evento no está en la lista cargada, igual se resuelve por su id.
   useEffect(() => {
     if (!id) return
     let cancelled = false
     setDetail(null)
     setTickets([])
+    setQueueSettings(null)
     setDetailError(false)
     ;(async () => {
       try {
-        const [d, t] = await Promise.all([
+        const [d, t, q] = await Promise.all([
           hiEventsService.getEvent(id),
-          hiEventsService.getTickets(id).catch(() => [] as HiTicketPublic[])
+          hiEventsService.getTickets(id).catch(() => [] as HiTicketPublic[]),
+          hiEventsService.getQueueSettings(id).catch(() => null)
         ])
         if (cancelled) return
         setDetail(d)
         setTickets(t)
+        setQueueSettings(q)
       } catch {
         if (!cancelled) setDetailError(true)
       }
@@ -142,6 +157,7 @@ export default function EventDetailV2() {
     const realAvailability = deriveAvailability(detail?.availability)
     return {
       ...baseEvent,
+      requiresQueue: queueSettings ? isQueueActiveNow(queueSettings) : baseEvent.requiresQueue,
       priceFrom: priceFrom ?? baseEvent.priceFrom,
       // Si la venta aún no abrió, no mostramos "sold-out" (0 disponibles ≠ agotado).
       availability: !isSaleActive ? 'available' : realAvailability ?? baseEvent.availability,
@@ -159,7 +175,7 @@ export default function EventDetailV2() {
           }
         : baseEvent.presale
     }
-  }, [baseEvent, priceFrom, detail, isSaleActive])
+  }, [baseEvent, priceFrom, detail, isSaleActive, queueSettings])
 
   const description = detail?.description ?? ''
   // Solo mostramos la hora de fin si es posterior al inicio (evita "9:54 – 9:54").
@@ -339,6 +355,12 @@ export default function EventDetailV2() {
       </Section>
 
       <TicketPricesPanel tickets={tickets} />
+
+      {detail?.id && (
+        <Section title='Resale'>
+          <EventResaleSection eventId={detail.id} />
+        </Section>
+      )}
 
       <div className='h-32 lg:h-24' />
 

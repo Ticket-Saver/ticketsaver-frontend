@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../../../context/AuthContext'
 import LayoutV2 from '../../../layouts/LayoutV2'
 import StepHeader from '../sale/StepHeader'
 import CheckoutStripe from '../../CheckoutStripe'
@@ -29,7 +29,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100
  */
 export default function CheckoutV2() {
   const navigate = useNavigate()
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const { items: cart, eventLabel, pricing } = useCart()
   const { byLabel } = useUIEvents()
   const timer = useSessionTimer(eventLabel ?? undefined, 10)
@@ -55,9 +55,9 @@ export default function CheckoutV2() {
 
   const customer = useMemo(
     () => ({
-      name: user?.name,
+      name: user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : undefined,
       email: user?.email,
-      phone: (user as { phone_number?: string } | undefined)?.phone_number
+      phone: user?.phone
     }),
     [user]
   )

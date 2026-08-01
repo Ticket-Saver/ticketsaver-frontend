@@ -1,4 +1,4 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router-dom'
 import TicketIcon from '../../assets/icons/ticket.svg'
 /*
@@ -10,7 +10,7 @@ import WalletIcon from '../../assets/icons/wallet.svg'
 import { useState } from 'react'
 
 export default function Sidebar() {
-  const { isAuthenticated, user } = useAuth0()
+  const { user } = useAuth()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
@@ -26,13 +26,9 @@ export default function Sidebar() {
           isSidebarOpen ? 'flex' : 'lg:flex hidden'
         } fixed lg:static top-19 left-0 flex-col bg-[#180F3C] text-white w-80 min-h-screen h-full p-4`}
       >
-        <div className="flex flex-col items-center py-8">
-          <img
-            src={isAuthenticated && user?.picture ? user?.picture : '/user.png'}
-            alt="Profile"
-            className="w-40 h-40 rounded-full mb-4"
-          />
-          <h2 className="text-lg mb-4">{user?.name}</h2>
+        <div className='flex flex-col items-center py-8'>
+          <img src='/user.png' alt='Profile' className='w-40 h-40 rounded-full mb-4' />
+          <h2 className='text-lg mb-4'>{user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : ''}</h2>
         </div>
         <nav className="flex flex-col space-y-3 px-4">
           <Link

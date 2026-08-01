@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../../context/AuthContext'
 import LayoutV2 from '../../layouts/LayoutV2'
 import { GlassCard } from '../../components/ui'
 import { useUserTickets, type UseUserTicketsResult } from '../../hooks/useUserTickets'
@@ -11,28 +11,25 @@ export type MyTicketsContext = UseUserTicketsResult
 
 const TABS = [
   { to: 'upcomingevent', label: 'Upcoming' },
-  { to: 'pastevent', label: 'Past' }
+  { to: 'pastevent', label: 'Past' },
+  { to: 'resales', label: 'Reventas' }
 ] as const
 
 /**
  * MyTicketsV2 — dashboard del usuario con sus tickets REALES de HiEvents
- * (GET /user/tickets vía `useUserTickets`, identificado por email de Auth0;
- * ver nota del hook sobre el futuro login custom).
+ * (GET /customer-auth/my-tickets vía `useUserTickets`, identificado por el
+ * JWT del customer logueado).
  *
  * Header con greeting + stats reales. Las pestañas hijas (UpcomingV2 / PastV2)
  * se montan vía `<Outlet />` y reciben los datos por `useOutletContext` para no
  * re-consultar el endpoint por tab.
  */
 export default function MyTicketsV2() {
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const tickets = useUserTickets()
   const location = useLocation()
 
-  const greeting = user?.given_name
-    ? `Hey, ${user.given_name}`
-    : user?.name
-      ? `Hey, ${user.name.split(' ')[0]}`
-      : 'Hey there'
+  const greeting = user?.firstName ? `Hey, ${user.firstName}` : 'Hey there'
 
   return (
     <LayoutV2 hideFooter meshSeed={3}>
@@ -93,7 +90,7 @@ export default function MyTicketsV2() {
                 {tickets.error}
               </p>
             </GlassCard>
-          ) : !tickets.loading && !tickets.email ? (
+          ) : !tickets.loading && !tickets.authenticated ? (
             <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
               <div className='font-display text-base font-semibold text-white'>
                 Sign in to see your tickets

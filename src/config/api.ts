@@ -7,15 +7,21 @@
  *                 /api → panel.ticketsaver.net/api/events, .../api/public/events/1
  *
  * Así la construcción de rutas es idéntica en ambos entornos; solo cambia la base.
- * El listado (`/events`) es PRIVADO y requiere `VITE_TOKEN_HIEVENTS` (token de
- * organizador). Los endpoints `/public/...` NO requieren token.
+ * El listado (`/events`) es PRIVADO y requiere el token de organizador. En DEV
+ * viaja en el bundle (front → localhost:1234 directo); en PROD lo inyecta el
+ * proxy de Netlify server-side (ver netlify/functions/proxy-api.js) y nunca
+ * entra al bundle del cliente.
  */
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
 const API_BASE_URL = (RAW_BASE && RAW_BASE.trim() ? RAW_BASE : 'http://localhost:1234').replace(/\/+$/, '')
 
-const RAW_TOKEN = import.meta.env.VITE_TOKEN_HIEVENTS as string | undefined
-const API_TOKEN = RAW_TOKEN && RAW_TOKEN.trim() ? RAW_TOKEN.trim() : undefined
+// ponytail: el token de organizador solo existe en dev (front → localhost:1234 directo).
+// En prod el proxy Netlify (netlify/functions/proxy-api.js) lo inyecta server-side,
+// así Vite hace DCE de la rama y el string nunca entra al bundle.
+const API_TOKEN = import.meta.env.DEV
+  ? ((import.meta.env.VITE_TOKEN_HIEVENTS as string | undefined)?.trim() || undefined)
+  : undefined
 
 export const HIEVENTS_CONFIG = {
   baseUrl: API_BASE_URL,
@@ -31,6 +37,7 @@ export const HIEVENTS_CONFIG = {
     presaleValidate: (eventId: string | number, code: string) =>
       `/public/events/${eventId}/presale/${encodeURIComponent(code)}`,
     eventTickets: (eventId: string | number) => `/public/events/${eventId}/tickets`,
+    queueSettings: (eventId: string | number) => `/public/events/${eventId}/queue-settings`,
 
     // --- Mapa de asientos (C3) ---
     seatingMap: (eventId: string | number) => `/public/events/${eventId}/seating-map`,
@@ -59,7 +66,34 @@ export const HIEVENTS_CONFIG = {
     userTickets: () => `/public/user/tickets`,
 
     // --- Curaduría de la Home (Admin TicketSaver) ---
-    homeConfig: () => `/public/home-config`
+    homeConfig: () => `/public/home-config`,
+
+    // --- Customer Auth (cuentas de compradores, login obligatorio para comprar) ---
+    customerRegister: () => `/customer-auth/register`,
+    customerLogin: () => `/customer-auth/login`,
+    customerVerifyEmail: () => `/customer-auth/verify-email`,
+    customerVerifyPhone: () => `/customer-auth/verify-phone`,
+    customerResendOtp: () => `/customer-auth/resend-otp`,
+    customerForgotPassword: () => `/customer-auth/forgot-password`,
+    customerResetPassword: () => `/customer-auth/reset-password`,
+    customerLogout: () => `/customer-auth/logout`,
+    customerRefresh: () => `/customer-auth/refresh`,
+    customerMe: () => `/customer-auth/me`,
+    customerMyTickets: () => `/customer-auth/my-tickets`,
+
+    // --- Reventa (marketplace) ---
+    /** Mis tickets listados en reventa (customer). */
+    resaleMyListings: () => `/customer-auth/resale/my-listings`,
+    /** Crear un listado de reventa (customer). */
+    resaleCreateListing: () => `/customer-auth/resale/listings`,
+    /** Cancelar un listado de reventa (customer). */
+    resaleCancelListing: (listingId: string | number) => `/customer-auth/resale/listings/${listingId}`,
+    /** Iniciar checkout de compra de una reventa (customer). */
+    resaleCheckout: (listingId: string | number) => `/customer-auth/resale/listings/${listingId}/checkout`,
+    /** Marketplace público de reventa de un evento. */
+    resaleEventListings: (eventId: string | number) => `/resale/events/${eventId}/listings`,
+    /** Eventos con reventas activas (marketplace global). */
+    resaleEvents: () => `/resale/events`
   }
 }
 

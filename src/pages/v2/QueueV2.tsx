@@ -18,6 +18,9 @@ import styles from '../../styles/effects/queue.module.css'
 import type { UIEvent } from '../../types/uiEvent'
 
 const RELEASE_REDIRECT_DELAY_MS = 1500
+// Si a los 15s de "released" seguimos sin admissionToken, redirigimos igual
+// (mejor eso que dejar al usuario colgado en "You're in").
+const NO_TOKEN_GRACE_MS = 15_000
 
 const buildSaleHref = (event: UIEvent): string => {
   const safe = (s: string | undefined | null) => encodeURIComponent(s ?? '')
@@ -38,17 +41,37 @@ export default function QueueV2() {
   const navigate = useNavigate()
   const { loading: eventsLoading, byLabel } = useUIEvents()
   const event = byLabel(label)
+  const eventId = event ? Number(event.eventId) : undefined
 
-  const { snapshot, loading: queueLoading, error } = useQueuePosition(label)
+  const { snapshot, loading: queueLoading, error, admissionToken, rejoin } = useQueuePosition(eventId)
 
-  // Auto-redirect cuando se libera.
+  // Auto-redirect cuando se libera: persiste el token de turno para que
+  // hiEventsService lo adjunte (X-Queue-Token) en createOrder/updateOrder.
+  // No redirigimos sin token: el checkout responde 403 si llega sin él.
+  // Si tarda demasiado, hay un timeout de gracia que redirige igual.
   useEffect(() => {
     if (!snapshot || snapshot.state !== 'released' || !event) return
-    const t = window.setTimeout(() => {
-      navigate(buildSaleHref(event), { replace: true })
-    }, RELEASE_REDIRECT_DELAY_MS)
-    return () => window.clearTimeout(t)
-  }, [snapshot, event, navigate])
+    if (admissionToken) sessionStorage.setItem(`queue_token:${event.eventId}`, admissionToken)
+
+    let redirectTimer: number | null = null
+    if (admissionToken) {
+      redirectTimer = window.setTimeout(() => {
+        navigate(buildSaleHref(event), { replace: true })
+      }, RELEASE_REDIRECT_DELAY_MS)
+    }
+
+    const graceTimer = window.setTimeout(() => {
+      if (!admissionToken) {
+        console.warn('QueueV2: released sin admissionToken tras el timeout de gracia, redirigiendo igual')
+        navigate(buildSaleHref(event), { replace: true })
+      }
+    }, NO_TOKEN_GRACE_MS)
+
+    return () => {
+      if (redirectTimer !== null) window.clearTimeout(redirectTimer)
+      window.clearTimeout(graceTimer)
+    }
+  }, [snapshot, event, admissionToken, navigate])
 
   if (!label) return <Navigate to='/events' replace />
 
@@ -138,10 +161,10 @@ export default function QueueV2() {
                 <Button
                   variant='primary'
                   size='md'
-                  onClick={() => navigate(buildSaleHref(event))}
+                  onClick={rejoin}
                   className='mt-4'
                 >
-                  Try the seat picker directly
+                  Rejoin queue
                 </Button>
               </GlassCard>
             ) : stateKind === 'released' ? (
@@ -302,7 +325,7 @@ const GetReadyCard = () => (
         Get ready — door opens in seconds
       </div>
       <p className='text-[12.5px] text-white/70 mt-1'>
-        You&apos;ll have 5 minutes to pick seats once you&apos;re inside.
+        You&apos;ll have 20 minutes to pick seats once you&apos;re inside.
       </p>
     </div>
   </div>

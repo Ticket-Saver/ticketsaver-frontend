@@ -211,6 +211,15 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
         throw new Error('No se recibió la URL de pago de Stripe.')
       }
     } catch (e) {
+      const queueExpired =
+        e instanceof HiEventsApiError &&
+        e.status === 403 &&
+        (e.body as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')
+      if (queueExpired) {
+        setError('Tu turno en la cola expiró. Volvé a intentar la compra.')
+        setSubmitting(false)
+        return
+      }
       setError(humanizeError(e))
       setSubmitting(false)
     }

@@ -2,14 +2,15 @@
  * walletPassService — cliente del endpoint que genera el .pkpass de
  * Apple Wallet.
  *
- * El backend (Netlify Function `/api/applePass`) requiere certificado
- * Apple Developer + Pass Type ID configurado server-side. Mientras el
- * cliente no provea esas credenciales, mantenemos la feature detrás del
- * flag `APPLE_WALLET_ENABLED` y mostramos "Coming soon" en el botón.
+ * El backend hiEvents (`POST /api/apple-pass`) firma el .pkpass con el cert del
+ * Pass Type ID de Apple. Mientras no esté deployado/configurado, la feature
+ * queda detrás del flag `APPLE_WALLET_ENABLED` y el botón muestra "Coming soon".
  *
  * El env var se setea por entorno:
  *   VITE_APPLE_WALLET_ENABLED=true
  */
+
+import { buildApiUrl } from '../config/api'
 
 export const APPLE_WALLET_ENABLED =
   import.meta.env.VITE_APPLE_WALLET_ENABLED === 'true'
@@ -51,7 +52,7 @@ export async function requestWalletPass(
     }
   }
   try {
-    const response = await fetch('/api/applePass', {
+    const response = await fetch(buildApiUrl('/apple-pass'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

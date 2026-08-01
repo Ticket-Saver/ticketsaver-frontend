@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../../../context/AuthContext'
 import { Button, GlassCard, useToast } from '../../ui'
 import { cn } from '../../../types/ui'
 import {
@@ -10,9 +10,9 @@ import {
 const TOPICS = ['Buying', 'Refunds', 'Wallet', 'Press', 'Promote a show', 'Other']
 
 export default function ContactForm() {
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const toast = useToast()
-  const [name, setName] = useState(user?.name ?? '')
+  const [name, setName] = useState(user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : '')
   const [email, setEmail] = useState(user?.email ?? '')
   const [topic, setTopic] = useState(TOPICS[0])
   const [message, setMessage] = useState('')

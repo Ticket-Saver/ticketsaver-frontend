@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '../../context/AuthContext'
 import LayoutV2 from '../../layouts/LayoutV2'
 import StepHeader from '../../components/v2/sale/StepHeader'
 import {
@@ -87,7 +87,7 @@ const fmtSaleStart = (s: string | null): string | null => {
  */
 export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
   const navigate = useNavigate()
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const toast = useToast()
   const {
     items: cart,
@@ -271,9 +271,9 @@ export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
           location: event.city
         },
         customer: {
-          name: user?.name,
+          name: user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : undefined,
           email: user?.email,
-          phone: (user as { phone_number?: string })?.phone_number
+          phone: user?.phone
         }
       })
     )
