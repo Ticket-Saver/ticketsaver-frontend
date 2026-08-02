@@ -12,25 +12,31 @@ export default function VerifyPhoneV2() {
   const toast = useToast()
 
   const navState = location.state as { phone?: string; returnTo?: string } | null
+  // Teléfono ya conocido: viene del registro por email (pending_phone). En el
+  // alta con Google/Apple no hay teléfono, así que primero lo pedimos.
   const forcedPhone = navState?.phone ?? user?.pendingPhone ?? ''
   const returnTo = navState?.returnTo ?? '/'
   const [phone, setPhone] = useState(forcedPhone)
+  // 'phone' = pedir número y enviar SMS; 'code' = ingresar el OTP recibido.
+  const [step, setStep] = useState<'phone' | 'code'>(forcedPhone ? 'code' : 'phone')
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [resending, setResending] = useState(false)
+  const [sending, setSending] = useState(false)
   const sentOnMount = useRef(false)
 
   // El user llega async (Supabase getSession) — si forcedPhone recién aparece,
-  // sincronizamos el estado local con él.
+  // sincronizamos el estado local y saltamos directo al paso del código.
   useEffect(() => {
     if (forcedPhone && !phone) {
       setPhone(forcedPhone)
+      setStep('code')
     }
   }, [forcedPhone, phone])
 
-  // Al llegar con un teléfono ya conocido (viene del registro), Supabase todavía
-  // no lo asoció a la cuenta — lo hacemos acá, lo que dispara el envío del SMS
-  // (Send SMS Hook -> AWS SNS) automáticamente.
+  // Registro por email: el teléfono ya se conoce pero Supabase aún no lo asoció.
+  // Lo asociamos al montar, lo que dispara el SMS (Send SMS Hook -> AWS SNS).
+  // En OAuth (sin forcedPhone) NO auto-enviamos: el usuario ingresa el número
+  // y recién ahí mandamos el código.
   useEffect(() => {
     if (forcedPhone && !sentOnMount.current) {
       sentOnMount.current = true
@@ -39,6 +45,25 @@ export default function VerifyPhoneV2() {
       })
     }
   }, [forcedPhone, resendOtp])
+
+  // Paso 1 (OAuth): el usuario confirma su teléfono -> asociamos y enviamos OTP.
+  const handleSendCode = async () => {
+    if (!phone) return
+    setSending(true)
+    try {
+      await resendOtp(phone, 'sms')
+      setStep('code')
+      toast.show({ variant: 'success', message: `We sent a code by SMS to ${phone}.` })
+    } catch (err) {
+      toast.show({
+        variant: 'error',
+        title: 'Could not send code',
+        message: err instanceof Error ? err.message : 'Check the number and try again.'
+      })
+    } finally {
+      setSending(false)
+    }
+  }
 
   const handleSubmit = async () => {
     if (code.length !== 6 || !phone) return
@@ -67,7 +92,7 @@ export default function VerifyPhoneV2() {
 
   const handleResend = async () => {
     if (!phone) return
-    setResending(true)
+    setSending(true)
     try {
       await resendOtp(phone, 'sms')
       toast.show({ variant: 'success', message: 'We sent a new code by SMS.' })
@@ -77,22 +102,26 @@ export default function VerifyPhoneV2() {
         message: err instanceof Error ? err.message : 'Could not resend the code.'
       })
     } finally {
-      setResending(false)
+      setSending(false)
     }
   }
 
   return (
     <AuthShell
       title='Verify your phone'
-      subtitle='Enter the 6-digit code we sent to your phone by SMS.'
+      subtitle={
+        step === 'phone'
+          ? 'Enter your phone number and we’ll send you a 6-digit code by SMS.'
+          : 'Enter the 6-digit code we sent to your phone by SMS.'
+      }
       footer={
         <Link to='/login' className='text-brand-hi font-semibold hover:text-white transition'>
           Back to login
         </Link>
       }
     >
-      <div className='space-y-5'>
-        {!forcedPhone && (
+      {step === 'phone' ? (
+        <div className='space-y-5'>
           <Field label='Phone'>
             <input
               type='tel'
@@ -103,30 +132,58 @@ export default function VerifyPhoneV2() {
               className={inputClass}
             />
           </Field>
-        )}
-        {forcedPhone && (
-          <p className='text-center text-sm text-white/60'>Code sent to {forcedPhone}</p>
-        )}
-        <OtpInput value={code} onChange={setCode} disabled={submitting} />
-        <Button
-          type='button'
-          variant='primary'
-          size='lg'
-          fullWidth
-          disabled={submitting || code.length !== 6 || !phone}
-          onClick={handleSubmit}
-        >
-          {submitting ? 'Verifying…' : 'Verify phone'}
-        </Button>
-        <button
-          type='button'
-          onClick={handleResend}
-          disabled={resending || !phone}
-          className='block mx-auto text-[12.5px] text-white/55 hover:text-white transition disabled:opacity-50'
-        >
-          {resending ? 'Resending…' : "Didn't get a code? Resend"}
-        </button>
-      </div>
+          <Button
+            type='button'
+            variant='primary'
+            size='lg'
+            fullWidth
+            disabled={sending || !phone}
+            onClick={handleSendCode}
+          >
+            {sending ? 'Sending…' : 'Send code'}
+          </Button>
+        </div>
+      ) : (
+        <div className='space-y-5'>
+          <p className='text-center text-sm text-white/60'>Code sent to {phone}</p>
+          <OtpInput value={code} onChange={setCode} disabled={submitting} />
+          <Button
+            type='button'
+            variant='primary'
+            size='lg'
+            fullWidth
+            disabled={submitting || code.length !== 6 || !phone}
+            onClick={handleSubmit}
+          >
+            {submitting ? 'Verifying…' : 'Verify phone'}
+          </Button>
+          <div className='flex items-center justify-center gap-3 text-[12.5px]'>
+            <button
+              type='button'
+              onClick={handleResend}
+              disabled={sending || !phone}
+              className='text-white/55 hover:text-white transition disabled:opacity-50'
+            >
+              {sending ? 'Resending…' : "Didn't get a code? Resend"}
+            </button>
+            {!forcedPhone && (
+              <>
+                <span className='text-white/25'>·</span>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setCode('')
+                    setStep('phone')
+                  }}
+                  className='text-white/55 hover:text-white transition'
+                >
+                  Change number
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </AuthShell>
   )
 }
