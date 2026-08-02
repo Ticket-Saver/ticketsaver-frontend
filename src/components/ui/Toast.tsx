@@ -84,10 +84,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  const value = useMemo<ToastContextValue>(
-    () => ({ show, dismiss, clear }),
-    [show, dismiss, clear]
-  )
+  const value = useMemo<ToastContextValue>(() => ({ show, dismiss, clear }), [show, dismiss, clear])
 
   return (
     <ToastContext.Provider value={value}>
@@ -164,18 +161,13 @@ const ToastViewport = ({
         >
           <span
             aria-hidden
-            className={cn(
-              'mt-1 h-2 w-2 shrink-0 rounded-full',
-              VARIANT_DOT[t.variant]
-            )}
+            className={cn('mt-1 h-2 w-2 shrink-0 rounded-full', VARIANT_DOT[t.variant])}
           />
           <div className='min-w-0 flex-1'>
             <div className='font-display text-[11px] font-bold uppercase tracking-[0.16em] text-white/55'>
               {t.title ?? VARIANT_LABEL[t.variant]}
             </div>
-            <div className='mt-0.5 text-[12.5px] text-white/90 leading-snug'>
-              {t.message}
-            </div>
+            <div className='mt-0.5 text-[12.5px] text-white/90 leading-snug'>{t.message}</div>
           </div>
           <button
             type='button'

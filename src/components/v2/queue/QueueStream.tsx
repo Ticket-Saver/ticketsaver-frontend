@@ -13,12 +13,7 @@ interface QueueStreamProps {
  * Mantiene el viz del rediseño — el dot del usuario crece y pulsa
  * mientras los vecinos se atenúan en función de la distancia.
  */
-export default function QueueStream({
-  pct,
-  color,
-  compact,
-  className
-}: QueueStreamProps) {
+export default function QueueStream({ pct, color, compact, className }: QueueStreamProps) {
   const total = compact ? 28 : 44
   const youIdx = Math.max(1, Math.min(total - 2, Math.round(pct * total)))
 

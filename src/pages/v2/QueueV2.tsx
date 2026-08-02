@@ -2,9 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import LayoutV2 from '../../layouts/LayoutV2'
 import EventCover from '../../components/v2/EventCover'
-import QueueStatePill, {
-  QUEUE_STATE_COLOR
-} from '../../components/v2/queue/QueueState'
+import QueueStatePill, { QUEUE_STATE_COLOR } from '../../components/v2/queue/QueueState'
 import QueueStream from '../../components/v2/queue/QueueStream'
 import QueueProgress from '../../components/v2/queue/QueueProgress'
 import TipRotator from '../../components/v2/queue/TipRotator'
@@ -43,7 +41,13 @@ export default function QueueV2() {
   const event = byLabel(label)
   const eventId = event ? Number(event.eventId) : undefined
 
-  const { snapshot, loading: queueLoading, error, admissionToken, rejoin } = useQueuePosition(eventId)
+  const {
+    snapshot,
+    loading: queueLoading,
+    error,
+    admissionToken,
+    rejoin
+  } = useQueuePosition(eventId)
 
   // Auto-redirect cuando se libera: persiste el token de turno para que
   // hiEventsService lo adjunte (X-Queue-Token) en createOrder/updateOrder.
@@ -62,7 +66,9 @@ export default function QueueV2() {
 
     const graceTimer = window.setTimeout(() => {
       if (!admissionToken) {
-        console.warn('QueueV2: released sin admissionToken tras el timeout de gracia, redirigiendo igual')
+        console.warn(
+          'QueueV2: released sin admissionToken tras el timeout de gracia, redirigiendo igual'
+        )
         navigate(buildSaleHref(event), { replace: true })
       }
     }, NO_TOKEN_GRACE_MS)
@@ -90,12 +96,8 @@ export default function QueueV2() {
       <LayoutV2 hideHeader hideFooter meshSeed={6}>
         <div className='min-h-[60vh] grid place-items-center px-4'>
           <GlassCard depth='md' radius='lg' className='p-8 text-center max-w-md'>
-            <div className='font-display text-base font-semibold text-white'>
-              Event not found
-            </div>
-            <p className='mt-2 text-sm text-white/55'>
-              That event is no longer accepting queues.
-            </p>
+            <div className='font-display text-base font-semibold text-white'>Event not found</div>
+            <p className='mt-2 text-sm text-white/55'>That event is no longer accepting queues.</p>
             <Button
               variant='primary'
               size='md'
@@ -114,33 +116,20 @@ export default function QueueV2() {
   const color = QUEUE_STATE_COLOR[stateKind]
 
   return (
-    <LayoutV2
-      hideHeader
-      hideFooter
-      meshSeed={(coverSeed(event.id) % 8) + 5}
-      meshPalette='charcoal'
-    >
+    <LayoutV2 hideHeader hideFooter meshSeed={(coverSeed(event.id) % 8) + 5} meshPalette='charcoal'>
       {/* Cover blureado del evento como fondo ambiental */}
       <div
         aria-hidden
         className='fixed inset-0 -z-10 overflow-hidden pointer-events-none'
         style={{ filter: 'blur(60px) saturate(140%) brightness(0.5)' }}
       >
-        <EventCover
-          event={event}
-          height={900}
-          big
-          hideCategory
-          hideDate
-          hideTitle
-        />
+        <EventCover event={event} height={900} big hideCategory hideDate hideTitle />
       </div>
       <div
         aria-hidden
         className='fixed inset-0 -z-10 pointer-events-none'
         style={{
-          background:
-            'linear-gradient(180deg, rgba(10,10,12,0.30) 0%, rgba(10,10,12,0.88) 100%)'
+          background: 'linear-gradient(180deg, rgba(10,10,12,0.30) 0%, rgba(10,10,12,0.88) 100%)'
         }}
       />
 
@@ -158,12 +147,7 @@ export default function QueueV2() {
                   Queue is offline
                 </div>
                 <p className='mt-2 text-sm text-white/55'>{error}</p>
-                <Button
-                  variant='primary'
-                  size='md'
-                  onClick={rejoin}
-                  className='mt-4'
-                >
+                <Button variant='primary' size='md' onClick={rejoin} className='mt-4'>
                   Rejoin queue
                 </Button>
               </GlassCard>
@@ -242,12 +226,7 @@ interface PositionPanelProps {
   stateKind: 'far' | 'close' | 'next'
 }
 
-const PositionPanel = ({
-  snapshot,
-  loading,
-  color,
-  stateKind
-}: PositionPanelProps) => {
+const PositionPanel = ({ snapshot, loading, color, stateKind }: PositionPanelProps) => {
   if (loading || !snapshot) {
     return (
       <div className='min-h-[420px] grid place-items-center'>
@@ -284,10 +263,7 @@ const PositionPanel = ({
           </span>
         </InfoPill>
         <InfoPill>
-          <span
-            aria-hidden
-            className='h-2 w-2 rounded-pill bg-white/55'
-          />
+          <span aria-hidden className='h-2 w-2 rounded-pill bg-white/55' />
           <span>{snapshot.total.toLocaleString()} in queue</span>
         </InfoPill>
       </div>
@@ -313,8 +289,7 @@ const GetReadyCard = () => (
   <div
     className='mt-6 rounded-glass-md border border-accent-mint/35 p-5 flex items-center gap-4'
     style={{
-      background:
-        'linear-gradient(135deg, rgba(125,255,176,0.18), rgba(212,168,240,0.10))'
+      background: 'linear-gradient(135deg, rgba(125,255,176,0.18), rgba(212,168,240,0.10))'
     }}
   >
     <span aria-hidden className='text-2xl'>
@@ -342,9 +317,7 @@ const ReleasedHero = () => (
     >
       You&apos;re in.
     </div>
-    <div className='mt-5 text-[15px] lg:text-lg text-white/72'>
-      Redirecting to seat picker…
-    </div>
+    <div className='mt-5 text-[15px] lg:text-lg text-white/72'>Redirecting to seat picker…</div>
     <div className={cn('mt-8 h-16 w-16', styles.spinner)} />
   </div>
 )
@@ -361,11 +334,6 @@ const InfoPill = ({ children }: { children: React.ReactNode }) => (
 const ClockIcon = () => (
   <svg width='14' height='14' viewBox='0 0 16 16' fill='none' aria-hidden>
     <circle cx='8' cy='8' r='6' stroke='currentColor' strokeWidth='1.4' />
-    <path
-      d='M8 5v3l2 1.5'
-      stroke='currentColor'
-      strokeWidth='1.4'
-      strokeLinecap='round'
-    />
+    <path d='M8 5v3l2 1.5' stroke='currentColor' strokeWidth='1.4' strokeLinecap='round' />
   </svg>
 )

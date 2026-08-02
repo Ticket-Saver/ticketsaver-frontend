@@ -64,7 +64,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 const requireSupabase = () => {
-  if (!supabase) throw new Error('Supabase no está configurado (faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).')
+  if (!supabase)
+    throw new Error(
+      'Supabase no está configurado (faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).'
+    )
   return supabase
 }
 
@@ -148,18 +151,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const verifyPhone = useCallback(async (phone: string, code: string) => {
-    const { error } = await requireSupabase().auth.verifyOtp({ phone, token: code, type: 'phone_change' })
+    const { error } = await requireSupabase().auth.verifyOtp({
+      phone,
+      token: code,
+      type: 'phone_change'
+    })
     if (error) throw error
   }, [])
 
-  const resendOtp = useCallback(async (identifier: string, channel: 'email' | 'sms') => {
-    if (channel === 'sms') {
-      await sendPhoneOtp(identifier)
-      return
-    }
-    const { error } = await requireSupabase().auth.resend({ type: 'signup', email: identifier })
-    if (error) throw error
-  }, [sendPhoneOtp])
+  const resendOtp = useCallback(
+    async (identifier: string, channel: 'email' | 'sms') => {
+      if (channel === 'sms') {
+        await sendPhoneOtp(identifier)
+        return
+      }
+      const { error } = await requireSupabase().auth.resend({ type: 'signup', email: identifier })
+      if (error) throw error
+    },
+    [sendPhoneOtp]
+  )
 
   const forgotPassword = useCallback(async (email: string) => {
     const { error } = await requireSupabase().auth.resetPasswordForEmail(email)
@@ -191,7 +201,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       resetPassword,
       refresh
     }),
-    [user, status, register, login, loginWithProvider, logout, verifyEmail, verifyPhone, resendOtp, forgotPassword, resetPassword, refresh]
+    [
+      user,
+      status,
+      register,
+      login,
+      loginWithProvider,
+      logout,
+      verifyEmail,
+      verifyPhone,
+      resendOtp,
+      forgotPassword,
+      resetPassword,
+      refresh
+    ]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

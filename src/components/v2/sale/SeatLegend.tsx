@@ -47,9 +47,7 @@ export default function SeatLegend({ className }: SeatLegendProps) {
                 </svg>
               )}
             </span>
-            <span className='text-[10.5px] text-white/75 truncate'>
-              {item.label}
-            </span>
+            <span className='text-[10.5px] text-white/75 truncate'>{item.label}</span>
           </div>
         ))}
       </div>

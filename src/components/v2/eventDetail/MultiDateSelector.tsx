@@ -84,8 +84,7 @@ const DateCard = ({ event, active, onClick }: DateCardProps) => {
         active
           ? 'bg-white text-brand-ink border border-transparent shadow-[0_10px_26px_rgba(212,168,240,0.30)]'
           : 'bg-white/[0.05] text-white border border-white/10 backdrop-blur-glass hover:bg-white/[0.08]',
-        (event.expired || event.availability === 'sold-out') &&
-          'opacity-50 cursor-not-allowed'
+        (event.expired || event.availability === 'sold-out') && 'opacity-50 cursor-not-allowed'
       )}
     >
       <div
@@ -113,12 +112,7 @@ const DateCard = ({ event, active, onClick }: DateCardProps) => {
       >
         {event.venueName}
       </div>
-      <div
-        className={cn(
-          'text-[10px] truncate',
-          active ? 'text-brand-ink/65' : 'text-white/50'
-        )}
-      >
+      <div className={cn('text-[10px] truncate', active ? 'text-brand-ink/65' : 'text-white/50')}>
         {event.city || '—'}
         {event.time && ` · ${event.time}`}
       </div>

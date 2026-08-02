@@ -84,7 +84,9 @@ export function useQueuePosition(eventId: number | undefined): UseQueuePositionR
       const pos = await getPosition(eventId, id)
       if (cancelled || !pos) return
       if (initialPositionRef.current === null) initialPositionRef.current = pos.position
-      setSnapshot(buildSnapshot(pos.position, pos.total, initialPositionRef.current, rateRef.current))
+      setSnapshot(
+        buildSnapshot(pos.position, pos.total, initialPositionRef.current, rateRef.current)
+      )
       setLoading(false)
     }
 
@@ -124,7 +126,8 @@ export function useQueuePosition(eventId: number | undefined): UseQueuePositionR
           .then((settings) => {
             // El tipo público no declara admission_rate_per_minute (es un campo
             // nuevo del backend); accedemos con un cast local acotado.
-            const rate = (settings as { admission_rate_per_minute?: number }).admission_rate_per_minute
+            const rate = (settings as { admission_rate_per_minute?: number })
+              .admission_rate_per_minute
             if (typeof rate === 'number') rateRef.current = rate
           })
           .catch(() => {})

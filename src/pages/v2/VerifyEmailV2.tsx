@@ -28,7 +28,7 @@ export default function VerifyEmailV2() {
       toast.show({
         variant: 'success',
         title: 'Email verified',
-        message: 'Now let\'s confirm your phone number.'
+        message: "Now let's confirm your phone number."
       })
       navigate('/verify-phone', { state: { phone: statePhone, returnTo } })
     } catch (err) {

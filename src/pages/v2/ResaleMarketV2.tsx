@@ -50,7 +50,8 @@ export default function ResaleMarketV2() {
         <header className='mb-6'>
           <h1 className='font-display text-2xl lg:text-3xl font-bold text-white'>Reventa</h1>
           <p className='text-[13px] text-white/55 mt-1'>
-            Eventos con tickets en reventa. Compra segura: TicketSaver retiene el pago y traspasa el ticket.
+            Eventos con tickets en reventa. Compra segura: TicketSaver retiene el pago y traspasa el
+            ticket.
           </p>
         </header>
 
@@ -77,7 +78,9 @@ export default function ResaleMarketV2() {
                   <span className='text-white/70'>
                     {re.listing_count} {re.listing_count === 1 ? 'ticket' : 'tickets'} en reventa
                   </span>
-                  <span className='text-white font-medium'>desde {money(re.min_price, re.currency)}</span>
+                  <span className='text-white font-medium'>
+                    desde {money(re.min_price, re.currency)}
+                  </span>
                 </div>
               </div>
             ))}

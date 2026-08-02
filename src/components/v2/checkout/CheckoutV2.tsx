@@ -73,10 +73,7 @@ export default function CheckoutV2() {
   // webhook / ReturnPage legacy lo necesita.
   useEffect(() => {
     if (cart.length === 0 || !eventInfo) return
-    localStorage.setItem(
-      'cart_checkout',
-      JSON.stringify({ cart, eventInfo, customer })
-    )
+    localStorage.setItem('cart_checkout', JSON.stringify({ cart, eventInfo, customer }))
   }, [cart, eventInfo, customer])
 
   if (cart.length === 0 || !event || !eventInfo) {
@@ -87,9 +84,7 @@ export default function CheckoutV2() {
             <div className='font-display text-base font-semibold text-white'>
               Your cart is empty
             </div>
-            <p className='mt-2 text-sm text-white/55'>
-              Add tickets first to proceed to checkout.
-            </p>
+            <p className='mt-2 text-sm text-white/55'>Add tickets first to proceed to checkout.</p>
             <Button
               variant='primary'
               size='md'
@@ -107,11 +102,7 @@ export default function CheckoutV2() {
   const subtitle = `${event.day}, ${event.month} ${event.date}${event.time ? ` · ${event.time}` : ''} · ${event.venueName}`
 
   return (
-    <LayoutV2
-      hideHeader
-      hideFooter
-      meshSeed={(coverSeed(event.id) % 8) + 3}
-    >
+    <LayoutV2 hideHeader hideFooter meshSeed={(coverSeed(event.id) % 8) + 3}>
       <StepHeader
         step='pay'
         title={event.title}
@@ -125,20 +116,11 @@ export default function CheckoutV2() {
           <div className='min-w-0 space-y-4'>
             {/* Order summary visible en mobile arriba del Stripe form. */}
             <div className='lg:hidden'>
-              <OrderSummary
-                items={cart}
-                pricing={pricing}
-                timer={timer}
-                eventTitle={event.title}
-              />
+              <OrderSummary items={cart} pricing={pricing} timer={timer} eventTitle={event.title} />
             </div>
 
             <PaymentPanel>
-              <CheckoutStripe
-                cart={cart}
-                eventInfo={eventInfo}
-                customer={customer}
-              />
+              <CheckoutStripe cart={cart} eventInfo={eventInfo} customer={customer} />
             </PaymentPanel>
 
             <SecurityNote />
@@ -190,13 +172,7 @@ interface OrderSummaryProps {
   sticky?: boolean
 }
 
-const OrderSummary = ({
-  items,
-  pricing,
-  timer,
-  eventTitle,
-  sticky
-}: OrderSummaryProps) => (
+const OrderSummary = ({ items, pricing, timer, eventTitle, sticky }: OrderSummaryProps) => (
   <div
     className={cn(
       glass.glassLg,
@@ -282,9 +258,7 @@ const OrderSummary = ({
 const BreakdownRow = ({ label, value }: { label: string; value: number }) => (
   <div className='flex justify-between'>
     <span className='text-white/55'>{label}</span>
-    <span className='text-white/85 font-display tabular-nums'>
-      ${value.toFixed(2)}
-    </span>
+    <span className='text-white/85 font-display tabular-nums'>${value.toFixed(2)}</span>
   </div>
 )
 
@@ -310,46 +284,21 @@ const HoldBanner = ({
     <ClockIcon />
     <span className='text-[11.5px]'>
       <strong className='font-semibold'>Hold</strong> ·{' '}
-      <span className='font-display font-bold tabular-nums'>{formatted}</span>{' '}
-      left to complete
+      <span className='font-display font-bold tabular-nums'>{formatted}</span> left to complete
     </span>
   </div>
 )
 
 const LockIcon = () => (
   <svg width='11' height='11' viewBox='0 0 12 12' fill='none' aria-hidden>
-    <rect
-      x='2.5'
-      y='5.5'
-      width='7'
-      height='5'
-      rx='1.2'
-      stroke='currentColor'
-      strokeWidth='1.2'
-    />
-    <path
-      d='M4 5.5V4a2 2 0 1 1 4 0v1.5'
-      stroke='currentColor'
-      strokeWidth='1.2'
-    />
+    <rect x='2.5' y='5.5' width='7' height='5' rx='1.2' stroke='currentColor' strokeWidth='1.2' />
+    <path d='M4 5.5V4a2 2 0 1 1 4 0v1.5' stroke='currentColor' strokeWidth='1.2' />
   </svg>
 )
 
 const ClockIcon = () => (
-  <svg
-    width='14'
-    height='14'
-    viewBox='0 0 14 14'
-    fill='none'
-    aria-hidden
-    className='shrink-0'
-  >
+  <svg width='14' height='14' viewBox='0 0 14 14' fill='none' aria-hidden className='shrink-0'>
     <circle cx='7' cy='7.6' r='5.4' stroke='currentColor' strokeWidth='1.4' />
-    <path
-      d='M7 5v3l2 1'
-      stroke='currentColor'
-      strokeWidth='1.4'
-      strokeLinecap='round'
-    />
+    <path d='M7 5v3l2 1' stroke='currentColor' strokeWidth='1.4' strokeLinecap='round' />
   </svg>
 )

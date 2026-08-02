@@ -41,9 +41,7 @@ export default function LegalSection({ section, index }: LegalSectionProps) {
                   background: 'linear-gradient(180deg, #FFB1C8, #7C5BC4)'
                 }}
               />
-              <span className='text-[12px] text-white/78 leading-relaxed flex-1'>
-                {b}
-              </span>
+              <span className='text-[12px] text-white/78 leading-relaxed flex-1'>{b}</span>
             </div>
           ))}
         </div>

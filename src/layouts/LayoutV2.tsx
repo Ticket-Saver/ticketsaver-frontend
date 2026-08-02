@@ -56,10 +56,7 @@ export default function LayoutV2({
       />
 
       {!hideHeader && (
-        <Header
-          forcedSessionLabel={forcedSessionLabel}
-          mockCountdown={mockCountdown}
-        />
+        <Header forcedSessionLabel={forcedSessionLabel} mockCountdown={mockCountdown} />
       )}
 
       <main className={cn('relative', mainClassName)}>{children}</main>

@@ -72,9 +72,7 @@ export default function LegalShell({
           <div className='text-[9.5px] uppercase tracking-[0.18em] text-brand-hi font-display font-bold'>
             The short version
           </div>
-          <p className='mt-2 text-[13.5px] text-white/85 leading-[1.55]'>
-            {intro}
-          </p>
+          <p className='mt-2 text-[13.5px] text-white/85 leading-[1.55]'>{intro}</p>
         </GlassCard>
 
         <div className='mt-6 grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start'>

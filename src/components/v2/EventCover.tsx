@@ -170,9 +170,7 @@ export default function EventCover({
           <div className='text-[8.5px] font-semibold tracking-[0.1em] opacity-70'>
             {event.month.toUpperCase()}
           </div>
-          <div className='mt-0.5 text-base font-bold'>
-            {String(event.date).padStart(2, '0')}
-          </div>
+          <div className='mt-0.5 text-base font-bold'>{String(event.date).padStart(2, '0')}</div>
         </div>
       )}
     </div>

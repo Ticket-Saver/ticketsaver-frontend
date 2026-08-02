@@ -30,9 +30,7 @@ const isValidCategory = (v: string | null): v is CategoryFilter =>
   v !== null && (VALID_CATEGORIES as readonly string[]).includes(v)
 
 const ensureSessionId = () => {
-  const hasSession = document.cookie
-    .split(';')
-    .some((c) => c.trim().startsWith('sessionId='))
+  const hasSession = document.cookie.split(';').some((c) => c.trim().startsWith('sessionId='))
   if (!hasSession) {
     const id = uuidv4()
     document.cookie = `sessionId=${id}; path=/`
@@ -74,9 +72,7 @@ export default function EventsV2() {
 
   const filtered = useMemo(() => {
     const base =
-      activeCategory === 'All'
-        ? visible
-        : visible.filter((e) => e.category === activeCategory)
+      activeCategory === 'All' ? visible : visible.filter((e) => e.category === activeCategory)
     const searched = base.filter((e) => matchesQuery(e, query))
     return sort === 'name'
       ? [...searched].sort((a, b) => a.title.localeCompare(b.title))
@@ -101,33 +97,23 @@ export default function EventsV2() {
             )}
           </div>
           <p className='mt-3 text-sm text-white/55 max-w-xl'>
-            Face value tickets across music, theatre, sports and more. Filter
-            by category, search by artist or venue.
+            Face value tickets across music, theatre, sports and more. Filter by category, search by
+            artist or venue.
           </p>
         </header>
 
-        <div
-          className={cn(
-            'sticky top-16 lg:top-20 z-30 mt-6 lg:mt-8',
-            glass.glassNav
-          )}
-        >
+        <div className={cn('sticky top-16 lg:top-20 z-30 mt-6 lg:mt-8', glass.glassNav)}>
           <div className='mx-auto max-w-7xl px-5 lg:px-10 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4'>
             <div className='flex-1 min-w-0'>
               <CategoryChips
                 active={activeCategory}
-                onChange={(cat) =>
-                  updateParam('cat', cat === 'All' ? null : cat)
-                }
+                onChange={(cat) => updateParam('cat', cat === 'All' ? null : cat)}
                 available={['All', ...availableCategories]}
               />
             </div>
 
             <div className='flex items-center gap-3'>
-              <SearchInput
-                value={query}
-                onChange={(v) => updateParam('q', v || null)}
-              />
+              <SearchInput value={query} onChange={(v) => updateParam('q', v || null)} />
               <SortSelect value={sort} onChange={setSort} />
             </div>
           </div>
@@ -151,13 +137,7 @@ export default function EventsV2() {
   )
 }
 
-const SearchInput = ({
-  value,
-  onChange
-}: {
-  value: string
-  onChange: (v: string) => void
-}) => (
+const SearchInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <label className='flex items-center gap-2 rounded-pill bg-white/[0.06] border border-white/10 px-3.5 h-10 w-[200px] sm:w-[240px] text-xs text-white/85 focus-within:border-brand-mid/60 transition'>
     <SearchIcon />
     <input
@@ -181,17 +161,9 @@ const SearchInput = ({
   </label>
 )
 
-const SortSelect = ({
-  value,
-  onChange
-}: {
-  value: SortMode
-  onChange: (v: SortMode) => void
-}) => (
+const SortSelect = ({ value, onChange }: { value: SortMode; onChange: (v: SortMode) => void }) => (
   <label className='hidden sm:inline-flex items-center gap-2 rounded-pill bg-white/[0.06] border border-white/10 h-10 pl-3.5 pr-2 text-xs text-white/85 cursor-pointer hover:bg-white/[0.10] transition font-display'>
-    <span className='text-white/55 text-[10px] uppercase tracking-[0.12em]'>
-      Sort
-    </span>
+    <span className='text-white/55 text-[10px] uppercase tracking-[0.12em]'>Sort</span>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as SortMode)}
@@ -217,12 +189,7 @@ const SortSelect = ({
 const SearchIcon = () => (
   <svg width='14' height='14' viewBox='0 0 16 16' fill='none' aria-hidden>
     <circle cx='7' cy='7' r='5' stroke='currentColor' strokeWidth='1.6' />
-    <path
-      d='m11 11 3 3'
-      stroke='currentColor'
-      strokeWidth='1.6'
-      strokeLinecap='round'
-    />
+    <path d='m11 11 3 3' stroke='currentColor' strokeWidth='1.6' strokeLinecap='round' />
   </svg>
 )
 
@@ -245,14 +212,11 @@ const EmptyState = ({
   activeCategory: CategoryFilter
 }) => (
   <GlassCard depth='md' radius='lg' className='p-8 text-center'>
-    <div className='font-display text-lg font-semibold text-white'>
-      No events found
-    </div>
+    <div className='font-display text-lg font-semibold text-white'>No events found</div>
     <p className='mt-2 text-sm text-white/55'>
       {query
         ? `Nothing matches "${query}"${activeCategory !== 'All' ? ` in ${activeCategory}` : ''}.`
-        : `No upcoming events in ${activeCategory}.`}
-      {' '}
+        : `No upcoming events in ${activeCategory}.`}{' '}
       Try clearing your filters.
     </p>
   </GlassCard>

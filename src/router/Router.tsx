@@ -67,7 +67,9 @@ const RequireAuth = () => {
   const location = useLocation()
   if (status === 'loading') return null
   if (status === 'unauthenticated') {
-    return <Navigate to='/login' state={{ returnTo: location.pathname + location.search }} replace />
+    return (
+      <Navigate to='/login' state={{ returnTo: location.pathname + location.search }} replace />
+    )
   }
   return <Outlet />
 }

@@ -33,15 +33,7 @@ const TicketIcon = () => (
 
 const WalletIcon = () => (
   <svg width='15' height='15' viewBox='0 0 18 18' fill='none' aria-hidden>
-    <rect
-      x='2'
-      y='4.5'
-      width='14'
-      height='10'
-      rx='2'
-      stroke='currentColor'
-      strokeWidth='1.4'
-    />
+    <rect x='2' y='4.5' width='14' height='10' rx='2' stroke='currentColor' strokeWidth='1.4' />
     <path d='M12 9.5h2.5' stroke='currentColor' strokeWidth='1.4' strokeLinecap='round' />
   </svg>
 )
@@ -115,17 +107,12 @@ const DashboardSidebar = () => {
   const { pathname } = useLocation()
   return (
     <aside
-      className={cn(
-        glass.glassMd,
-        'rounded-glass-lg p-3 lg:sticky lg:top-24 self-start'
-      )}
+      className={cn(glass.glassMd, 'rounded-glass-lg p-3 lg:sticky lg:top-24 self-start')}
       aria-label='Dashboard navigation'
     >
       <nav className='flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible no-scrollbar'>
         {NAV_ITEMS.map((item) => {
-          const matchesPrefix = item.matchPrefix
-            ? pathname.startsWith(item.matchPrefix)
-            : false
+          const matchesPrefix = item.matchPrefix ? pathname.startsWith(item.matchPrefix) : false
           return (
             <NavLink
               key={item.to}

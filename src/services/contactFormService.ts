@@ -21,21 +21,15 @@ export interface ContactResult {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export const validateContact = (
-  payload: Partial<ContactPayload>
-): string | null => {
-  if (!payload.name || payload.name.trim().length < 2)
-    return 'Please enter your name.'
-  if (!payload.email || !EMAIL_RE.test(payload.email))
-    return 'Please enter a valid email.'
+export const validateContact = (payload: Partial<ContactPayload>): string | null => {
+  if (!payload.name || payload.name.trim().length < 2) return 'Please enter your name.'
+  if (!payload.email || !EMAIL_RE.test(payload.email)) return 'Please enter a valid email.'
   if (!payload.message || payload.message.trim().length < 10)
     return 'Tell us a bit more (at least 10 characters).'
   return null
 }
 
-export async function sendContactForm(
-  payload: ContactPayload
-): Promise<ContactResult> {
+export async function sendContactForm(payload: ContactPayload): Promise<ContactResult> {
   try {
     const response = await fetch('/.netlify/functions/contact', {
       method: 'POST',

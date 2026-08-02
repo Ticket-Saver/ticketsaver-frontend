@@ -91,7 +91,11 @@ async function request<T>(
     })
   } catch (err) {
     // Error de red / CORS / DNS — no llegó respuesta.
-    throw new HiEventsApiError(0, path, `Fallo de red hacia HiEvents en ${path}: ${(err as Error).message}`)
+    throw new HiEventsApiError(
+      0,
+      path,
+      `Fallo de red hacia HiEvents en ${path}: ${(err as Error).message}`
+    )
   }
   if (!res.ok) {
     // Conservamos el cuerpo del error para mostrar el mensaje del backend
@@ -114,7 +118,8 @@ async function request<T>(
   return (text ? JSON.parse(text) : undefined) as T
 }
 
-const getJson = <T>(path: string, signal?: AbortSignal) => request<T>('GET', path, undefined, signal)
+const getJson = <T>(path: string, signal?: AbortSignal) =>
+  request<T>('GET', path, undefined, signal)
 
 /**
  * POST/PUT autenticado con el access_token de la sesión Supabase — usado por
@@ -159,7 +164,10 @@ async function requestAsCustomer<T>(method: HttpMethod, path: string, body?: unk
     if (res.status === 401) {
       window.dispatchEvent(new Event('customer-auth:logout'))
     }
-    if (res.status === 403 && (errBody as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')) {
+    if (
+      res.status === 403 &&
+      (errBody as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')
+    ) {
       if (eventId) sessionStorage.removeItem(`queue_token:${eventId}`)
     }
     throw new HiEventsApiError(res.status, path, apiMessage, errBody)
@@ -209,7 +217,10 @@ export const hiEventsService = {
   // --- Catálogo (C1) ---
 
   /** Listado de eventos (privado, requiere token). Devuelve los eventos LIVE upcoming por defecto. */
-  async listEvents(params: HiEventsListParams = {}, signal?: AbortSignal): Promise<HiEventPublic[]> {
+  async listEvents(
+    params: HiEventsListParams = {},
+    signal?: AbortSignal
+  ): Promise<HiEventPublic[]> {
     const query = toQuery({
       page: params.page ?? 1,
       per_page: params.per_page ?? 50,
@@ -217,7 +228,10 @@ export const hiEventsService = {
       eventsStatus: params.eventsStatus ?? 'upcoming',
       only_live: params.only_live ?? true
     })
-    const body = await getJson<HiPaginated<HiEventPublic>>(`${HIEVENTS_CONFIG.endpoints.events()}${query}`, signal)
+    const body = await getJson<HiPaginated<HiEventPublic>>(
+      `${HIEVENTS_CONFIG.endpoints.events()}${query}`,
+      signal
+    )
     return body.data
   },
 
@@ -275,7 +289,11 @@ export const hiEventsService = {
     return (body as HiResource<HiSeatingMap>).data ?? (body as HiSeatingMap)
   },
 
-  async getSeats(eventId: string | number, group?: string, signal?: AbortSignal): Promise<HiSeat[]> {
+  async getSeats(
+    eventId: string | number,
+    group?: string,
+    signal?: AbortSignal
+  ): Promise<HiSeat[]> {
     // SIN group: el backend pagina y `data` es un ARRAY → concatenamos páginas.
     // CON ?group=: el backend devuelve los asientos AGRUPADOS POR FILA y sin paginar
     // (`data` = { "E": [...], "F": [...] }) → hay que aplanar ese objeto. (Sin esto,
@@ -318,7 +336,11 @@ export const hiEventsService = {
   // --- Órdenes / checkout (C5; firmas listas, payloads se refinan al portar el checkout) ---
 
   async createOrder(eventId: string | number, payload: unknown): Promise<HiOrder> {
-    const body = await requestAsCustomer<HiResource<HiOrder>>('POST', HIEVENTS_CONFIG.endpoints.order(eventId), payload)
+    const body = await requestAsCustomer<HiResource<HiOrder>>(
+      'POST',
+      HIEVENTS_CONFIG.endpoints.order(eventId),
+      payload
+    )
     return body.data
   },
 
@@ -344,7 +366,11 @@ export const hiEventsService = {
   },
 
   async updateOrder(eventId: string | number, shortId: string, payload: unknown): Promise<HiOrder> {
-    const body = await requestAsCustomer<HiResource<HiOrder>>('PUT', HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), payload)
+    const body = await requestAsCustomer<HiResource<HiOrder>>(
+      'PUT',
+      HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId),
+      payload
+    )
     return body.data
   },
 
@@ -353,15 +379,17 @@ export const hiEventsService = {
     shortId: string,
     payload: unknown
   ): Promise<{ checkout_url?: string; client_secret?: string; [key: string]: unknown }> {
-    const body = await requestAsCustomer<HiResource<{ checkout_url?: string; client_secret?: string }>>(
-      'POST',
-      HIEVENTS_CONFIG.endpoints.stripeCheckoutSession(eventId, shortId),
-      payload
-    )
+    const body = await requestAsCustomer<
+      HiResource<{ checkout_url?: string; client_secret?: string }>
+    >('POST', HIEVENTS_CONFIG.endpoints.stripeCheckoutSession(eventId, shortId), payload)
     return body.data
   },
 
-  async confirmPayment(eventId: string | number, shortId: string, sessionId: string): Promise<HiOrder> {
+  async confirmPayment(
+    eventId: string | number,
+    shortId: string,
+    sessionId: string
+  ): Promise<HiOrder> {
     const body = await requestAsCustomer<HiResource<HiOrder>>(
       'POST',
       HIEVENTS_CONFIG.endpoints.confirmPayment(eventId, shortId),
@@ -370,13 +398,24 @@ export const hiEventsService = {
     return body.data
   },
 
-  async getOrder(eventId: string | number, shortId: string, signal?: AbortSignal): Promise<HiOrder> {
-    const body = await getJsonAsCustomer<HiResource<HiOrder>>(HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId), signal)
+  async getOrder(
+    eventId: string | number,
+    shortId: string,
+    signal?: AbortSignal
+  ): Promise<HiOrder> {
+    const body = await getJsonAsCustomer<HiResource<HiOrder>>(
+      HIEVENTS_CONFIG.endpoints.orderByShortId(eventId, shortId),
+      signal
+    )
     return body.data
   },
 
   /** Attendee emitido por public_id — para la ticketera pública (QR real). */
-  async getAttendee(eventId: string | number, publicId: string, signal?: AbortSignal): Promise<HiAttendee> {
+  async getAttendee(
+    eventId: string | number,
+    publicId: string,
+    signal?: AbortSignal
+  ): Promise<HiAttendee> {
     const body = await getJson<HiResource<HiAttendee>>(
       HIEVENTS_CONFIG.endpoints.attendee(eventId, publicId),
       signal
@@ -405,7 +444,10 @@ export const hiEventsService = {
    * (Bearer), nunca por email en query param.
    */
   async getMyTickets(signal?: AbortSignal): Promise<HiUserTicketsResponse> {
-    return getJsonAsCustomer<HiUserTicketsResponse>(HIEVENTS_CONFIG.endpoints.customerMyTickets(), signal)
+    return getJsonAsCustomer<HiUserTicketsResponse>(
+      HIEVENTS_CONFIG.endpoints.customerMyTickets(),
+      signal
+    )
   },
 
   /** Curaduría de la Home del sitio público (destacados + carruseles). */
@@ -422,11 +464,17 @@ export const hiEventsService = {
 
   /** Mis tickets listados en reventa. */
   async getMyResaleListings(signal?: AbortSignal): Promise<{ data: HiResaleListing[] }> {
-    return getJsonAsCustomer<{ data: HiResaleListing[] }>(HIEVENTS_CONFIG.endpoints.resaleMyListings(), signal)
+    return getJsonAsCustomer<{ data: HiResaleListing[] }>(
+      HIEVENTS_CONFIG.endpoints.resaleMyListings(),
+      signal
+    )
   },
 
   /** Pone un ticket propio en reventa. attendeePublicId = ticketId del ticket (public_id). */
-  async createResaleListing(attendeePublicId: string, askingPrice: number): Promise<HiResaleListing> {
+  async createResaleListing(
+    attendeePublicId: string,
+    askingPrice: number
+  ): Promise<HiResaleListing> {
     const body = await requestAsCustomer<{ data: HiResaleListing }>(
       'POST',
       HIEVENTS_CONFIG.endpoints.resaleCreateListing(),
@@ -437,7 +485,10 @@ export const hiEventsService = {
 
   /** Cancela un listado propio (desbloquea el ticket). */
   async cancelResaleListing(listingId: number): Promise<void> {
-    await requestAsCustomer<unknown>('DELETE', HIEVENTS_CONFIG.endpoints.resaleCancelListing(listingId))
+    await requestAsCustomer<unknown>(
+      'DELETE',
+      HIEVENTS_CONFIG.endpoints.resaleCancelListing(listingId)
+    )
   },
 
   /** Inicia la compra de una reventa: devuelve la checkout_url de Stripe. */

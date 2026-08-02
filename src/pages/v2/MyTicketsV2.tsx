@@ -86,9 +86,7 @@ export default function MyTicketsV2() {
               <div className='font-display text-base font-semibold text-white'>
                 We couldn&apos;t load your tickets
               </div>
-              <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
-                {tickets.error}
-              </p>
+              <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>{tickets.error}</p>
             </GlassCard>
           ) : !tickets.loading && !tickets.authenticated ? (
             <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
@@ -108,13 +106,7 @@ export default function MyTicketsV2() {
   )
 }
 
-const StatCard = ({
-  label,
-  value
-}: {
-  label: string
-  value: number | string
-}) => (
+const StatCard = ({ label, value }: { label: string; value: number | string }) => (
   <GlassCard depth='sm' radius='md' className='p-4'>
     <div className='text-[9.5px] uppercase tracking-[0.16em] font-display font-bold text-white/55'>
       {label}

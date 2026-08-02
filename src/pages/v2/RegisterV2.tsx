@@ -31,7 +31,11 @@ export default function RegisterV2() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!passwordValid) {
-      toast.show({ variant: 'warn', title: 'Check the form', message: 'La contraseña no cumple los requisitos.' })
+      toast.show({
+        variant: 'warn',
+        title: 'Check the form',
+        message: 'La contraseña no cumple los requisitos.'
+      })
       return
     }
     if (password !== passwordConfirmation) {
@@ -129,13 +133,17 @@ export default function RegisterV2() {
             className={inputClass}
           />
           {password.length > 0 && (
-            <ul style={{ listStyle: 'none', margin: '8px 0 0', padding: 0, display: 'grid', gap: 4 }}>
+            <ul
+              style={{ listStyle: 'none', margin: '8px 0 0', padding: 0, display: 'grid', gap: 4 }}
+            >
               {passwordRules.map((r) => (
                 <li
                   key={r.label}
                   style={{
                     fontSize: 12,
-                    color: r.ok ? 'var(--accent-mint, #7DFFB0)' : 'var(--text-tertiary, rgba(255,255,255,0.55))'
+                    color: r.ok
+                      ? 'var(--accent-mint, #7DFFB0)'
+                      : 'var(--text-tertiary, rgba(255,255,255,0.55))'
                   }}
                 >
                   {r.ok ? '✓' : '○'} {r.label}

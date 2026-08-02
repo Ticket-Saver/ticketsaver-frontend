@@ -67,7 +67,9 @@ export default function SeatingMapV2({
   // La carga del grupo es síncrona (cálculo local), así que siempre es false.
   const isLoadingGroup = false
   const lastFetchedGroupRef = useRef<string | null>(null)
-  const availabilityCacheRef = useRef<Record<string, { total: number; available: number; price?: number }>>({})
+  const availabilityCacheRef = useRef<
+    Record<string, { total: number; available: number; price?: number }>
+  >({})
   const pendingClickRef = useRef<boolean>(false)
   // Cache de asientos por grupo (lazy): el mapa no trae los ~1876 de una; cada sección
   // se trae al hacer hover/click sobre ella, vía /seats?group= (~100 asientos, <0.7s).
@@ -76,7 +78,11 @@ export default function SeatingMapV2({
     async (groupKey: string, signal?: AbortSignal): Promise<SeatItem[]> => {
       const cached = groupSeatsCacheRef.current.get(groupKey)
       if (cached) return cached
-      const list = (await hiEventsService.getSeats(eventId, groupKey, signal)) as unknown as SeatItem[]
+      const list = (await hiEventsService.getSeats(
+        eventId,
+        groupKey,
+        signal
+      )) as unknown as SeatItem[]
       groupSeatsCacheRef.current.set(groupKey, list)
       // Alimentar el "desde $X" por rango con el precio base de estos asientos.
       setPriceByRange((prev) => {
@@ -446,10 +452,15 @@ export default function SeatingMapV2({
       if (!rKeys || rKeys.length === 0) return undefined
       for (const s of seats) {
         const row = (s.row || '').toString().toUpperCase()
-        const seatNum = typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
+        const seatNum =
+          typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
         const match = rKeys.some((k) => {
           const def = ranges[k]
-          return def && def.rows.includes(row) && def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
+          return (
+            def &&
+            def.rows.includes(row) &&
+            def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)
+          )
         })
         if (match) return priceByRange[s.price_range]
       }
@@ -457,7 +468,13 @@ export default function SeatingMapV2({
     }
 
     const getSectionPrice = (secKey: string) => {
-      const match = seats.find((s) => s.section === secKey || s.position === secKey || s.seat_key === secKey || s.seat_key_alt === secKey)
+      const match = seats.find(
+        (s) =>
+          s.section === secKey ||
+          s.position === secKey ||
+          s.seat_key === secKey ||
+          s.seat_key_alt === secKey
+      )
       return match ? priceByRange[match.price_range] : undefined
     }
 
@@ -468,7 +485,8 @@ export default function SeatingMapV2({
         const row = (s.row || '').toString().toUpperCase()
         if (rowCandidate && row !== rowCandidate.toUpperCase()) continue
         if (!def.rows.includes(row)) continue
-        const seatNum = typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
+        const seatNum =
+          typeof s.seat_number === 'string' ? parseInt(s.seat_number, 10) : s.seat_number || 0
         if (def.ranges.some((r) => seatNum >= r.start && seatNum <= r.end)) {
           return priceByRange[s.price_range]
         }
@@ -488,8 +506,12 @@ export default function SeatingMapV2({
         if (position === 'leftcenter') posFormatted = 'Left Center'
         else if (position === 'rightcenter') posFormatted = 'Right Center'
         else posFormatted = position.charAt(0).toUpperCase() + position.slice(1)
-        if (!posFormatted.toLowerCase().includes('section') && posFormatted !== 'Balcony' && posFormatted !== 'Loge') {
-           posFormatted = `Section ${posFormatted}`
+        if (
+          !posFormatted.toLowerCase().includes('section') &&
+          posFormatted !== 'Balcony' &&
+          posFormatted !== 'Loge'
+        ) {
+          posFormatted = `Section ${posFormatted}`
         }
       }
       if (isBalcony && !posFormatted.toLowerCase().includes('balcony')) {
@@ -1131,7 +1153,6 @@ export default function SeatingMapV2({
         // If no recognizable shapes, just use the element itself as fallback
         if (targets.length === 0) targets.push(el as SVGElement)
 
-
         // Track highlighted elements for group hover to restore on leave
         let groupApplied: Array<{
           el: SVGElement
@@ -1141,7 +1162,6 @@ export default function SeatingMapV2({
         }> = []
 
         const enter = (ev: MouseEvent) => {
-
           // Apply visual hover (opacity or stroke change)
           targets.forEach((t) => {
             if (t.getAttribute('data-ts-selected') === 'true') return
@@ -1204,7 +1224,11 @@ export default function SeatingMapV2({
           // Asientos de la sección on-demand (/seats?group=), no de una lista global.
           const groupSeats = await loadGroupSeats(groupKey)
           if (groupSeats.length === 0) return
-          onSelectSection({ label: toTitleCaseFromKebab(groupKey), seats: groupSeats, groupId: groupKey })
+          onSelectSection({
+            label: toTitleCaseFromKebab(groupKey),
+            seats: groupSeats,
+            groupId: groupKey
+          })
         }
 
         const click = async (ev: MouseEvent) => {
@@ -1333,21 +1357,37 @@ export default function SeatingMapV2({
 
 // Tonos tomados del propio SVG del Copernicus para que la leyenda COINCIDA con el mapa.
 const RANGE_COLORS: Record<string, string> = {
-  celeste: '#93cddc', cyan: '#93cddc',
-  rojo: '#ea0a0a', red: '#ea0a0a',
-  verde: '#c2d69b', green: '#c2d69b',
-  morado: '#b2a1c7', purple: '#b2a1c7',
-  anaranjado: '#b97034', orange: '#b97034',
+  celeste: '#93cddc',
+  cyan: '#93cddc',
+  rojo: '#ea0a0a',
+  red: '#ea0a0a',
+  verde: '#c2d69b',
+  green: '#c2d69b',
+  morado: '#b2a1c7',
+  purple: '#b2a1c7',
+  anaranjado: '#b97034',
+  orange: '#b97034',
   // otros rangos (map1/map2) — se afinan al validar esos mapas
-  amarillo: '#F6C84A', yellow: '#F6C84A',
-  rosa: '#ED3689', pink: '#ED3689',
-  azul: '#3B82F6', blue: '#3B82F6'
+  amarillo: '#F6C84A',
+  yellow: '#F6C84A',
+  rosa: '#ED3689',
+  pink: '#ED3689',
+  azul: '#3B82F6',
+  blue: '#3B82F6'
 }
 
 /** Nombre legible por color (mientras no llegó el price_range real del backend). */
 const COLOR_LABELS: Record<string, string> = {
-  cyan: 'Celeste', red: 'Rojo', green: 'Verde', purple: 'Morado', orange: 'Anaranjado',
-  celeste: 'Celeste', rojo: 'Rojo', verde: 'Verde', morado: 'Morado', anaranjado: 'Anaranjado'
+  cyan: 'Celeste',
+  red: 'Rojo',
+  green: 'Verde',
+  purple: 'Morado',
+  orange: 'Anaranjado',
+  celeste: 'Celeste',
+  rojo: 'Rojo',
+  verde: 'Verde',
+  morado: 'Morado',
+  anaranjado: 'Anaranjado'
 }
 
 /** Leyenda de rangos de precio (color → "desde $X"), derivada de los asientos. */

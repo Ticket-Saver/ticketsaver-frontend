@@ -42,9 +42,9 @@ export default function TicketQR({ value, eventId, publicId, size = 128 }: Ticke
   }, [value, eventId, publicId, size])
 
   return (
-    <div className="flex flex-col items-center">
+    <div className='flex flex-col items-center'>
       <canvas ref={canvasRef} />
-      <p className="text-xs text-gray-600 mt-2 text-center">Escanea para ver el ticket</p>
+      <p className='text-xs text-gray-600 mt-2 text-center'>Escanea para ver el ticket</p>
     </div>
   )
 }

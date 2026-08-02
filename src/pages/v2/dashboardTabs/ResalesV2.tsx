@@ -4,7 +4,12 @@ import Drawer from '../../../components/ui/Drawer'
 import { hiEventsService } from '../../../services/hiEventsService'
 import { useUserTickets } from '../../../hooks/useUserTickets'
 import { useMyResaleListings } from '../../../hooks/useMyResaleListings'
-import type { HiEventPublic, HiResaleFees, HiUserTicket, HiUserTicketsEvent } from '../../../types/hievents'
+import type {
+  HiEventPublic,
+  HiResaleFees,
+  HiUserTicket,
+  HiUserTicketsEvent
+} from '../../../types/hievents'
 
 interface ResellTarget {
   event: HiUserTicketsEvent
@@ -30,17 +35,19 @@ export default function ResalesV2() {
     const missing = ids.filter((id) => !(id in eventDetails))
     if (missing.length === 0) return
     let active = true
-    Promise.all(missing.map((id) => hiEventsService.getEvent(id).catch(() => null))).then((results) => {
-      if (!active) return
-      setEventDetails((prev) => {
-        const next = { ...prev }
-        missing.forEach((id, i) => {
-          const ev = results[i]
-          if (ev) next[id] = ev
+    Promise.all(missing.map((id) => hiEventsService.getEvent(id).catch(() => null))).then(
+      (results) => {
+        if (!active) return
+        setEventDetails((prev) => {
+          const next = { ...prev }
+          missing.forEach((id, i) => {
+            const ev = results[i]
+            if (ev) next[id] = ev
+          })
+          return next
         })
-        return next
-      })
-    })
+      }
+    )
     return () => {
       active = false
     }
@@ -56,11 +63,17 @@ export default function ResalesV2() {
   const cancel = async (listingId: number) => {
     try {
       await hiEventsService.cancelResaleListing(listingId)
-      toast.show({ variant: 'success', message: 'Listado cancelado. Tu ticket vuelve a estar activo.' })
+      toast.show({
+        variant: 'success',
+        message: 'Listado cancelado. Tu ticket vuelve a estar activo.'
+      })
       refreshTickets()
       refreshListings()
     } catch (e) {
-      toast.show({ variant: 'error', message: e instanceof Error ? e.message : 'No se pudo cancelar.' })
+      toast.show({
+        variant: 'error',
+        message: e instanceof Error ? e.message : 'No se pudo cancelar.'
+      })
     }
   }
 
@@ -72,7 +85,9 @@ export default function ResalesV2() {
       <section>
         <h2 className='font-display text-lg font-semibold text-white mb-3'>Mis reventas activas</h2>
         {loading ? (
-          <GlassCard depth='sm' radius='lg' className='p-6 text-center text-white/60'>Cargando…</GlassCard>
+          <GlassCard depth='sm' radius='lg' className='p-6 text-center text-white/60'>
+            Cargando…
+          </GlassCard>
         ) : listings.length === 0 ? (
           <GlassCard depth='sm' radius='lg' className='p-6 text-center text-white/60'>
             No tienes tickets en reventa.
@@ -80,11 +95,18 @@ export default function ResalesV2() {
         ) : (
           <div className='flex flex-col gap-3'>
             {listings.map((l) => (
-              <GlassCard key={l.id} depth='sm' radius='lg' className='p-4 flex items-center justify-between gap-3'>
+              <GlassCard
+                key={l.id}
+                depth='sm'
+                radius='lg'
+                className='p-4 flex items-center justify-between gap-3'
+              >
                 <div>
                   <div className='text-white font-medium'>{money(l.asking_price, l.currency)}</div>
                   <div className='text-[11px] text-white/50'>Estado: {l.status}</div>
-                  <div className='text-[11px] text-white/50'>Recibirás: {money(l.seller_net, l.currency)}</div>
+                  <div className='text-[11px] text-white/50'>
+                    Recibirás: {money(l.seller_net, l.currency)}
+                  </div>
                   {l.payout_status && (
                     <div className='text-[11px] text-white/50'>
                       {l.payout_status === 'PAID' ? 'Pagado' : 'Pendiente de pago'}
@@ -92,7 +114,9 @@ export default function ResalesV2() {
                   )}
                 </div>
                 {l.status === 'LISTED' && (
-                  <Button variant='danger' size='sm' onClick={() => cancel(l.id)}>Cancelar</Button>
+                  <Button variant='danger' size='sm' onClick={() => cancel(l.id)}>
+                    Cancelar
+                  </Button>
                 )}
               </GlassCard>
             ))}
@@ -102,7 +126,9 @@ export default function ResalesV2() {
 
       {/* Tickets revendibles */}
       <section>
-        <h2 className='font-display text-lg font-semibold text-white mb-3'>Poner un ticket en reventa</h2>
+        <h2 className='font-display text-lg font-semibold text-white mb-3'>
+          Poner un ticket en reventa
+        </h2>
         {loading ? null : (
           <div className='flex flex-col gap-3'>
             {events.flatMap((event) => {
@@ -117,10 +143,10 @@ export default function ResalesV2() {
                   const blockedReason = !detail
                     ? null
                     : !resaleEnabled
-                    ? 'Este evento no tiene reventa habilitada.'
-                    : eventPast
-                    ? 'El evento ya finalizó.'
-                    : null
+                      ? 'Este evento no tiene reventa habilitada.'
+                      : eventPast
+                        ? 'El evento ya finalizó.'
+                        : null
                   return (
                     <GlassCard
                       key={ticket.ticketId}
@@ -135,7 +161,9 @@ export default function ResalesV2() {
                           {ticket.seatNumber ?? ticket.priceType ?? 'Entrada'}
                         </div>
                         {blockedReason && (
-                          <div className='text-[11px] text-accent-coral/80 truncate'>{blockedReason}</div>
+                          <div className='text-[11px] text-accent-coral/80 truncate'>
+                            {blockedReason}
+                          </div>
                         )}
                       </div>
                       <Button
@@ -216,7 +244,10 @@ function ResellDrawer({
       toast.show({ variant: 'success', message: 'Ticket puesto en reventa.' })
       onListed()
     } catch (e) {
-      toast.show({ variant: 'error', message: e instanceof Error ? e.message : 'No se pudo publicar.' })
+      toast.show({
+        variant: 'error',
+        message: e instanceof Error ? e.message : 'No se pudo publicar.'
+      })
     } finally {
       setSubmitting(false)
     }
@@ -251,27 +282,36 @@ function ResellDrawer({
         {fees && priceNum > 0 && (
           <div className='rounded-lg bg-white/5 p-3 text-[12px] text-white/70 flex flex-col gap-1'>
             <div className='flex justify-between'>
-              <span>Precio</span><span>{money(priceNum, currency)}</span>
+              <span>Precio</span>
+              <span>{money(priceNum, currency)}</span>
             </div>
             <div className='flex justify-between'>
               <span>Comisión vendedor ({fees.seller_fee_percent}%)</span>
               <span>-{money(sellerFee, currency)}</span>
             </div>
             <div className='flex justify-between font-semibold text-white border-t border-white/10 pt-1 mt-1'>
-              <span>Recibes</span><span>{money(sellerNet, currency)}</span>
+              <span>Recibes</span>
+              <span>{money(sellerNet, currency)}</span>
             </div>
           </div>
         )}
 
         <p className='text-[12px] text-accent-coral/90'>
-          Al publicar, este ticket queda bloqueado y no podrá usarse para ingresar hasta que canceles la reventa o se venda.
+          Al publicar, este ticket queda bloqueado y no podrá usarse para ingresar hasta que
+          canceles la reventa o se venda.
         </p>
 
         <div className='flex gap-2 mt-2'>
           <Button variant='ghost' size='md' onClick={onClose} disabled={submitting} fullWidth>
             Cancelar
           </Button>
-          <Button variant='primary' size='md' onClick={submit} disabled={submitting || overMax} fullWidth>
+          <Button
+            variant='primary'
+            size='md'
+            onClick={submit}
+            disabled={submitting || overMax}
+            fullWidth
+          >
             {submitting ? 'Publicando…' : 'Publicar reventa'}
           </Button>
         </div>

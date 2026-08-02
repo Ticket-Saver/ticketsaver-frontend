@@ -28,12 +28,8 @@ export default function TicketGrid({
   if (events.length === 0) {
     return (
       <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
-        <div className='font-display text-base font-semibold text-white'>
-          Nothing here yet
-        </div>
-        <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
-          {emptyMessage}
-        </p>
+        <div className='font-display text-base font-semibold text-white'>Nothing here yet</div>
+        <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>{emptyMessage}</p>
       </GlassCard>
     )
   }

@@ -9,9 +9,4 @@ export { default as CountdownPill } from './CountdownPill'
 export { ToastProvider, useToast } from './Toast'
 export type { ToastVariant, ToastInput } from './Toast'
 export type { MeshPalette } from './MeshBackground'
-export type {
-  ButtonVariant,
-  PillState,
-  GlassDepth,
-  Size
-} from '../../types/ui'
+export type { ButtonVariant, PillState, GlassDepth, Size } from '../../types/ui'

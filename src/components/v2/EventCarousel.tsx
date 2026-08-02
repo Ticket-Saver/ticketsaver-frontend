@@ -50,9 +50,7 @@ export default function EventCarousel({
             {title}
           </h2>
           {subtitle && (
-            <p className='text-[11.5px] lg:text-[13px] text-white/55 mt-1 truncate'>
-              {subtitle}
-            </p>
+            <p className='text-[11.5px] lg:text-[13px] text-white/55 mt-1 truncate'>{subtitle}</p>
           )}
         </div>
         <div className='flex items-center gap-2 shrink-0'>
@@ -96,11 +94,7 @@ export default function EventCarousel({
           style={{ gap }}
         >
           {events.map((event) => (
-            <div
-              key={event.id}
-              className='snap-start shrink-0'
-              style={{ width: cardWidth }}
-            >
+            <div key={event.id} className='snap-start shrink-0' style={{ width: cardWidth }}>
               <EventCardV2 event={event} variant={variant} />
             </div>
           ))}

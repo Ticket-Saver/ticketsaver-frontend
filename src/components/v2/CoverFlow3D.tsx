@@ -27,19 +27,13 @@ interface CoverFlow3DProps {
  *
  * Dimensiones responsivas: cards más grandes y separadas en desktop.
  */
-export default function CoverFlow3D({
-  events,
-  initialActive,
-  className
-}: CoverFlow3DProps) {
+export default function CoverFlow3D({ events, initialActive, className }: CoverFlow3DProps) {
   const navigate = useNavigate()
 
   // Breakpoint desktop (lg = 1024px). Las dimensiones se recalculan
   // automáticamente al cambiar el ancho del viewport.
   const [isDesktop, setIsDesktop] = useState<boolean>(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(min-width: 1024px)').matches
-      : true
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : true
   )
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -89,10 +83,7 @@ export default function CoverFlow3D({
     const delta = clientX - dragStartXRef.current
     if (Math.abs(delta) > DRAG_THRESHOLD) wasDragRef.current = true
     const steps = computeSteps(delta)
-    const next = Math.min(
-      Math.max(dragStartActiveRef.current + steps, 0),
-      events.length - 1
-    )
+    const next = Math.min(Math.max(dragStartActiveRef.current + steps, 0), events.length - 1)
     if (next !== active) setActive(next)
   }
 
@@ -133,8 +124,7 @@ export default function CoverFlow3D({
     }
   }
 
-  const cardTransition =
-    'transform .35s cubic-bezier(.3,.7,.3,1), opacity .25s'
+  const cardTransition = 'transform .35s cubic-bezier(.3,.7,.3,1), opacity .25s'
 
   return (
     <section className={cn('relative', className)}>
@@ -175,8 +165,7 @@ export default function CoverFlow3D({
             const abs = Math.abs(offset)
             const tx = offset * spacing
             const rotY = offset * -32
-            const scale =
-              abs === 0 ? 1 : 0.85 - Math.min(abs - 1, 1) * 0.06
+            const scale = abs === 0 ? 1 : 0.85 - Math.min(abs - 1, 1) * 0.06
             const z = -abs * zStep
             const opacity = abs > 2 ? 0 : 1 - abs * 0.18
             const isActive = abs === 0
@@ -185,9 +174,7 @@ export default function CoverFlow3D({
                 type='button'
                 key={e.id}
                 onClick={() => handleCardClick(i, e)}
-                aria-label={
-                  isActive ? `Open ${e.title}` : `Bring ${e.title} to focus`
-                }
+                aria-label={isActive ? `Open ${e.title}` : `Bring ${e.title} to focus`}
                 aria-current={isActive ? 'true' : undefined}
                 className='absolute top-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-mid/60 rounded-[18px]'
                 style={{
@@ -225,9 +212,7 @@ export default function CoverFlow3D({
           </div>
           <div className='mt-1 text-[12px] lg:text-[13px] text-white/55'>
             {current.day} {current.date} {current.month}
-            {(current.city || current.venueName) && (
-              <> · {current.city || current.venueName}</>
-            )}
+            {(current.city || current.venueName) && <> · {current.city || current.venueName}</>}
           </div>
         </div>
       </div>

@@ -59,15 +59,7 @@ const SOCIALS: { label: string; href: string; icon: JSX.Element }[] = [
     href: 'https://www.instagram.com/ticket.saver?igsh=MWdtdXF0b2VudGk5',
     icon: (
       <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
-        <rect
-          x='3'
-          y='3'
-          width='18'
-          height='18'
-          rx='5'
-          stroke='currentColor'
-          strokeWidth='1.5'
-        />
+        <rect x='3' y='3' width='18' height='18' rx='5' stroke='currentColor' strokeWidth='1.5' />
         <circle cx='12' cy='12' r='4' stroke='currentColor' strokeWidth='1.5' />
         <circle cx='17.5' cy='6.5' r='1' fill='currentColor' />
       </svg>
@@ -102,14 +94,8 @@ export default function Footer() {
         <div className='grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(4,1fr)] lg:gap-12'>
           <div className='sm:col-span-2 lg:col-span-1'>
             <div className='flex items-center gap-2.5 mb-3'>
-              <img
-                src='/logos/ticketsaver-icon.png'
-                alt=''
-                className='h-8 w-8'
-              />
-              <span className='font-display text-base font-semibold'>
-                ticketsaver
-              </span>
+              <img src='/logos/ticketsaver-icon.png' alt='' className='h-8 w-8' />
+              <span className='font-display text-base font-semibold'>ticketsaver</span>
             </div>
             <p className='text-xs text-white/55 leading-relaxed max-w-xs font-body'>
               Face-value tickets, NFTs on Base, no scalpers. Made with care.
@@ -185,13 +171,7 @@ export default function Footer() {
   )
 }
 
-const FooterColumn = ({
-  title,
-  items
-}: {
-  title: string
-  items: FooterLink[]
-}) => (
+const FooterColumn = ({ title, items }: { title: string; items: FooterLink[] }) => (
   <div>
     <div className='text-[10px] uppercase tracking-[0.18em] text-white/40 font-bold font-display'>
       {title}
@@ -216,9 +196,7 @@ const FooterColumn = ({
               {item.label}
             </a>
           ) : (
-            <span className='text-[13px] text-white/35 cursor-default font-body'>
-              {item.label}
-            </span>
+            <span className='text-[13px] text-white/35 cursor-default font-body'>{item.label}</span>
           )}
         </li>
       ))}

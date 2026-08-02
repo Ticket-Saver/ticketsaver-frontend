@@ -16,7 +16,12 @@ import type { HiQueueSettingsPublic } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
 import type { Availability, UIEvent } from '../../types/uiEvent'
-import type { HiAvailability, HiEventPublic, HiTicketPublic, HiLocationDetails } from '../../types/hievents'
+import type {
+  HiAvailability,
+  HiEventPublic,
+  HiTicketPublic,
+  HiLocationDetails
+} from '../../types/hievents'
 
 const SALE_DATE_FMT = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
@@ -113,8 +118,7 @@ export default function EventDetailV2() {
   }, [id])
 
   // Evento base: de la lista (rápido) o construido desde el detalle (deep-link).
-  const baseEvent: UIEvent | null =
-    eventFromList ?? (detail ? hiEventToUIEvent(detail) : null)
+  const baseEvent: UIEvent | null = eventFromList ?? (detail ? hiEventToUIEvent(detail) : null)
 
   // priceFrom real: mínimo con impuestos de los tickets.
   const priceFrom = useMemo(() => {
@@ -160,7 +164,7 @@ export default function EventDetailV2() {
       requiresQueue: queueSettings ? isQueueActiveNow(queueSettings) : baseEvent.requiresQueue,
       priceFrom: priceFrom ?? baseEvent.priceFrom,
       // Si la venta aún no abrió, no mostramos "sold-out" (0 disponibles ≠ agotado).
-      availability: !isSaleActive ? 'available' : realAvailability ?? baseEvent.availability,
+      availability: !isSaleActive ? 'available' : (realAvailability ?? baseEvent.availability),
       vibe: detail?.description_preview ?? baseEvent.vibe,
       // Preventa del DETALLE (fresca): el listado no trae presale_active/sales_started
       // (campos computados que solo expone EventResourcePublic). Sin esto, el gate del
@@ -188,10 +192,7 @@ export default function EventDetailV2() {
   const address = formatAddress(detail?.location_details)
   const organizerName = detail?.organizer?.name
 
-  const dates = useMemo(
-    () => getDatesForEvent(visible, event),
-    [visible, event]
-  )
+  const dates = useMemo(() => getDatesForEvent(visible, event), [visible, event])
   const datesForArtist = dates.length > 0 ? dates : event ? [event] : []
 
   // Si no se encuentra ni en la lista ni en HiEvents → a /events.
@@ -345,11 +346,7 @@ export default function EventDetailV2() {
           <FactPill label='Doors' value={event.time || 'TBA'} />
           {/* Campos custom públicos cargados desde el admin (attributes). */}
           {(detail?.attributes ?? []).map((attr) => (
-            <FactPill
-              key={attr.name}
-              label={attr.name}
-              value={String(attr.value ?? '')}
-            />
+            <FactPill key={attr.name} label={attr.name} value={String(attr.value ?? '')} />
           ))}
         </div>
       </Section>
@@ -454,9 +451,7 @@ const TitleBlock = ({ event, organizer }: { event: UIEvent; organizer?: string }
     <h1 className='mt-2 font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.05]'>
       {event.title}
     </h1>
-    <p className='mt-3 text-sm lg:text-base text-white/70'>
-      {event.subtitle}
-    </p>
+    <p className='mt-3 text-sm lg:text-base text-white/70'>{event.subtitle}</p>
     {organizer && (
       <p className='mt-1.5 text-[12.5px] text-white/55'>
         Presented by <span className='text-white/75'>{organizer}</span>
@@ -509,15 +504,16 @@ interface DescriptionProps {
 const Description = ({ text, expanded, onToggle }: DescriptionProps) => {
   if (!text)
     return (
-      <p className='text-[13px] text-white/45 italic leading-relaxed'>
-        Description coming soon.
-      </p>
+      <p className='text-[13px] text-white/45 italic leading-relaxed'>Description coming soon.</p>
     )
 
   // `text` es HTML ya purificado por el backend (HTMLPurifier). Se renderiza como
   // HTML real (antes se mostraban los tags <p> literales). El truncado es por CSS
   // (line-clamp): no se puede cortar HTML por caracteres sin romper los tags.
-  const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const plain = text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   const isLong = plain.length > 320
 
   return (
@@ -561,19 +557,12 @@ const TicketPricesPanel = ({ tickets }: { tickets: HiTicketPublic[] }) => {
     <Section title='Tickets'>
       <GlassCard depth='sm' radius='md' className='divide-y divide-white/[0.08]'>
         {tickets.map((ticket) => {
-          const prices = ticket.prices.map(
-            (p) => p.price_including_taxes_and_fees ?? p.price
-          )
+          const prices = ticket.prices.map((p) => p.price_including_taxes_and_fees ?? p.price)
           const min = prices.length > 0 ? Math.min(...prices) : 0
           return (
-            <div
-              key={ticket.id}
-              className='flex items-center justify-between px-4 py-3'
-            >
+            <div key={ticket.id} className='flex items-center justify-between px-4 py-3'>
               <div>
-                <div className='font-display text-sm font-semibold text-white'>
-                  {ticket.title}
-                </div>
+                <div className='font-display text-sm font-semibold text-white'>{ticket.title}</div>
                 <div className='text-[10.5px] text-white/45 uppercase tracking-[0.14em] mt-0.5 font-display'>
                   {ticket.is_sold_out ? 'Sold out' : 'Starting from'}
                 </div>
@@ -589,13 +578,7 @@ const TicketPricesPanel = ({ tickets }: { tickets: HiTicketPublic[] }) => {
   )
 }
 
-const Section = ({
-  title,
-  children
-}: {
-  title: string
-  children: React.ReactNode
-}) => (
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className='mt-8 px-5 lg:px-10 max-w-7xl mx-auto'>
     <SectionLabel>{title}</SectionLabel>
     {children}
@@ -613,9 +596,7 @@ const FactPill = ({ label, value }: { label: string; value: string }) => (
     <div className='text-[9px] uppercase tracking-[0.14em] text-white/50 font-display font-semibold'>
       {label}
     </div>
-    <div className='mt-1 text-[12.5px] text-white font-medium tracking-tight'>
-      {value}
-    </div>
+    <div className='mt-1 text-[12.5px] text-white font-medium tracking-tight'>{value}</div>
   </div>
 )
 
@@ -701,9 +682,7 @@ const SaleSchedule = ({ event }: { event: UIEvent }) => {
               }
             />
             <div className='flex-1 min-w-0'>
-              <div className='font-display text-[12.5px] font-semibold text-white'>
-                {r.label}
-              </div>
+              <div className='font-display text-[12.5px] font-semibold text-white'>{r.label}</div>
               {r.note && <div className='text-[10.5px] text-white/50'>{r.note}</div>}
             </div>
             <div
@@ -722,10 +701,7 @@ const SaleSchedule = ({ event }: { event: UIEvent }) => {
 }
 
 const CountdownBanner = ({ date }: { date: Date }) => {
-  const days = Math.max(
-    0,
-    Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
-  )
+  const days = Math.max(0, Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
   const dateLabel = new Intl.DateTimeFormat('en-GB', {
     weekday: 'short',
     day: '2-digit',
@@ -736,8 +712,7 @@ const CountdownBanner = ({ date }: { date: Date }) => {
     <div
       className='relative overflow-hidden rounded-glass-md border border-brand-hi/40 px-4 py-4 flex items-center gap-4'
       style={{
-        background:
-          'linear-gradient(110deg, rgba(181,123,232,0.22), rgba(255,94,158,0.16))'
+        background: 'linear-gradient(110deg, rgba(181,123,232,0.22), rgba(255,94,158,0.16))'
       }}
     >
       <div className='shrink-0 grid place-items-center h-12 w-12 rounded-glass-sm bg-white/10 border border-white/15 text-white/85'>

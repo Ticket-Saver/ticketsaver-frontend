@@ -14,13 +14,16 @@
  */
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
-const API_BASE_URL = (RAW_BASE && RAW_BASE.trim() ? RAW_BASE : 'http://localhost:1234').replace(/\/+$/, '')
+const API_BASE_URL = (RAW_BASE && RAW_BASE.trim() ? RAW_BASE : 'http://localhost:1234').replace(
+  /\/+$/,
+  ''
+)
 
 // ponytail: el token de organizador solo existe en dev (front → localhost:1234 directo).
 // En prod el proxy Netlify (netlify/functions/proxy-api.js) lo inyecta server-side,
 // así Vite hace DCE de la rama y el string nunca entra al bundle.
 const API_TOKEN = import.meta.env.DEV
-  ? ((import.meta.env.VITE_TOKEN_HIEVENTS as string | undefined)?.trim() || undefined)
+  ? (import.meta.env.VITE_TOKEN_HIEVENTS as string | undefined)?.trim() || undefined
   : undefined
 
 export const HIEVENTS_CONFIG = {
@@ -50,8 +53,7 @@ export const HIEVENTS_CONFIG = {
     order: (eventId: string | number) => `/public/events/${eventId}/order`,
     orderByShortId: (eventId: string | number, shortId: string) =>
       `/public/events/${eventId}/order/${shortId}`,
-    ticketsBySeatIds: (eventId: string | number) =>
-      `/public/events/${eventId}/tickets/by-seat-ids`,
+    ticketsBySeatIds: (eventId: string | number) => `/public/events/${eventId}/tickets/by-seat-ids`,
     stripeCheckoutSession: (eventId: string | number, shortId: string) =>
       `/public/events/${eventId}/order/${shortId}/stripe/checkout_session`,
     confirmPayment: (eventId: string | number, shortId: string) =>
@@ -87,9 +89,11 @@ export const HIEVENTS_CONFIG = {
     /** Crear un listado de reventa (customer). */
     resaleCreateListing: () => `/customer-auth/resale/listings`,
     /** Cancelar un listado de reventa (customer). */
-    resaleCancelListing: (listingId: string | number) => `/customer-auth/resale/listings/${listingId}`,
+    resaleCancelListing: (listingId: string | number) =>
+      `/customer-auth/resale/listings/${listingId}`,
     /** Iniciar checkout de compra de una reventa (customer). */
-    resaleCheckout: (listingId: string | number) => `/customer-auth/resale/listings/${listingId}/checkout`,
+    resaleCheckout: (listingId: string | number) =>
+      `/customer-auth/resale/listings/${listingId}/checkout`,
     /** Marketplace público de reventa de un evento. */
     resaleEventListings: (eventId: string | number) => `/resale/events/${eventId}/listings`,
     /** Eventos con reventas activas (marketplace global). */

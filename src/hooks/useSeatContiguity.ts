@@ -46,9 +46,7 @@ const key = (row: number, col: number) => `${row}:${col}`
  *   no-disponibles. El propio asiento sigue disponible.
  * - El borde de la sección NO crea aislamiento (no hay vecino).
  */
-export function useSeatContiguity(
-  args: UseSeatContiguityArgs
-): UseSeatContiguityResult {
+export function useSeatContiguity(args: UseSeatContiguityArgs): UseSeatContiguityResult {
   const { selected, reserved, disabled = [], columns } = args
 
   return useMemo(() => {
@@ -128,8 +126,7 @@ export function validateSeatAdd(
 ): ValidateAddResult {
   const { selected, reserved, disabled = [], columns } = args
   const row = candidate.row
-  const colsInRow = (arr: SeatCoord[]) =>
-    arr.filter((s) => s.row === row).map((s) => s.col)
+  const colsInRow = (arr: SeatCoord[]) => arr.filter((s) => s.row === row).map((s) => s.col)
 
   const disabledCols = new Set(colsInRow(disabled))
   const reservedCols = new Set(colsInRow(reserved))
@@ -147,8 +144,7 @@ export function validateSeatAdd(
     ) + 1
 
   const isWall = (c: number) => c < 0 || c >= width || disabledCols.has(c)
-  const isFree = (c: number, sel: Set<number>) =>
-    !isWall(c) && !sel.has(c) && !reservedCols.has(c)
+  const isFree = (c: number, sel: Set<number>) => !isWall(c) && !sel.has(c) && !reservedCols.has(c)
 
   // Regla 1 — contigüidad de la selección del comprador.
   const myCols = [...selectedAfter].sort((a, b) => a - b)
@@ -230,8 +226,7 @@ export function validateSeatAddByNumber(
   selAfter.add(candidateNum)
 
   // Libre = existe, está disponible y no está seleccionado.
-  const isFree = (n: number, sel: Set<number>) =>
-    availableByNum.get(n) === true && !sel.has(n)
+  const isFree = (n: number, sel: Set<number>) => availableByNum.get(n) === true && !sel.has(n)
 
   // Única regla (bloqueo duro): CONTIGÜIDAD — no dejar un asiento LIBRE entre los
   // asientos que el comprador eligió. NO bloqueamos dejar asientos sueltos (en la

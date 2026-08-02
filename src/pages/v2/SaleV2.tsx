@@ -50,10 +50,7 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
   if (!event) {
     return (
       <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={2}>
-        <ErrorState
-          title='Event not found'
-          message='That event is not currently available.'
-        />
+        <ErrorState title='Event not found' message='That event is not currently available.' />
       </LayoutV2>
     )
   }
@@ -80,12 +77,7 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
   const onSeats = step === 'seats' && section !== null
 
   return (
-    <LayoutV2
-      hideHeader
-      hideFooter
-      hideMobileTabBar
-      meshSeed={(coverSeed(event.id) % 8) + 2}
-    >
+    <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={(coverSeed(event.id) % 8) + 2}>
       <StepHeader
         step={onSeats ? 'seats' : 'venue'}
         title={event.title}
@@ -98,9 +90,7 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
           <SeatPickerV2
             event={event}
             section={section}
-            sectionLayout={
-              mapLayout && section.groupId ? mapLayout[section.groupId] : undefined
-            }
+            sectionLayout={mapLayout && section.groupId ? mapLayout[section.groupId] : undefined}
             onBack={() => setStep('venue')}
           />
         ) : (

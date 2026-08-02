@@ -29,8 +29,7 @@ export interface UseZoomPanResult {
   setScale: (scale: number, pivot?: { x: number; y: number }) => void
 }
 
-const clamp = (v: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, v))
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
 
 /**
  * Hook que provee zoom (wheel + pinch) y pan (drag mouse + touch) sobre
@@ -39,16 +38,8 @@ const clamp = (v: number, min: number, max: number) =>
  * El pivot del zoom es el cursor (wheel) o el midpoint de los dos dedos
  * (pinch), de modo que el punto bajo el cursor / midpoint no se mueve.
  */
-export function useZoomPan(
-  opts: UseZoomPanOptions = {}
-): UseZoomPanResult {
-  const {
-    minScale = 0.5,
-    maxScale = 4,
-    initialScale = 1,
-    step = 0.2,
-    wheelPans = false
-  } = opts
+export function useZoomPan(opts: UseZoomPanOptions = {}): UseZoomPanResult {
+  const { minScale = 0.5, maxScale = 4, initialScale = 1, step = 0.2, wheelPans = false } = opts
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [state, setState] = useState<ZoomPanState>({
@@ -79,10 +70,7 @@ export function useZoomPan(
   const setStateClamped = useCallback(
     (next: Partial<ZoomPanState>) => {
       setState((s) => ({
-        scale:
-          next.scale !== undefined
-            ? clamp(next.scale, minScale, maxScale)
-            : s.scale,
+        scale: next.scale !== undefined ? clamp(next.scale, minScale, maxScale) : s.scale,
         tx: next.tx !== undefined ? next.tx : s.tx,
         ty: next.ty !== undefined ? next.ty : s.ty
       }))
@@ -110,10 +98,7 @@ export function useZoomPan(
     [minScale, maxScale, setStateClamped]
   )
 
-  const reset = useCallback(
-    () => setState({ scale: initialScale, tx: 0, ty: 0 }),
-    [initialScale]
-  )
+  const reset = useCallback(() => setState({ scale: initialScale, tx: 0, ty: 0 }), [initialScale])
 
   const zoomIn = useCallback(() => {
     const s = stateRef.current

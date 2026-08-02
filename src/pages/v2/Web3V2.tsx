@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import WalletConnect from '../../components/v2/web3/WalletConnect'
-import NFTGrid, {
-  type NFTItem
-} from '../../components/v2/web3/NFTGrid'
+import NFTGrid, { type NFTItem } from '../../components/v2/web3/NFTGrid'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
 import gradients from '../../styles/effects/gradients.module.css'
@@ -46,8 +44,7 @@ export default function Web3V2() {
           Wallet & collectibles
         </h1>
         <p className='mt-2 text-sm text-white/55 max-w-xl'>
-          Connect your wallet to claim past events as NFTs and view your
-          collection.
+          Connect your wallet to claim past events as NFTs and view your collection.
         </p>
       </header>
 
@@ -70,8 +67,7 @@ export default function Web3V2() {
               Wallet not connected
             </div>
             <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
-              Once you connect, your past events will appear here as
-              collectible NFTs on Base.
+              Once you connect, your past events will appear here as collectible NFTs on Base.
             </p>
           </GlassCard>
         )}

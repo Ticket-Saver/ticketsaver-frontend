@@ -38,8 +38,7 @@ export default function ContactV2() {
             How can we help?
           </h1>
           <p className='mt-4 text-[15px] text-white/72 leading-relaxed'>
-            We answer within a few hours — usually in minutes during business
-            hours.
+            We answer within a few hours — usually in minutes during business hours.
           </p>
         </header>
 
@@ -50,17 +49,8 @@ export default function ContactV2() {
               Quick channels
             </h2>
             {CHANNELS.map((c) => (
-              <a
-                key={c.title}
-                href={c.href}
-                className='block focus-visible:outline-none'
-              >
-                <GlassCard
-                  depth='sm'
-                  radius='md'
-                  hoverable
-                  className='p-4 flex items-center gap-3'
-                >
+              <a key={c.title} href={c.href} className='block focus-visible:outline-none'>
+                <GlassCard depth='sm' radius='md' hoverable className='p-4 flex items-center gap-3'>
                   <div
                     aria-hidden
                     className='h-10 w-10 shrink-0 rounded-glass-sm grid place-items-center text-brand-hi'
@@ -75,9 +65,7 @@ export default function ContactV2() {
                     <div className='font-display text-[13.5px] font-semibold text-white truncate'>
                       {c.title}
                     </div>
-                    <div className='text-[11px] text-white/55 mt-0.5'>
-                      {c.sub}
-                    </div>
+                    <div className='text-[11px] text-white/55 mt-0.5'>{c.sub}</div>
                   </div>
                 </GlassCard>
               </a>

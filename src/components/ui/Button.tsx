@@ -20,11 +20,9 @@ const VARIANT: Record<ButtonVariant, string> = {
   primary:
     'tsv-btn-primary bg-gradient-to-br from-brand-hi to-brand-mid text-brand-ink ' +
     'shadow-brand-glow hover:brightness-110 active:brightness-95',
-  ghost:
-    'tsv-btn-ghost bg-transparent text-white border border-white/15 hover:bg-white/[0.08]',
+  ghost: 'tsv-btn-ghost bg-transparent text-white border border-white/15 hover:bg-white/[0.08]',
   glass: 'tsv-btn-glass text-white hover:bg-white/[0.12]',
-  danger:
-    'tsv-btn-danger bg-red-500/20 text-red-200 border border-red-400/40 hover:bg-red-500/30'
+  danger: 'tsv-btn-danger bg-red-500/20 text-red-200 border border-red-400/40 hover:bg-red-500/30'
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

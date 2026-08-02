@@ -133,9 +133,7 @@ const writeEventLabel = (label: string | null) => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItemsState] = useState<CartItem[]>(() => readItems())
-  const [eventLabel, setEventLabel] = useState<string | null>(() =>
-    readEventLabel()
-  )
+  const [eventLabel, setEventLabel] = useState<string | null>(() => readEventLabel())
   const [isOpen, setIsOpen] = useState(false)
 
   // Timer atado al eventLabel actual. Si no hay eventLabel, el hook no

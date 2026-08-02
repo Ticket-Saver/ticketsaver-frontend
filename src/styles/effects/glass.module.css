@@ -51,7 +51,10 @@
 }
 
 .hoverable {
-  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease;
 }
 
 .hoverable:hover {

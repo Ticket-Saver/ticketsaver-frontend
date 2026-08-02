@@ -34,10 +34,7 @@ export interface ShareTicketResult {
 const CANVAS_WIDTH = 1080
 const CANVAS_HEIGHT = 1920
 
-const drawTicket = (
-  ctx: CanvasRenderingContext2D,
-  input: ShareTicketInput
-): void => {
+const drawTicket = (ctx: CanvasRenderingContext2D, input: ShareTicketInput): void => {
   const palette = getCoverPalette(input.coverKey)
   const W = CANVAS_WIDTH
   const H = CANVAS_HEIGHT
@@ -51,14 +48,7 @@ const drawTicket = (
   ctx.fillRect(0, 0, W, H)
 
   // Accent radial blob
-  const radial = ctx.createRadialGradient(
-    W * 0.75,
-    H * 0.2,
-    0,
-    W * 0.75,
-    H * 0.2,
-    W * 0.7
-  )
+  const radial = ctx.createRadialGradient(W * 0.75, H * 0.2, 0, W * 0.75, H * 0.2, W * 0.7)
   radial.addColorStop(0, `${palette.accent}66`)
   radial.addColorStop(1, 'transparent')
   ctx.fillStyle = radial
@@ -83,8 +73,7 @@ const drawTicket = (
 
   // Big date
   ctx.textAlign = 'center'
-  ctx.font =
-    '700 56px "Space Grotesk", system-ui, sans-serif'
+  ctx.font = '700 56px "Space Grotesk", system-ui, sans-serif'
   ctx.fillStyle = 'rgba(255,255,255,0.75)'
   ctx.fillText(`${input.day} · ${input.month}`, W / 2, H * 0.42)
 
@@ -135,9 +124,7 @@ const drawTicket = (
   ctx.fillText('TICKETSAVER.NET', W / 2, H - 80)
 }
 
-export async function shareTicket(
-  input: ShareTicketInput
-): Promise<ShareTicketResult> {
+export async function shareTicket(input: ShareTicketInput): Promise<ShareTicketResult> {
   if (typeof document === 'undefined') {
     return { ok: false, error: 'Document not available' }
   }
@@ -172,10 +159,7 @@ export async function shareTicket(
         return { ok: true, shared: true }
       } catch (err) {
         // El usuario canceló — no es un error fatal.
-        if (
-          err instanceof Error &&
-          /abort|cancel/i.test(err.name + err.message)
-        ) {
+        if (err instanceof Error && /abort|cancel/i.test(err.name + err.message)) {
           return { ok: true, shared: false }
         }
         // Cae al fallback de descarga.

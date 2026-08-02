@@ -16,13 +16,7 @@ interface StepHeaderProps {
   eventLabel?: string
 }
 
-export default function StepHeader({
-  step,
-  title,
-  subtitle,
-  onBack,
-  eventLabel
-}: StepHeaderProps) {
+export default function StepHeader({ step, title, subtitle, onBack, eventLabel }: StepHeaderProps) {
   const navigate = useNavigate()
 
   const handleBack = () => {
@@ -31,12 +25,7 @@ export default function StepHeader({
   }
 
   return (
-    <header
-      className={cn(
-        glass.glassNav,
-        'sticky top-0 z-30 w-full border-b border-white/[0.08]'
-      )}
-    >
+    <header className={cn(glass.glassNav, 'sticky top-0 z-30 w-full border-b border-white/[0.08]')}>
       <div className='mx-auto max-w-5xl px-4 lg:px-10 h-16 lg:h-20 flex items-center gap-3'>
         <button
           type='button'
@@ -50,31 +39,21 @@ export default function StepHeader({
         <div className='flex-1 min-w-0 text-center'>
           <div className='flex items-center justify-center gap-2 text-[10px] font-display font-bold uppercase tracking-[0.16em] text-white/55'>
             <StepDot active />
-            <span className={cn(step === 'venue' ? 'text-brand-hi' : '')}>
-              Section
-            </span>
+            <span className={cn(step === 'venue' ? 'text-brand-hi' : '')}>Section</span>
             <span className='text-white/30'>·</span>
             <StepDot active={step === 'seats' || step === 'pay'} />
-            <span
-              className={cn(
-                step === 'seats' || step === 'pay' ? 'text-brand-hi' : ''
-              )}
-            >
+            <span className={cn(step === 'seats' || step === 'pay' ? 'text-brand-hi' : '')}>
               Seats
             </span>
             <span className='text-white/30'>·</span>
             <StepDot active={step === 'pay'} />
-            <span className={cn(step === 'pay' ? 'text-brand-hi' : '')}>
-              Pay
-            </span>
+            <span className={cn(step === 'pay' ? 'text-brand-hi' : '')}>Pay</span>
           </div>
           <div className='mt-1 font-display text-sm font-semibold text-white tracking-tight truncate'>
             {title}
           </div>
           {subtitle && (
-            <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>
-              {subtitle}
-            </div>
+            <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>{subtitle}</div>
           )}
         </div>
 
@@ -89,10 +68,7 @@ export default function StepHeader({
 const StepDot = ({ active }: { active: boolean }) => (
   <span
     aria-hidden
-    className={cn(
-      'inline-block h-1.5 w-1.5 rounded-full',
-      active ? 'bg-brand-hi' : 'bg-white/25'
-    )}
+    className={cn('inline-block h-1.5 w-1.5 rounded-full', active ? 'bg-brand-hi' : 'bg-white/25')}
   />
 )
 

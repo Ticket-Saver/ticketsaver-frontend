@@ -29,17 +29,9 @@ export default function ZoomPanContainer({
       ref={containerRef}
       role='region'
       aria-label={ariaLabel}
-      className={cn(
-        'relative overflow-hidden touch-none select-none cursor-grab',
-        className
-      )}
+      className={cn('relative overflow-hidden touch-none select-none cursor-grab', className)}
     >
-      <div
-        className={cn(
-          'absolute inset-0 grid place-items-center',
-          contentClassName
-        )}
-      >
+      <div className={cn('absolute inset-0 grid place-items-center', contentClassName)}>
         <div
           style={{
             transform: `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`,

@@ -85,17 +85,14 @@ const HeroTicket = ({
 }) => {
   const palette = getCoverPalette(event.cover)
   const noiseId = useId().replace(/[^a-z0-9]/gi, '')
-  const ticketLabel = ticketNumber
-    ? `No. ${String(ticketNumber).padStart(3, '0')}`
-    : 'No. 042'
+  const ticketLabel = ticketNumber ? `No. ${String(ticketNumber).padStart(3, '0')}` : 'No. 042'
 
   return (
     <div
       className={cn('relative rounded-glass-xl overflow-hidden', className)}
       style={{
         background: `linear-gradient(135deg, ${palette.a}, ${palette.b}, ${palette.c})`,
-        boxShadow:
-          '0 30px 60px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.15)'
+        boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.15)'
       }}
     >
       <div
@@ -148,14 +145,8 @@ const HeroTicket = ({
 
       {/* Perforación */}
       <div className='relative'>
-        <div
-          aria-hidden
-          className='absolute -left-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]'
-        />
-        <div
-          aria-hidden
-          className='absolute -right-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]'
-        />
+        <div aria-hidden className='absolute -left-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]' />
+        <div aria-hidden className='absolute -right-2 -top-2 h-4 w-4 rounded-full bg-[#0A0A0C]' />
         <div
           aria-hidden
           className='h-px mx-5'
@@ -264,9 +255,7 @@ const ListTicket = ({
     <article
       className={cn(
         'relative rounded-glass-md overflow-hidden border border-white/[0.10] backdrop-blur-glass transition',
-        past
-          ? 'opacity-70 saturate-50'
-          : 'hover:border-white/[0.18] hover:-translate-y-0.5',
+        past ? 'opacity-70 saturate-50' : 'hover:border-white/[0.18] hover:-translate-y-0.5',
         className
       )}
       style={{ background: 'rgba(255,255,255,0.04)' }}
@@ -318,9 +307,7 @@ const ListTicket = ({
             {event.city && ` · ${event.city}`}
           </div>
           <div className='mt-auto flex items-center gap-1.5'>
-            <Tag>
-              {event.time || 'TBA'}
-            </Tag>
+            <Tag>{event.time || 'TBA'}</Tag>
           </div>
         </div>
       </div>

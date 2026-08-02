@@ -124,9 +124,7 @@ export default function HeroEvent({
               onClick={() => goTo(i)}
               className={cn(
                 'h-1.5 rounded-pill transition-all duration-300',
-                i === active
-                  ? 'w-7 bg-white'
-                  : 'w-1.5 bg-white/30 hover:bg-white/55'
+                i === active ? 'w-7 bg-white' : 'w-1.5 bg-white/30 hover:bg-white/55'
               )}
             />
           ))}

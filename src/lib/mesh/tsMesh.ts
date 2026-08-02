@@ -49,7 +49,7 @@ export const DARK_VIOLET_PALETTE: RGB[] = [
   hex('#3D2566'), // plum shadow (replaces bright lavender anchor)
   hex('#1A0F33'), // deep indigo again
   hex('#5B3A8C'), // royal violet (mid)
-  hex('#3D2566')  // plum (replaces soft mauve anchor)
+  hex('#3D2566') // plum (replaces soft mauve anchor)
 ]
 
 // Vivid — the original redesign mesh. Use it for hero sections,
@@ -187,11 +187,7 @@ export class TSMesh {
 
     const buf = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buf)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW
-    )
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
     this.aPos = gl.getAttribLocation(p, 'a_pos')
     this.U = {
       res: gl.getUniformLocation(p, 'u_res'),

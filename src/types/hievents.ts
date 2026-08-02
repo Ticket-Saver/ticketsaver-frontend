@@ -27,11 +27,7 @@ export interface HiAvailability {
   sold_out: number
 }
 
-export type HiImageType =
-  | 'EVENT_COVER'
-  | 'EVENT_THUMBNAIL'
-  | 'EVENT_BANNER'
-  | 'EVENT_GALLERY'
+export type HiImageType = 'EVENT_COVER' | 'EVENT_THUMBNAIL' | 'EVENT_BANNER' | 'EVENT_GALLERY'
 
 export interface HiImage {
   id: number
@@ -135,12 +131,7 @@ export interface HiTicketPrice {
   quantity_remaining: number | null
 }
 
-export type HiTicketType =
-  | 'FREE'
-  | 'PAID'
-  | 'DONATION'
-  | 'TIERED'
-  | 'REGISTRATION'
+export type HiTicketType = 'FREE' | 'PAID' | 'DONATION' | 'TIERED' | 'REGISTRATION'
 
 /** Item de `data` en GET /public/events/{id}/tickets. */
 export interface HiTicketPublic {

@@ -35,12 +35,7 @@ const TABS: Tab[] = [
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none' aria-hidden>
         <circle cx='8' cy='8' r='5' stroke='currentColor' strokeWidth='1.5' />
-        <path
-          d='m12 12 3.5 3.5'
-          stroke='currentColor'
-          strokeWidth='1.5'
-          strokeLinecap='round'
-        />
+        <path d='m12 12 3.5 3.5' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
       </svg>
     )
   },
@@ -56,12 +51,7 @@ const TABS: Tab[] = [
           stroke='currentColor'
           strokeWidth='1.4'
         />
-        <path
-          d='M9 4v9'
-          stroke='currentColor'
-          strokeWidth='1.4'
-          strokeDasharray='1.5 1.5'
-        />
+        <path d='M9 4v9' stroke='currentColor' strokeWidth='1.4' strokeDasharray='1.5 1.5' />
       </svg>
     )
   },
@@ -113,9 +103,7 @@ export default function MobileTabBar() {
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-0.5 rounded-2xl py-2 px-1 transition',
-                  active
-                    ? 'bg-brand-hi/15 text-white'
-                    : 'text-white/55 hover:text-white/85'
+                  active ? 'bg-brand-hi/15 text-white' : 'text-white/55 hover:text-white/85'
                 )}
               >
                 {tab.icon}

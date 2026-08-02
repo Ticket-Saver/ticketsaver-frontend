@@ -3,14 +3,14 @@ const seatrangesToValues = (ranges: string[]): number[] => {
   const values: number[] = []
 
   // Iterar sobre cada string en la lista de rangos
-  ranges.forEach(r => {
+  ranges.forEach((r) => {
     const parsedNumber = parseInt(r, 10)
 
     if (!isNaN(parsedNumber)) {
       values.push(parsedNumber)
     } else {
       try {
-        let param = r.split(',', 3).map(s => parseInt(s, 10))
+        let param = r.split(',', 3).map((s) => parseInt(s, 10))
 
         if (param.length === 2) {
           param.push(1)
@@ -45,7 +45,7 @@ export { zone_prices_file }
 
 // dada los precios y sus correspondientes zonas, se regresa el nombre de la zona y los precios
 const extractZonePrices = (tickets: any[]) => {
-  return tickets.map(ticket => ({
+  return tickets.map((ticket) => ({
     zone: ticket.title,
     prices: ticket.prices.map((price: any) => ({
       priceFinal: price.price_including_taxes_and_fees,
@@ -106,10 +106,10 @@ export { zoneseatToPrice }
 //dado un tipo de precio, se regresa el monto
 const pricetypeToAmount = (prices: any, priceType: string): number => {
   const priceHistory = prices[priceType]
-  const dateObjs = Object.keys(priceHistory).map(date => new Date(date))
+  const dateObjs = Object.keys(priceHistory).map((date) => new Date(date))
   dateObjs.sort((a, b) => a.getTime() - b.getTime())
 
-  const dateTs = dateObjs.filter(date => date < new Date()).pop()
+  const dateTs = dateObjs.filter((date) => date < new Date()).pop()
   if (!dateTs) {
     throw new Error('No valid date found')
   }

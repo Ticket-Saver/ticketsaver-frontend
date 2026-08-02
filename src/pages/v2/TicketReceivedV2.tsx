@@ -84,12 +84,8 @@ export default function TicketReceivedV2() {
   const { byLabel } = useUIEvents()
   const { clear: clearCart } = useCart()
 
-  const [snapshot, setSnapshot] = useState<CartCheckoutSnapshot | null>(() =>
-    readCartSnapshot()
-  )
-  const [customerEmail, setCustomerEmail] = useState<string>(
-    snapshot?.customer?.email ?? ''
-  )
+  const [snapshot, setSnapshot] = useState<CartCheckoutSnapshot | null>(() => readCartSnapshot())
+  const [customerEmail, setCustomerEmail] = useState<string>(snapshot?.customer?.email ?? '')
   const [order, setOrder] = useState<HiOrder | null>(null)
   const confirmRan = useRef(false)
 
@@ -168,12 +164,8 @@ export default function TicketReceivedV2() {
         ticketNumber: i + 1,
         seatInfo: {
           section: it.subZone,
-          row:
-            parsed.row ??
-            (it.coords ? String.fromCharCode(65 + it.coords.row) : undefined),
-          seat:
-            parsed.seat ??
-            (it.coords ? String(it.coords.col + 1) : undefined)
+          row: parsed.row ?? (it.coords ? String.fromCharCode(65 + it.coords.row) : undefined),
+          seat: parsed.seat ?? (it.coords ? String(it.coords.col + 1) : undefined)
         }
       }
     })
@@ -237,8 +229,8 @@ export default function TicketReceivedV2() {
               Nothing to confirm yet
             </div>
             <p className='mt-2 text-sm text-white/55'>
-              We could not find a recent purchase. Maybe the page expired or
-              you opened it by mistake.
+              We could not find a recent purchase. Maybe the page expired or you opened it by
+              mistake.
             </p>
             <Button
               variant='primary'
@@ -263,8 +255,7 @@ export default function TicketReceivedV2() {
           <div
             className='h-14 w-14 mx-auto rounded-pill grid place-items-center'
             style={{
-              background:
-                'radial-gradient(circle at 30% 30%, #E0C0FF, #7B3FE4)',
+              background: 'radial-gradient(circle at 30% 30%, #E0C0FF, #7B3FE4)',
               boxShadow: '0 10px 40px rgba(123,63,228,0.50)'
             }}
           >
@@ -290,8 +281,7 @@ export default function TicketReceivedV2() {
           </p>
           {customerEmail && (
             <p className='mt-1 text-[11px] text-white/45'>
-              A confirmation was sent to{' '}
-              <span className='text-white/70'>{customerEmail}</span>
+              A confirmation was sent to <span className='text-white/70'>{customerEmail}</span>
             </p>
           )}
         </header>

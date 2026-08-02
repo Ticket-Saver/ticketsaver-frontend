@@ -11,8 +11,7 @@ export default function VenueMap({ venueName, city, address, mapsUrl }: VenueMap
   const query = [venueName, city].filter(Boolean).join(', ')
   const iframeSrc = `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`
   const directionsUrl =
-    mapsUrl ??
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
+    mapsUrl ?? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
 
   return (
     <div className='rounded-glass-md overflow-hidden border border-white/[0.12] bg-white/[0.04]'>
@@ -26,8 +25,7 @@ export default function VenueMap({ venueName, city, address, mapsUrl }: VenueMap
           referrerPolicy='no-referrer-when-downgrade'
           className='block w-full h-full border-0'
           style={{
-            filter:
-              'invert(0.92) hue-rotate(180deg) saturate(0.6) brightness(0.95)'
+            filter: 'invert(0.92) hue-rotate(180deg) saturate(0.6) brightness(0.95)'
           }}
         />
         <div
@@ -40,19 +38,9 @@ export default function VenueMap({ venueName, city, address, mapsUrl }: VenueMap
       </div>
       <div className='px-3.5 py-3 flex items-center justify-between gap-3'>
         <div className='min-w-0'>
-          <div className='text-[12.5px] font-medium text-white truncate'>
-            {venueName}
-          </div>
-          {city && (
-            <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>
-              {city}
-            </div>
-          )}
-          {address && (
-            <div className='text-[10.5px] text-white/45 mt-0.5 truncate'>
-              {address}
-            </div>
-          )}
+          <div className='text-[12.5px] font-medium text-white truncate'>{venueName}</div>
+          {city && <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>{city}</div>}
+          {address && <div className='text-[10.5px] text-white/45 mt-0.5 truncate'>{address}</div>}
         </div>
         <a
           href={directionsUrl}

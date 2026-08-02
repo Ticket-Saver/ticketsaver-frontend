@@ -85,12 +85,7 @@ export default function Drawer({
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div
-      className='fixed inset-0 z-modal'
-      role='dialog'
-      aria-modal='true'
-      aria-label={ariaLabel}
-    >
+    <div className='fixed inset-0 z-modal' role='dialog' aria-modal='true' aria-label={ariaLabel}>
       <div
         aria-hidden
         onClick={() => {

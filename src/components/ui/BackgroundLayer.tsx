@@ -63,11 +63,7 @@ export default function BackgroundLayer({
     : undefined
 
   return (
-    <div
-      aria-hidden='true'
-      className={cn('bg-[#0A0A0C]', className)}
-      style={layerStyle}
-    >
+    <div aria-hidden='true' className={cn('bg-[#0A0A0C]', className)} style={layerStyle}>
       <MeshBackground
         seed={seed}
         palette={palette}

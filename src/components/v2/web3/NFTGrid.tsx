@@ -26,12 +26,8 @@ export default function NFTGrid({
   if (items.length === 0) {
     return (
       <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
-        <div className='font-display text-base font-semibold text-white'>
-          Empty wallet
-        </div>
-        <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>
-          {emptyMessage}
-        </p>
+        <div className='font-display text-base font-semibold text-white'>Empty wallet</div>
+        <p className='mt-2 text-[12.5px] text-white/55 max-w-md mx-auto'>{emptyMessage}</p>
       </GlassCard>
     )
   }
@@ -70,11 +66,7 @@ const NFTTile = ({ item }: { item: NFTItem }) => {
         <filter id={`nft-grid-noise-${safeId}`}>
           <feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves={2} />
         </filter>
-        <rect
-          width='100%'
-          height='100%'
-          filter={`url(#nft-grid-noise-${safeId})`}
-        />
+        <rect width='100%' height='100%' filter={`url(#nft-grid-noise-${safeId})`} />
       </svg>
       <div className='absolute left-3 top-3 text-white text-[8.5px] uppercase tracking-[0.16em] font-display font-bold opacity-85'>
         NFT · Base
@@ -84,9 +76,7 @@ const NFTTile = ({ item }: { item: NFTItem }) => {
           {item.title}
         </div>
         {item.subtitle && (
-          <div className='text-[9.5px] opacity-65 mt-0.5 truncate'>
-            {item.subtitle}
-          </div>
+          <div className='text-[9.5px] opacity-65 mt-0.5 truncate'>{item.subtitle}</div>
         )}
       </div>
     </article>

@@ -27,16 +27,8 @@ const pickPalettes = (event?: UIEvent): CoverKey[] => {
   return [wrap(start), wrap(start + 2), wrap(start - 1), wrap(start + 4), wrap(start - 3)]
 }
 
-export default function Gallery({
-  event,
-  images,
-  paletteKeys,
-  featuredLabel
-}: GalleryProps) {
-  const keys = useMemo(
-    () => paletteKeys ?? pickPalettes(event),
-    [event, paletteKeys]
-  )
+export default function Gallery({ event, images, paletteKeys, featuredLabel }: GalleryProps) {
+  const keys = useMemo(() => paletteKeys ?? pickPalettes(event), [event, paletteKeys])
   const reactId = useId().replace(/[^a-z0-9]/gi, '')
 
   const realImages = useMemo(

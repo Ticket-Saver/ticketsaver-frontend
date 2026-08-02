@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import { useToast } from '../../ui'
 import { cn } from '../../../types/ui'
-import {
-  shareTicket,
-  type ShareTicketInput
-} from '../../../services/ticketShareService'
+import { shareTicket, type ShareTicketInput } from '../../../services/ticketShareService'
 
 interface ShareSheetProps {
   input: ShareTicketInput

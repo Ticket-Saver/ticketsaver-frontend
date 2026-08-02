@@ -29,8 +29,7 @@ interface Attendee {
   email: string
 }
 
-const genSessionId = () =>
-  `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+const genSessionId = () => `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 
 const seatIdsOf = (cart: CartItem[]) =>
   cart.map((c) => Number(c.seatId)).filter((n) => Number.isFinite(n) && n > 0)
@@ -125,9 +124,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
   useEffect(() => {
     if (initRef.current) return
     initRef.current = true
-    setAttendees(
-      cart.map(() => ({ firstName: '', lastName: '', email: customer?.email || '' }))
-    )
+    setAttendees(cart.map(() => ({ firstName: '', lastName: '', email: customer?.email || '' })))
     ;(async () => {
       try {
         if (!eventId) throw new Error('Falta el identificador del evento.')
@@ -149,8 +146,7 @@ export default function CheckoutStripe({ cart, eventInfo, customer }: CheckoutSt
           const order = await hiEventsService.createOrder(eventId, {
             tickets,
             session_identifier: sessionIdRef.current,
-            presale_code:
-              sessionStorage.getItem(`presale_code_${eventId}`) || undefined
+            presale_code: sessionStorage.getItem(`presale_code_${eventId}`) || undefined
           })
           setOrderShortId(order.short_id)
         }

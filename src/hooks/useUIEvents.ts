@@ -31,10 +31,7 @@ const inNDays = (e: UIEvent, n: number): boolean => {
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const horizon = startOfToday.getTime() + n * 24 * 60 * 60 * 1000
-  return (
-    e.startsAt.getTime() >= startOfToday.getTime() &&
-    e.startsAt.getTime() < horizon
-  )
+  return e.startsAt.getTime() >= startOfToday.getTime() && e.startsAt.getTime() < horizon
 }
 
 const isToday = (e: UIEvent): boolean => {
@@ -61,9 +58,9 @@ export const useUIEvents = (): UseUIEventsResult => {
     const thisWeek = visible.filter((e) => inNDays(e, 7))
     const tonight = visible.filter(isToday)
 
-    const availableCategories = Array.from(
-      new Set(visible.map((e) => e.category))
-    ).filter((c): c is Category => c !== 'Other')
+    const availableCategories = Array.from(new Set(visible.map((e) => e.category))).filter(
+      (c): c is Category => c !== 'Other'
+    )
 
     const byCategory = (cat: CategoryFilter): UIEvent[] =>
       cat === 'All' ? visible : visible.filter((e) => e.category === cat)

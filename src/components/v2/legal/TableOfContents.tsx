@@ -11,11 +11,7 @@ interface TableOfContentsProps {
   onSelect: (id: string) => void
 }
 
-export default function TableOfContents({
-  items,
-  activeId,
-  onSelect
-}: TableOfContentsProps) {
+export default function TableOfContents({ items, activeId, onSelect }: TableOfContentsProps) {
   return (
     <nav aria-label='Document sections'>
       <div className='text-[9.5px] uppercase tracking-[0.18em] text-white/40 font-display font-bold mb-2.5'>

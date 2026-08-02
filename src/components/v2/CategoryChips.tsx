@@ -31,15 +31,11 @@ export default function CategoryChips({
     <div
       role='tablist'
       aria-label='Event category filter'
-      className={cn(
-        'flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1',
-        className
-      )}
+      className={cn('flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1', className)}
     >
       {categories.map((cat) => {
         const isActive = active === cat
-        const isAvailable =
-          cat === 'All' || !available || available.includes(cat)
+        const isAvailable = cat === 'All' || !available || available.includes(cat)
         return (
           <button
             key={cat}

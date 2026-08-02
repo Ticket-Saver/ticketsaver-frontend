@@ -16,10 +16,7 @@ interface GoogleWalletButtonProps {
  * Botón "Add to Google Wallet" (Android). Espejo de AppleWalletButton:
  * detrás del flag GOOGLE_WALLET_ENABLED; en off muestra "Soon" + toast.
  */
-export default function GoogleWalletButton({
-  payload,
-  className
-}: GoogleWalletButtonProps) {
+export default function GoogleWalletButton({ payload, className }: GoogleWalletButtonProps) {
   const toast = useToast()
   const [loading, setLoading] = useState(false)
 
@@ -30,8 +27,7 @@ export default function GoogleWalletButton({
       toast.show({
         variant: 'info',
         title: 'Coming soon',
-        message:
-          'Google Wallet passes will be available once the issuer account is set up.'
+        message: 'Google Wallet passes will be available once the issuer account is set up.'
       })
       return
     }
@@ -73,9 +69,7 @@ export default function GoogleWalletButton({
         <span className='text-[14px] font-bold tracking-tight'>Google Wallet</span>
       </span>
       {!enabled && (
-        <span className='text-[9px] uppercase tracking-[0.12em] text-white/55 ml-2'>
-          Soon
-        </span>
+        <span className='text-[9px] uppercase tracking-[0.12em] text-white/55 ml-2'>Soon</span>
       )}
     </button>
   )

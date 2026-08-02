@@ -14,9 +14,7 @@ import { coverHash } from '../lib/covers/coverHash'
  * schema, mantenemos esta lista hardcoded — al menos un demo (`demo_v2.01`)
  * para que el flujo se pueda verificar en local.
  */
-const HIGH_DEMAND_LABELS: ReadonlySet<string> = new Set([
-  'demo_v2.01'
-])
+const HIGH_DEMAND_LABELS: ReadonlySet<string> = new Set(['demo_v2.01'])
 
 const HIDDEN_EVENT_LABELS: ReadonlySet<string> = new Set([
   'ice_spice.01',
@@ -35,8 +33,18 @@ const HIDDEN_EVENT_LABELS: ReadonlySet<string> = new Set([
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
 ]
 
 const djb2 = (input: string): number => {
@@ -98,14 +106,8 @@ const inferTags = (startsAt: Date, category: Category): string[] => {
   const now = new Date()
   const dayMs = 24 * 60 * 60 * 1000
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const eventStartOfDay = new Date(
-    startsAt.getFullYear(),
-    startsAt.getMonth(),
-    startsAt.getDate()
-  )
-  const diffDays = Math.round(
-    (eventStartOfDay.getTime() - startOfDay.getTime()) / dayMs
-  )
+  const eventStartOfDay = new Date(startsAt.getFullYear(), startsAt.getMonth(), startsAt.getDate())
+  const diffDays = Math.round((eventStartOfDay.getTime() - startOfDay.getTime()) / dayMs)
 
   if (diffDays === 0) tags.push('Tonight')
   else if (diffDays === 1) tags.push('Tomorrow')
@@ -227,16 +229,11 @@ export const toUIEvents = (
   return adapted.map((e) => (heroIds.has(e.id) ? { ...e, hero: true } : e))
 }
 
-export const isVisibleEvent = (e: UIEvent): boolean =>
-  !e.hidden && !e.expired
+export const isVisibleEvent = (e: UIEvent): boolean => !e.hidden && !e.expired
 
 export { HIDDEN_EVENT_LABELS }
 
 // Re-export del adapter de multi-fecha — el plan B3 expone helpers de
 // agrupación por artista desde este módulo.
-export {
-  getDatesForArtist,
-  groupByArtist,
-  getGroupForEvent
-} from './multiDateAdapter'
+export { getDatesForArtist, groupByArtist, getGroupForEvent } from './multiDateAdapter'
 export type { DateGroup } from './multiDateAdapter'

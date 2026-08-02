@@ -65,7 +65,10 @@ export default function EventResaleSection({
       )
       window.location.href = checkout_url
     } catch (e) {
-      toast.show({ variant: 'error', message: e instanceof Error ? e.message : 'No se pudo iniciar la compra.' })
+      toast.show({
+        variant: 'error',
+        message: e instanceof Error ? e.message : 'No se pudo iniciar la compra.'
+      })
       setBuyingId(null)
     }
   }
@@ -86,21 +89,33 @@ export default function EventResaleSection({
     <section className='mt-8'>
       <h2 className='font-display text-lg font-semibold text-white mb-3'>Reventa segura</h2>
       <p className='text-[13px] text-white/55 mb-4'>
-        Tickets que otros asistentes pusieron en reventa. TicketSaver retiene el pago y traspasa el ticket de forma segura.
+        Tickets que otros asistentes pusieron en reventa. TicketSaver retiene el pago y traspasa el
+        ticket de forma segura.
       </p>
       <div className='flex flex-col gap-3'>
         {listings.map((l) => {
           const ticketLine = [l.ticket_name, l.seat_label].filter(Boolean).join(' · ')
           return (
-            <GlassCard key={l.id} depth='sm' radius='lg' className='p-4 flex items-center justify-between gap-3'>
+            <GlassCard
+              key={l.id}
+              depth='sm'
+              radius='lg'
+              className='p-4 flex items-center justify-between gap-3'
+            >
               <div>
                 {ticketLine && <div className='text-[12px] text-white/70'>{ticketLine}</div>}
                 <div className='text-white font-semibold'>{money(l.buyer_total, l.currency)}</div>
                 <div className='text-[11px] text-white/50'>
-                  Precio {money(l.asking_price, l.currency)} + servicio {money(l.buyer_fee, l.currency)}
+                  Precio {money(l.asking_price, l.currency)} + servicio{' '}
+                  {money(l.buyer_fee, l.currency)}
                 </div>
               </div>
-              <Button variant='primary' size='sm' onClick={() => buy(l)} disabled={buyingId === l.id}>
+              <Button
+                variant='primary'
+                size='sm'
+                onClick={() => buy(l)}
+                disabled={buyingId === l.id}
+              >
                 {buyingId === l.id ? 'Redirigiendo…' : 'Comprar'}
               </Button>
             </GlassCard>

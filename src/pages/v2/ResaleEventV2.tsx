@@ -16,7 +16,9 @@ export default function ResaleEventV2() {
   return (
     <LayoutV2 meshSeed={7}>
       <div className='px-5 lg:px-10 max-w-3xl mx-auto w-full pt-6 lg:pt-10 pb-10'>
-        <Link to='/reventa' className='text-[13px] text-white/55 hover:text-white'>← Volver a Reventa</Link>
+        <Link to='/reventa' className='text-[13px] text-white/55 hover:text-white'>
+          ← Volver a Reventa
+        </Link>
 
         <header className='mt-4 mb-2'>
           <h1 className='font-display text-2xl font-bold text-white'>
@@ -24,7 +26,8 @@ export default function ResaleEventV2() {
           </h1>
           {event && (
             <p className='text-[13px] text-white/55 mt-1'>
-              {event.venueName}{event.city ? ` · ${event.city}` : ''}
+              {event.venueName}
+              {event.city ? ` · ${event.city}` : ''}
               {event.isoDate ? ` · ${event.day} ${event.date} ${event.month}` : ''}
             </p>
           )}
@@ -35,7 +38,9 @@ export default function ResaleEventV2() {
         {event && (
           <div className='mt-8'>
             <Link to={event.detailHref}>
-              <Button variant='ghost' size='sm'>Ver evento completo</Button>
+              <Button variant='ghost' size='sm'>
+                Ver evento completo
+              </Button>
             </Link>
           </div>
         )}

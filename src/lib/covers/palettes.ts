@@ -20,9 +20,6 @@ export const COVER_PALETTES = {
 
 export type CoverKey = keyof typeof COVER_PALETTES
 
-export const COVER_KEYS: readonly CoverKey[] = Object.keys(
-  COVER_PALETTES
-) as CoverKey[]
+export const COVER_KEYS: readonly CoverKey[] = Object.keys(COVER_PALETTES) as CoverKey[]
 
-export const getCoverPalette = (key: CoverKey): CoverPalette =>
-  COVER_PALETTES[key]
+export const getCoverPalette = (key: CoverKey): CoverPalette => COVER_PALETTES[key]

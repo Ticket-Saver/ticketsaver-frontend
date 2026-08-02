@@ -149,10 +149,7 @@ export function useSessionTimer(
       setHasStarted(true)
       setIsExpired(expiresAtMs <= now)
       setTimeRemaining(Math.max(0, Math.floor((expiresAtMs - now) / 1000)))
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ expiresAt: expiresAtMs, startedAt: now })
-      )
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ expiresAt: expiresAtMs, startedAt: now }))
       broadcastSync(STORAGE_KEY)
     },
     [STORAGE_KEY]

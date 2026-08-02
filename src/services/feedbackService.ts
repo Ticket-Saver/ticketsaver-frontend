@@ -26,18 +26,12 @@ const read = (): FeedbackEntry[] => {
   }
 }
 
-export const recordFeedback = (
-  context: string,
-  sectionId: string,
-  vote: FeedbackVote
-): void => {
+export const recordFeedback = (context: string, sectionId: string, vote: FeedbackVote): void => {
   const entry: FeedbackEntry = { context, sectionId, vote, at: Date.now() }
   try {
     const all = read()
     // Reemplazamos el voto previo de la misma sección.
-    const filtered = all.filter(
-      (e) => !(e.context === context && e.sectionId === sectionId)
-    )
+    const filtered = all.filter((e) => !(e.context === context && e.sectionId === sectionId))
     filtered.push(entry)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
   } catch {
@@ -48,12 +42,7 @@ export const recordFeedback = (
   }
 }
 
-export const getFeedbackFor = (
-  context: string,
-  sectionId: string
-): FeedbackVote | null => {
-  const match = read().find(
-    (e) => e.context === context && e.sectionId === sectionId
-  )
+export const getFeedbackFor = (context: string, sectionId: string): FeedbackVote | null => {
+  const match = read().find((e) => e.context === context && e.sectionId === sectionId)
   return match?.vote ?? null
 }

@@ -12,10 +12,7 @@ interface AppleWalletButtonProps {
   className?: string
 }
 
-export default function AppleWalletButton({
-  payload,
-  className
-}: AppleWalletButtonProps) {
+export default function AppleWalletButton({ payload, className }: AppleWalletButtonProps) {
   const toast = useToast()
   const [loading, setLoading] = useState(false)
 
@@ -26,8 +23,7 @@ export default function AppleWalletButton({
       toast.show({
         variant: 'info',
         title: 'Coming soon',
-        message:
-          'Apple Wallet passes will be available once the issuer cert is in place.'
+        message: 'Apple Wallet passes will be available once the issuer cert is in place.'
       })
       return
     }
@@ -66,14 +62,10 @@ export default function AppleWalletButton({
         <span className='text-[8.5px] uppercase tracking-[0.18em] text-white/70 font-bold'>
           Add to
         </span>
-        <span className='text-[14px] font-bold tracking-tight'>
-          Apple Wallet
-        </span>
+        <span className='text-[14px] font-bold tracking-tight'>Apple Wallet</span>
       </span>
       {!enabled && (
-        <span className='text-[9px] uppercase tracking-[0.12em] text-white/55 ml-2'>
-          Soon
-        </span>
+        <span className='text-[9px] uppercase tracking-[0.12em] text-white/55 ml-2'>Soon</span>
       )}
     </button>
   )

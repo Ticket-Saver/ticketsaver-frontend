@@ -76,7 +76,11 @@ const fmtSaleStart = (s: string | null): string | null => {
   if (!s) return null
   const d = new Date(s.includes('T') ? s : s.replace(' ', 'T'))
   if (Number.isNaN(d.getTime()) || d.getTime() <= Date.now()) return null
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(d)
 }
 
 /**
@@ -177,7 +181,11 @@ export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
       return
     }
     if (totalTickets >= GLOBAL_MAX) {
-      toast.show({ variant: 'warn', title: 'Limit reached', message: `Up to ${GLOBAL_MAX} tickets per order.` })
+      toast.show({
+        variant: 'warn',
+        title: 'Limit reached',
+        message: `Up to ${GLOBAL_MAX} tickets per order.`
+      })
       return
     }
     const issuedAt = Date.now()

@@ -21,9 +21,7 @@ export default function PrinciplesList({ principles }: PrinciplesListProps) {
             <div className='font-display text-[14px] font-semibold text-white tracking-tight'>
               {p.title}
             </div>
-            <p className='mt-1.5 text-[12px] text-white/65 leading-relaxed'>
-              {p.body}
-            </p>
+            <p className='mt-1.5 text-[12px] text-white/65 leading-relaxed'>{p.body}</p>
           </div>
         </GlassCard>
       ))}

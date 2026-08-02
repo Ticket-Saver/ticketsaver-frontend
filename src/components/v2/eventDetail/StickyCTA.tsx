@@ -80,9 +80,7 @@ export default function StickyCTA({
   const content = (
     <>
       <span className='flex items-center gap-2 min-w-0'>
-        <span className='font-display text-sm font-semibold truncate'>
-          {ctaLabel}
-        </span>
+        <span className='font-display text-sm font-semibold truncate'>{ctaLabel}</span>
         {isSaleActive && !disabled && (
           <span className='text-[10px] uppercase tracking-[0.14em] font-display opacity-50 hidden sm:inline'>
             {event.day} {event.date}
@@ -91,9 +89,7 @@ export default function StickyCTA({
       </span>
       <span className='flex items-center gap-2 shrink-0'>
         {!disabled && priceLabel && (
-          <span className='font-display text-sm font-semibold tabular-nums'>
-            {priceLabel}
-          </span>
+          <span className='font-display text-sm font-semibold tabular-nums'>{priceLabel}</span>
         )}
         {!disabled && <ChevRight />}
       </span>
@@ -110,15 +106,12 @@ export default function StickyCTA({
   )
 
   return (
-    <div
-      className='fixed inset-x-0 z-40 px-3 lg:px-10 pointer-events-none bottom-[76px] md:bottom-0 md:pb-3 lg:pb-6'
-    >
+    <div className='fixed inset-x-0 z-40 px-3 lg:px-10 pointer-events-none bottom-[76px] md:bottom-0 md:pb-3 lg:pb-6'>
       <div
         aria-hidden
         className='absolute inset-x-0 bottom-0 h-32 pointer-events-none'
         style={{
-          background:
-            'linear-gradient(to top, rgba(10,10,12,0.95) 50%, rgba(10,10,12,0))'
+          background: 'linear-gradient(to top, rgba(10,10,12,0.95) 50%, rgba(10,10,12,0))'
         }}
       />
       <div className='relative max-w-3xl mx-auto pointer-events-auto'>
@@ -127,12 +120,7 @@ export default function StickyCTA({
             {content}
           </button>
         ) : event.isExternal && event.ticketUrl && !overrideHref ? (
-          <a
-            href={targetHref}
-            target='_blank'
-            rel='noopener noreferrer'
-            className={btnClass}
-          >
+          <a href={targetHref} target='_blank' rel='noopener noreferrer' className={btnClass}>
             {content}
           </a>
         ) : onChooseSeats && !event.requiresQueue && !overrideHref ? (

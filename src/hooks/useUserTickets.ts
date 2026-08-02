@@ -69,12 +69,8 @@ export function useUserTickets(): UseUserTicketsResult {
 
   return useMemo(() => {
     const now = Date.now()
-    const upcoming = events
-      .filter((e) => dateMs(e) >= now)
-      .sort((a, b) => dateMs(a) - dateMs(b))
-    const past = events
-      .filter((e) => dateMs(e) < now)
-      .sort((a, b) => dateMs(b) - dateMs(a))
+    const upcoming = events.filter((e) => dateMs(e) >= now).sort((a, b) => dateMs(a) - dateMs(b))
+    const past = events.filter((e) => dateMs(e) < now).sort((a, b) => dateMs(b) - dateMs(a))
     const totalTickets = events.reduce((acc, e) => acc + (e.tickets?.length ?? 0), 0)
 
     return {

@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import HelpCategories, {
-  type HelpCategory
-} from '../../components/v2/help/HelpCategories'
+import HelpCategories, { type HelpCategory } from '../../components/v2/help/HelpCategories'
 import { Button, GlassCard } from '../../components/ui'
 import { cn } from '../../types/ui'
 import gradients from '../../styles/effects/gradients.module.css'
@@ -44,20 +42,8 @@ const CATEGORIES: HelpCategory[] = [
     description: 'Cards, billing receipts and currency conversion.',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none' aria-hidden>
-        <rect
-          x='2'
-          y='4.5'
-          width='14'
-          height='10'
-          rx='2'
-          stroke='currentColor'
-          strokeWidth='1.4'
-        />
-        <path
-          d='M2 8h14'
-          stroke='currentColor'
-          strokeWidth='1.4'
-        />
+        <rect x='2' y='4.5' width='14' height='10' rx='2' stroke='currentColor' strokeWidth='1.4' />
+        <path d='M2 8h14' stroke='currentColor' strokeWidth='1.4' />
       </svg>
     )
   },
@@ -67,15 +53,7 @@ const CATEGORIES: HelpCategory[] = [
     description: 'Connect Base, claim collectibles, transfer NFTs.',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none' aria-hidden>
-        <rect
-          x='2'
-          y='4'
-          width='14'
-          height='11'
-          rx='2'
-          stroke='currentColor'
-          strokeWidth='1.4'
-        />
+        <rect x='2' y='4' width='14' height='11' rx='2' stroke='currentColor' strokeWidth='1.4' />
         <circle cx='12.5' cy='9.5' r='1.2' fill='currentColor' />
       </svg>
     )
@@ -126,9 +104,7 @@ export default function YouNeedHelpV2() {
     const q = query.trim().toLowerCase()
     if (!q) return CATEGORIES
     return CATEGORIES.filter(
-      (c) =>
-        c.title.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q)
+      (c) => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
     )
   }, [query])
 
@@ -144,8 +120,7 @@ export default function YouNeedHelpV2() {
           How can we help?
         </h1>
         <p className='mt-2 text-sm text-white/55 max-w-xl'>
-          Search the knowledge base or contact us directly — average response
-          time under 4 hours.
+          Search the knowledge base or contact us directly — average response time under 4 hours.
         </p>
       </header>
 
@@ -169,13 +144,7 @@ export default function YouNeedHelpV2() {
   )
 }
 
-const SearchBox = ({
-  value,
-  onChange
-}: {
-  value: string
-  onChange: (v: string) => void
-}) => (
+const SearchBox = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <label
     className={cn(
       'flex items-center gap-2.5 rounded-pill bg-white/[0.06] border border-white/10 px-4 h-12 text-sm text-white/85',

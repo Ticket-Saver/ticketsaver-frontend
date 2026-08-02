@@ -1,6 +1,4 @@
-import SettingsList, {
-  type SettingsSection
-} from '../../components/v2/settings/SettingsList'
+import SettingsList, { type SettingsSection } from '../../components/v2/settings/SettingsList'
 import gradients from '../../styles/effects/gradients.module.css'
 
 const SECTIONS: SettingsSection[] = [
@@ -118,8 +116,8 @@ export default function MySettingsV2() {
           Settings
         </h1>
         <p className='mt-2 text-sm text-white/55 max-w-xl'>
-          Tweak notifications, privacy and regional defaults. Changes save
-          locally until the backend is wired.
+          Tweak notifications, privacy and regional defaults. Changes save locally until the backend
+          is wired.
         </p>
       </header>
 

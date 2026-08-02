@@ -59,18 +59,11 @@ const SettingRow = ({ item }: { item: SettingItem }) => (
       <div className='font-display text-[13.5px] font-semibold text-white tracking-tight'>
         {item.label}
       </div>
-      {item.description && (
-        <p className='text-[11.5px] text-white/55 mt-0.5'>
-          {item.description}
-        </p>
-      )}
+      {item.description && <p className='text-[11.5px] text-white/55 mt-0.5'>{item.description}</p>}
     </div>
     <div className='shrink-0'>
       {item.control === 'toggle' && (
-        <Toggle
-          defaultChecked={item.defaultValue ?? false}
-          label={item.label}
-        />
+        <Toggle defaultChecked={item.defaultValue ?? false} label={item.label} />
       )}
       {item.control === 'select' && item.options && (
         <Select
@@ -79,20 +72,12 @@ const SettingRow = ({ item }: { item: SettingItem }) => (
           label={item.label}
         />
       )}
-      {item.control === 'link' && (
-        <LinkButton href={item.href} label={item.label} />
-      )}
+      {item.control === 'link' && <LinkButton href={item.href} label={item.label} />}
     </div>
   </li>
 )
 
-const Toggle = ({
-  defaultChecked,
-  label
-}: {
-  defaultChecked: boolean
-  label: string
-}) => {
+const Toggle = ({ defaultChecked, label }: { defaultChecked: boolean; label: string }) => {
   const [on, setOn] = useState(defaultChecked)
   const toast = useToast()
   return (

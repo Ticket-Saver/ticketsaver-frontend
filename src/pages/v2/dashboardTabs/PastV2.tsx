@@ -13,10 +13,7 @@ export default function PastV2() {
   const { past, loading } = useOutletContext<MyTicketsContext>()
 
   const events = useMemo(() => past.map(userTicketsEventToUIEvent), [past])
-  const hrefBySlug = useMemo(
-    () => new Map(past.map((e) => [e.eventId, ticketHref(e)])),
-    [past]
-  )
+  const hrefBySlug = useMemo(() => new Map(past.map((e) => [e.eventId, ticketHref(e)])), [past])
 
   if (loading) return <TicketListSkeleton />
 

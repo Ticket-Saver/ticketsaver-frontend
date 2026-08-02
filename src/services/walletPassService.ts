@@ -12,8 +12,7 @@
 
 import { buildApiUrl } from '../config/api'
 
-export const APPLE_WALLET_ENABLED =
-  import.meta.env.VITE_APPLE_WALLET_ENABLED === 'true'
+export const APPLE_WALLET_ENABLED = import.meta.env.VITE_APPLE_WALLET_ENABLED === 'true'
 
 export interface WalletPassPayload {
   ticketId: string
@@ -42,9 +41,7 @@ export interface WalletPassResult {
  * En iOS Safari, navegar a una URL .pkpass abre la app Wallet con el
  * preview del pase. En otros browsers el archivo se descarga.
  */
-export async function requestWalletPass(
-  payload: WalletPassPayload
-): Promise<WalletPassResult> {
+export async function requestWalletPass(payload: WalletPassPayload): Promise<WalletPassResult> {
   if (!APPLE_WALLET_ENABLED) {
     return {
       ok: false,
@@ -90,8 +87,7 @@ export async function requestWalletPass(
  *
  *   VITE_GOOGLE_WALLET_ENABLED=true
  */
-export const GOOGLE_WALLET_ENABLED =
-  import.meta.env.VITE_GOOGLE_WALLET_ENABLED === 'true'
+export const GOOGLE_WALLET_ENABLED = import.meta.env.VITE_GOOGLE_WALLET_ENABLED === 'true'
 
 /**
  * Solicita un pase de Google Wallet y devuelve el "Save" link

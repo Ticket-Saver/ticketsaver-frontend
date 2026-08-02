@@ -46,13 +46,10 @@ const FALLBACK_GRADIENT: Record<FallbackKey, string> = {
     'linear-gradient(180deg, #15151A 0%, #0A0A0C 100%)'
 }
 
-const resolvePalette = (
-  palette: MeshPalette | undefined
-): { rgb: RGB[]; key: FallbackKey } => {
+const resolvePalette = (palette: MeshPalette | undefined): { rgb: RGB[]; key: FallbackKey } => {
   if (palette === 'violet') return { rgb: DARK_VIOLET_PALETTE, key: 'violet' }
   if (palette === 'vivid') return { rgb: VIVID_VIOLET_PALETTE, key: 'vivid' }
-  if (Array.isArray(palette) && palette.length === 6)
-    return { rgb: palette, key: 'charcoal' }
+  if (Array.isArray(palette) && palette.length === 6) return { rgb: palette, key: 'charcoal' }
   // Default: charcoal neutro. El violeta solo se usa si se pide explícito.
   return { rgb: CHARCOAL_PALETTE, key: 'charcoal' }
 }

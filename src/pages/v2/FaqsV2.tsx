@@ -65,10 +65,7 @@ export default function FaqsV2() {
     const q = query.trim().toLowerCase()
     return FAQS.filter((f) => {
       const catMatch = cat === 'All' || f.cat === cat
-      const searchMatch =
-        !q ||
-        f.q.toLowerCase().includes(q) ||
-        f.a.toLowerCase().includes(q)
+      const searchMatch = !q || f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q)
       return catMatch && searchMatch
     })
   }, [cat, query])
@@ -128,10 +125,7 @@ export default function FaqsV2() {
                 key={f.q}
                 depth='sm'
                 radius='md'
-                className={cn(
-                  'overflow-hidden transition',
-                  isOpen && 'border-brand-hi/30'
-                )}
+                className={cn('overflow-hidden transition', isOpen && 'border-brand-hi/30')}
               >
                 <button
                   type='button'
@@ -159,14 +153,17 @@ export default function FaqsV2() {
                         transition: 'transform 0.2s'
                       }}
                     >
-                      <path d='M5 1v8M1 5h8' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+                      <path
+                        d='M5 1v8M1 5h8'
+                        stroke='currentColor'
+                        strokeWidth='1.5'
+                        strokeLinecap='round'
+                      />
                     </svg>
                   </span>
                 </button>
                 {isOpen && (
-                  <div className='px-4 pb-4 text-[12.5px] text-white/70 leading-[1.55]'>
-                    {f.a}
-                  </div>
+                  <div className='px-4 pb-4 text-[12.5px] text-white/70 leading-[1.55]'>{f.a}</div>
                 )}
               </GlassCard>
             )
@@ -185,8 +182,7 @@ export default function FaqsV2() {
           radius='lg'
           className='mt-6 p-5 flex items-center gap-3'
           style={{
-            background:
-              'linear-gradient(135deg, rgba(124,91,196,0.22), rgba(255,177,200,0.10))'
+            background: 'linear-gradient(135deg, rgba(124,91,196,0.22), rgba(255,177,200,0.10))'
           }}
         >
           <div className='flex-1'>

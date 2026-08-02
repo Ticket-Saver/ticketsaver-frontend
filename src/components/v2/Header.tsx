@@ -41,12 +41,7 @@ export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProp
   const handleLogout = () => logout()
 
   return (
-    <header
-      className={cn(
-        glass.glassNav,
-        'sticky top-0 z-nav w-full'
-      )}
-    >
+    <header className={cn(glass.glassNav, 'sticky top-0 z-nav w-full')}>
       <div className='mx-auto flex max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-10 h-16 lg:h-20'>
         <Brand />
 
@@ -56,8 +51,7 @@ export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProp
               link.to === '/'
                 ? location.pathname === '/'
                 : location.pathname === link.to ||
-                  (link.matchPrefix &&
-                    location.pathname.startsWith(link.matchPrefix))
+                  (link.matchPrefix && location.pathname.startsWith(link.matchPrefix))
             return (
               <Link
                 key={link.to}
@@ -122,11 +116,7 @@ export default function Header({ forcedSessionLabel, mockCountdown }: HeaderProp
 
 const Brand = () => (
   <Link to='/' className='flex items-center gap-2.5 shrink-0'>
-    <img
-      src='/logos/ticketsaver-icon.png'
-      alt=''
-      className='h-9 w-9'
-    />
+    <img src='/logos/ticketsaver-icon.png' alt='' className='h-9 w-9' />
     <span className='font-display text-lg font-semibold tracking-tight text-white'>
       ticketsaver
     </span>
@@ -211,11 +201,7 @@ const UserMenu = ({ name, email, picture, onLogout }: UserMenuProps) => {
         className='grid h-10 w-10 place-items-center rounded-pill border border-white/20 bg-gradient-to-br from-brand-hi to-brand-mid font-display text-[12px] font-bold text-brand-ink shadow-brand-glow overflow-hidden'
       >
         {picture ? (
-          <img
-            src={picture}
-            alt={name ?? 'User avatar'}
-            className='h-full w-full object-cover'
-          />
+          <img src={picture} alt={name ?? 'User avatar'} className='h-full w-full object-cover' />
         ) : (
           initials
         )}
@@ -232,9 +218,7 @@ const UserMenu = ({ name, email, picture, onLogout }: UserMenuProps) => {
             <div className='font-display text-sm font-semibold text-white truncate'>
               {name ?? 'Account'}
             </div>
-            {email && (
-              <div className='text-[11px] text-white/55 truncate'>{email}</div>
-            )}
+            {email && <div className='text-[11px] text-white/55 truncate'>{email}</div>}
           </div>
           <div className='my-1 h-px bg-white/10' />
           <MenuLink to='/dashboard/tickets/upcomingevent' onSelect={() => setOpen(false)}>

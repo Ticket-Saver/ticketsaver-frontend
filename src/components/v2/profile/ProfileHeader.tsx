@@ -21,12 +21,7 @@ const initialsFromName = (name?: string): string => {
     .toUpperCase()
 }
 
-export default function ProfileHeader({
-  name,
-  email,
-  picture,
-  subtitle
-}: ProfileHeaderProps) {
+export default function ProfileHeader({ name, email, picture, subtitle }: ProfileHeaderProps) {
   const [imgError, setImgError] = useState(false)
   const initialsRef = useRef(initialsFromName(name))
   useEffect(() => {
@@ -66,9 +61,7 @@ export default function ProfileHeader({
           {name ?? 'Guest'}
         </h1>
         {(email || subtitle) && (
-          <p className='mt-1 text-[12.5px] text-white/55 truncate'>
-            {email ?? subtitle}
-          </p>
+          <p className='mt-1 text-[12.5px] text-white/55 truncate'>{email ?? subtitle}</p>
         )}
       </div>
     </header>

@@ -24,16 +24,13 @@ export interface DateGroup {
   cities: string[]
 }
 
-const normalizeArtistKey = (name: string): string =>
-  name.trim().toLowerCase().replace(/\s+/g, ' ')
+const normalizeArtistKey = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ')
 
 /** Clave de serie: prioriza `seriesId`; si no, cae al título normalizado. */
 const keyForEvent = (ev: UIEvent): string =>
-  ev.seriesId != null
-    ? `series:${ev.seriesId}`
-    : `title:${normalizeArtistKey(ev.title)}`
+  ev.seriesId != null ? `series:${ev.seriesId}` : `title:${normalizeArtistKey(ev.title)}`
 
-const uniqueOrdered = <T,>(arr: T[]): T[] => Array.from(new Set(arr))
+const uniqueOrdered = <T>(arr: T[]): T[] => Array.from(new Set(arr))
 
 export const groupByArtist = (events: UIEvent[]): Map<string, DateGroup> => {
   const map = new Map<string, DateGroup>()
@@ -84,18 +81,12 @@ export const getDatesForEvent = (
  * Se mantiene para llamadores que no tienen el UIEvent completo; cuando puedas,
  * preferí `getDatesForEvent`.
  */
-export const getDatesForArtist = (
-  events: UIEvent[],
-  artistName: string | undefined
-): UIEvent[] => {
+export const getDatesForArtist = (events: UIEvent[], artistName: string | undefined): UIEvent[] => {
   if (!artistName) return []
   const key = normalizeArtistKey(artistName)
   return events.filter((ev) => normalizeArtistKey(ev.title) === key)
 }
 
-export const getGroupForEvent = (
-  events: UIEvent[],
-  event: UIEvent
-): DateGroup | undefined => {
+export const getGroupForEvent = (events: UIEvent[], event: UIEvent): DateGroup | undefined => {
   return groupByArtist(events).get(keyForEvent(event))
 }

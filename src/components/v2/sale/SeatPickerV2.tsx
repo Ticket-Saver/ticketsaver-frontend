@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { GlassCard, Pill, useToast } from '../../ui'
 import SeatLegend from './SeatLegend'
 import SeatIcon from './SeatIconV2'
-import {
-  CartSidebar,
-  CartMobileSheet,
-  type CartSummaryItem
-} from './CartSummaryPanel'
+import { CartSidebar, CartMobileSheet, type CartSummaryItem } from './CartSummaryPanel'
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { validateSeatAddByNumber, type RowSeatInfo } from '../../../hooks/useSeatContiguity'
 import { useCart } from '../../../router/cartContext'
-import { hiEventsService, HiEventsApiError, type HiSeatPricing } from '../../../services/hiEventsService'
+import {
+  hiEventsService,
+  HiEventsApiError,
+  type HiSeatPricing
+} from '../../../services/hiEventsService'
 import type { PricingBreakdown } from '../../../lib/pricing'
 import type { UIEvent } from '../../../types/uiEvent'
 import type { SeatItem } from './seatTypes'
@@ -59,9 +59,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
   const wasEmptyRef = useRef(cart.length === 0)
   // session_identifier ESTABLE para toda la sesión de compra (idempotencia de
   // reintentos de la orden). Se comparte con el checkout vía el snapshot.
-  const sessionIdRef = useRef(
-    `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-  )
+  const sessionIdRef = useRef(`session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`)
 
   // El mapa masivo NO trae precio (performance). Al abrir la sección traemos el precio
   // + impuestos SOLO de sus asientos (pocos → <0.6s) vía /tickets/by-seat-ids.
@@ -314,9 +312,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     setConfirming(true)
     setWarning(null)
     try {
-      const seatIds = cart
-        .map((c) => Number(c.seatId))
-        .filter((n) => Number.isFinite(n) && n > 0)
+      const seatIds = cart.map((c) => Number(c.seatId)).filter((n) => Number.isFinite(n) && n > 0)
       const rows = await hiEventsService.getTicketsBySeatIds(event.eventId, seatIds)
       const priceIds: number[] = []
       const tickets = cart.map((c, i) => {
@@ -332,8 +328,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
         session_identifier: sessionIdRef.current,
         // Preventa: si se validó un código en el detalle, viaja para que el back
         // permita la compra anticipada (red de seguridad además del gate visual).
-        presale_code:
-          sessionStorage.getItem(`presale_code_${event.eventId}`) || undefined
+        presale_code: sessionStorage.getItem(`presale_code_${event.eventId}`) || undefined
       })
 
       const reservedMs = Date.parse((order.reserved_until || '').replace(' ', 'T') + 'Z')
@@ -360,8 +355,7 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
         navigate(`/queue/${event.id}`)
         return
       }
-      const conflict =
-        e instanceof HiEventsApiError && (e.status === 409 || e.status === 422)
+      const conflict = e instanceof HiEventsApiError && (e.status === 409 || e.status === 422)
       setWarning(
         conflict
           ? 'Uno o más de tus asientos acaban de ser tomados por otra persona. Elegí otros para continuar.'
@@ -430,7 +424,13 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
                               const seat = sn !== null ? seatByKey.get(`${row}|${sn}`) : undefined
                               if (!seat) {
                                 // Hueco/pasillo (o butaca no cargada) → espacio para conservar la forma real.
-                                return <span key={col} aria-hidden className='inline-block h-[38px] w-[38px]' />
+                                return (
+                                  <span
+                                    key={col}
+                                    aria-hidden
+                                    className='inline-block h-[38px] w-[38px]'
+                                  />
+                                )
                               }
                               return (
                                 <SeatIcon

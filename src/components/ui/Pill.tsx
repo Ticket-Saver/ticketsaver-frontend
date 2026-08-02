@@ -37,18 +37,10 @@ export default function Pill({
 }: PillProps) {
   return (
     <span
-      className={cn(
-        pill.base,
-        SIZE_CLASS[size],
-        STATE_CLASS[state],
-        'font-display',
-        className
-      )}
+      className={cn(pill.base, SIZE_CLASS[size], STATE_CLASS[state], 'font-display', className)}
       {...rest}
     >
-      {leadingDot && (
-        <span className={cn(pill.dot, dotPulse && pill.dotPulse)} aria-hidden />
-      )}
+      {leadingDot && <span className={cn(pill.dot, dotPulse && pill.dotPulse)} aria-hidden />}
       {leading}
       {children}
       {trailing}

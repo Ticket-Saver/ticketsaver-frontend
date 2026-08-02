@@ -93,8 +93,16 @@ export default function MyProfileV2() {
         ) : (
           <ul className='divide-y divide-white/[0.06]'>
             <ProfileRow label='Full name' value={fullName ?? '—'} />
-            <ProfileRow label='Email' value={user?.email ?? '—'} badge={user?.emailVerified ? 'Verified' : 'Unverified'} />
-            <ProfileRow label='Phone' value={user?.phone ?? '—'} badge={user?.phoneVerified ? 'Verified' : 'Unverified'} />
+            <ProfileRow
+              label='Email'
+              value={user?.email ?? '—'}
+              badge={user?.emailVerified ? 'Verified' : 'Unverified'}
+            />
+            <ProfileRow
+              label='Phone'
+              value={user?.phone ?? '—'}
+              badge={user?.phoneVerified ? 'Verified' : 'Unverified'}
+            />
           </ul>
         )}
       </GlassCard>
@@ -102,9 +110,7 @@ export default function MyProfileV2() {
       <GlassCard depth='sm' radius='lg' className='p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
           <div>
-            <h3 className='font-display text-base font-semibold text-white'>
-              Sign out
-            </h3>
+            <h3 className='font-display text-base font-semibold text-white'>Sign out</h3>
             <p className='text-[12px] text-white/55 mt-1'>
               You can come back any time — your tickets stay in your wallet.
             </p>
@@ -129,7 +135,9 @@ const ProfileRow = ({ label, value, badge }: { label: string; value: string; bad
     {badge && (
       <span
         className={`shrink-0 text-[10px] font-display font-bold uppercase tracking-[0.1em] px-2 py-1 rounded-pill ${
-          badge === 'Verified' ? 'bg-accent-mint/15 text-accent-mint' : 'bg-white/[0.08] text-white/55'
+          badge === 'Verified'
+            ? 'bg-accent-mint/15 text-accent-mint'
+            : 'bg-white/[0.08] text-white/55'
         }`}
       >
         {badge}

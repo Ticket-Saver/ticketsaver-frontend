@@ -31,10 +31,9 @@ export default function SaleCheck() {
             Sale check
           </h1>
           <p className='text-sm text-white/65 max-w-xl leading-relaxed'>
-            Previsualiza el VenuePicker (paso 1 del flujo de compra) con
-            datos reales de zonas. Elegí un evento abajo y verificá zoom
-            (wheel/pinch), pan (drag) y selección de sección. El paso 2
-            (SeatGrid v2) llega en el Bloque 4b.
+            Previsualiza el VenuePicker (paso 1 del flujo de compra) con datos reales de zonas.
+            Elegí un evento abajo y verificá zoom (wheel/pinch), pan (drag) y selección de sección.
+            El paso 2 (SeatGrid v2) llega en el Bloque 4b.
           </p>
         </header>
 
@@ -60,9 +59,7 @@ const EventPicker = ({ onPick }: { onPick: (label: string) => void }) => {
   if (visible.length === 0) {
     return (
       <GlassCard depth='md' radius='lg' className='p-6 text-center'>
-        <div className='font-display text-sm font-semibold text-white'>
-          No visible events
-        </div>
+        <div className='font-display text-sm font-semibold text-white'>No visible events</div>
         <p className='mt-2 text-xs text-white/55'>
           The schema returned no events with future dates.
         </p>

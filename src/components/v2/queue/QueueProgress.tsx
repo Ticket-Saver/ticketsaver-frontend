@@ -6,18 +6,11 @@ interface QueueProgressProps {
   className?: string
 }
 
-export default function QueueProgress({
-  pct,
-  color,
-  className
-}: QueueProgressProps) {
+export default function QueueProgress({ pct, color, className }: QueueProgressProps) {
   const safePct = Math.max(0, Math.min(1, pct))
   return (
     <div
-      className={cn(
-        'rounded-glass-md border border-white/[0.10] p-5',
-        className
-      )}
+      className={cn('rounded-glass-md border border-white/[0.10] p-5', className)}
       style={{ background: 'rgba(255,255,255,0.04)' }}
     >
       <div className='flex items-baseline justify-between mb-2.5'>

@@ -68,7 +68,10 @@ export const buildSnapshot = (
   ratePerMinute?: number
 ): QueueSnapshot => {
   const state = classifyState(position, initialPosition)
-  const pct = state === 'released' ? 1 : Math.max(0, Math.min(0.99, 1 - position / Math.max(initialPosition, 1)))
+  const pct =
+    state === 'released'
+      ? 1
+      : Math.max(0, Math.min(0.99, 1 - position / Math.max(initialPosition, 1)))
   return { state, position, total, eta: formatEta(position, ratePerMinute), pct }
 }
 

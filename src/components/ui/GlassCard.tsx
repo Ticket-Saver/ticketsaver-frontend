@@ -34,12 +34,7 @@ export default function GlassCard({
 }: GlassCardProps) {
   return (
     <Tag
-      className={cn(
-        DEPTH_CLASS[depth],
-        RADIUS[radius],
-        hoverable && glass.hoverable,
-        className
-      )}
+      className={cn(DEPTH_CLASS[depth], RADIUS[radius], hoverable && glass.hoverable, className)}
       {...rest}
     >
       {children}

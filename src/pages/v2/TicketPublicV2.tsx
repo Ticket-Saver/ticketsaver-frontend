@@ -102,8 +102,7 @@ export default function TicketPublicV2() {
 
   // Evento del listado o traído por API; si ninguno, un mínimo para que la card
   // renderice (caso muy raro).
-  const displayEvent: UIEvent =
-    byId(eventId) ??
+  const displayEvent: UIEvent = byId(eventId) ??
     fetchedEvent ?? {
       id: String(eventId),
       eventId: String(eventId),

@@ -25,12 +25,12 @@ export default function AuthShell({ title, subtitle, children, footer }: AuthShe
           </Link>
 
           <GlassCard depth='md' radius='lg' className='p-6 sm:p-8'>
-            <h1 className={`font-display text-2xl font-bold tracking-tight text-center ${gradients.textBrandSoft}`}>
+            <h1
+              className={`font-display text-2xl font-bold tracking-tight text-center ${gradients.textBrandSoft}`}
+            >
               {title}
             </h1>
-            {subtitle && (
-              <p className='mt-2 text-[13px] text-white/60 text-center'>{subtitle}</p>
-            )}
+            {subtitle && <p className='mt-2 text-[13px] text-white/60 text-center'>{subtitle}</p>}
             <div className='mt-6'>{children}</div>
           </GlassCard>
 

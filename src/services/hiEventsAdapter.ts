@@ -22,11 +22,20 @@ import type { HiEventPublic, HiImage, HiUserTicketsEvent } from '../types/hieven
 import { coverHash } from '../lib/covers/coverHash'
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
 ]
 const HERO_LIMIT = 5
-
 
 const CATEGORY_KEYWORDS: ReadonlyArray<{ kw: RegExp; cat: Category }> = [
   { kw: /comedy|standup|stand-up|laugh/i, cat: 'Comedy' },
@@ -43,7 +52,12 @@ const inferCategory = (title: string): Category => {
 }
 
 const VALID_CATEGORIES: readonly Category[] = [
-  'Music', 'Theatre', 'Comedy', 'Sports', 'Family', 'Other'
+  'Music',
+  'Theatre',
+  'Comedy',
+  'Sports',
+  'Family',
+  'Other'
 ]
 
 /**
@@ -78,16 +92,17 @@ const inferTags = (startsAt: Date): string[] => {
 
 /** slug simple para venue_label sintético (estable por nombre de venue). */
 const slugify = (s: string): string =>
-  s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  s
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
 /** Imagen para las cards: thumbnail > cover > banner > primera disponible. */
 const pickCardImage = (images: HiImage[]): string | undefined => {
   const byType = (t: string) => images.find((i) => i.type === t)?.url
   return (
-    byType('EVENT_THUMBNAIL') ||
-    byType('EVENT_COVER') ||
-    byType('EVENT_BANNER') ||
-    images[0]?.url
+    byType('EVENT_THUMBNAIL') || byType('EVENT_COVER') || byType('EVENT_BANNER') || images[0]?.url
   )
 }
 
@@ -113,7 +128,9 @@ const toDateParts = (startDate: string, timezone: string): DateParts => {
   }
   const tz = timezone || 'UTC'
   const get = (opts: Intl.DateTimeFormatOptions): Record<string, string> => {
-    const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, ...opts }).formatToParts(startsAt)
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, ...opts }).formatToParts(
+      startsAt
+    )
     const out: Record<string, string> = {}
     for (const p of parts) out[p.type] = p.value
     return out
@@ -156,10 +173,7 @@ const buildDetailHref = (hi: HiEventPublic): string =>
   // Ruta nueva: id numérico (para fetch directo / deep-link robusto) + slug legible.
   `/event/${hi.id}/${encodeURIComponent(hi.slug)}`
 
-export const hiEventToUIEvent = (
-  hi: HiEventPublic,
-  context: { hero?: boolean } = {}
-): UIEvent => {
+export const hiEventToUIEvent = (hi: HiEventPublic, context: { hero?: boolean } = {}): UIEvent => {
   const parts = toDateParts(hi.start_date, hi.timezone)
   const category = resolveCategory(hi.category, hi.title)
   const venueName = hi.location_details?.venue_name ?? ''

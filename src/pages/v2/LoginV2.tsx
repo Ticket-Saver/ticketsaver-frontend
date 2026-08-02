@@ -80,7 +80,10 @@ export default function LoginV2() {
           />
         </Field>
         <div className='text-right'>
-          <Link to='/forgot-password' className='text-[12px] text-brand-hi font-semibold hover:text-white transition'>
+          <Link
+            to='/forgot-password'
+            className='text-[12px] text-brand-hi font-semibold hover:text-white transition'
+          >
             Forgot password?
           </Link>
         </div>

@@ -33,19 +33,10 @@ export default function WalletConnect() {
               <div className='font-display text-base font-semibold text-white truncate tabular-nums'>
                 {shorten(address)}
               </div>
-              {chain && (
-                <div className='text-[11px] text-white/55 truncate'>
-                  on {chain.name}
-                </div>
-              )}
+              {chain && <div className='text-[11px] text-white/55 truncate'>on {chain.name}</div>}
             </div>
           </div>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => disconnect()}
-            className='shrink-0'
-          >
+          <Button variant='ghost' size='sm' onClick={() => disconnect()} className='shrink-0'>
             Disconnect
           </Button>
         </div>
@@ -76,12 +67,7 @@ export default function WalletConnect() {
         </div>
       </div>
 
-      <Button
-        variant='primary'
-        size='md'
-        fullWidth
-        onClick={() => setOpen((s) => !s)}
-      >
+      <Button variant='primary' size='md' fullWidth onClick={() => setOpen((s) => !s)}>
         {open ? 'Close options' : 'Connect wallet'}
       </Button>
 
@@ -89,8 +75,7 @@ export default function WalletConnect() {
         <div className='mt-4 space-y-2'>
           {connectors.length === 0 && (
             <p className='text-[12px] text-white/55 text-center'>
-              No connectors available — install MetaMask or use Coinbase
-              Smart Wallet.
+              No connectors available — install MetaMask or use Coinbase Smart Wallet.
             </p>
           )}
           {connectors.map((connector) => (
@@ -111,11 +96,7 @@ export default function WalletConnect() {
               </span>
             </button>
           ))}
-          {error && (
-            <p className='text-[12px] text-red-300 mt-2 text-center'>
-              {error.message}
-            </p>
-          )}
+          {error && <p className='text-[12px] text-red-300 mt-2 text-center'>{error.message}</p>}
         </div>
       )}
     </GlassCard>

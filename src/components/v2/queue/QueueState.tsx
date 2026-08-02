@@ -21,11 +21,7 @@ interface QueueStatePillProps {
   className?: string
 }
 
-export default function QueueStatePill({
-  state,
-  size = 'md',
-  className
-}: QueueStatePillProps) {
+export default function QueueStatePill({ state, size = 'md', className }: QueueStatePillProps) {
   const color = COLOR[state]
   return (
     <div

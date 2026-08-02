@@ -1,12 +1,5 @@
 import { useState } from 'react'
-import {
-  Button,
-  Pill,
-  GlassCard,
-  Chip,
-  IconButton,
-  MeshBackground
-} from '../../components/ui'
+import { Button, Pill, GlassCard, Chip, IconButton, MeshBackground } from '../../components/ui'
 import gradients from '../../styles/effects/gradients.module.css'
 import { COVER_KEYS, getCoverPalette } from '../../lib/covers/palettes'
 import { coverHash } from '../../lib/covers/coverHash'
@@ -68,15 +61,10 @@ export default function DesignCheck() {
             Design system check
           </h1>
           <p className='text-white/65 max-w-xl text-sm leading-relaxed'>
-            Página temporal para verificar que los tokens, primitives y el
-            MeshBackground se renderizan correctamente. Eliminar antes de
-            producción.
+            Página temporal para verificar que los tokens, primitives y el MeshBackground se
+            renderizan correctamente. Eliminar antes de producción.
           </p>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => setPaused((p) => !p)}
-          >
+          <Button variant='ghost' size='sm' onClick={() => setPaused((p) => !p)}>
             {paused ? 'Resume mesh' : 'Pause mesh'}
           </Button>
         </header>
@@ -119,9 +107,15 @@ export default function DesignCheck() {
         <section>
           <SectionTitle>Buttons</SectionTitle>
           <div className='flex flex-wrap gap-3'>
-            <Button variant='primary' size='sm'>Primary sm</Button>
-            <Button variant='primary' size='md'>Primary md</Button>
-            <Button variant='primary' size='lg'>Primary lg</Button>
+            <Button variant='primary' size='sm'>
+              Primary sm
+            </Button>
+            <Button variant='primary' size='md'>
+              Primary md
+            </Button>
+            <Button variant='primary' size='lg'>
+              Primary lg
+            </Button>
             <Button variant='ghost'>Ghost</Button>
             <Button variant='glass'>Glass</Button>
             <Button variant='danger'>Danger</Button>
@@ -137,12 +131,22 @@ export default function DesignCheck() {
         <section>
           <SectionTitle>Pills · countdown states</SectionTitle>
           <div className='flex flex-wrap items-center gap-3'>
-            <Pill state='normal' leadingDot>09:42</Pill>
-            <Pill state='warn' leadingDot dotPulse>01:58</Pill>
-            <Pill state='critical' leadingDot dotPulse>00:42</Pill>
+            <Pill state='normal' leadingDot>
+              09:42
+            </Pill>
+            <Pill state='warn' leadingDot dotPulse>
+              01:58
+            </Pill>
+            <Pill state='critical' leadingDot dotPulse>
+              00:42
+            </Pill>
             <Pill state='expired'>00:00</Pill>
-            <Pill state='normal' size='sm'>SM</Pill>
-            <Pill state='normal' size='lg'>LG pill</Pill>
+            <Pill state='normal' size='sm'>
+              SM
+            </Pill>
+            <Pill state='normal' size='lg'>
+              LG pill
+            </Pill>
           </div>
         </section>
 
@@ -167,29 +171,37 @@ export default function DesignCheck() {
         <section>
           <SectionTitle>Chips · category filter</SectionTitle>
           <div className='flex flex-wrap gap-2'>
-            {['Tonight', 'Electronic', 'Indie', 'Rock', 'Theatre', 'Comedy'].map(
-              (cat) => (
-                <Chip
-                  key={cat}
-                  selected={selectedChip === cat}
-                  onClick={() => setSelectedChip(cat)}
-                  role='button'
-                >
-                  {cat}
-                </Chip>
-              )
-            )}
+            {['Tonight', 'Electronic', 'Indie', 'Rock', 'Theatre', 'Comedy'].map((cat) => (
+              <Chip
+                key={cat}
+                selected={selectedChip === cat}
+                onClick={() => setSelectedChip(cat)}
+                role='button'
+              >
+                {cat}
+              </Chip>
+            ))}
           </div>
         </section>
 
         <section>
           <SectionTitle>Icon buttons</SectionTitle>
           <div className='flex flex-wrap gap-3'>
-            <IconButton label='Cart' size='sm'><IconCart /></IconButton>
-            <IconButton label='Cart' size='md'><IconCart /></IconButton>
-            <IconButton label='Cart' size='lg'><IconCart /></IconButton>
-            <IconButton label='Search' variant='ghost'><IconSearch /></IconButton>
-            <IconButton label='Search' variant='solid'><IconSearch /></IconButton>
+            <IconButton label='Cart' size='sm'>
+              <IconCart />
+            </IconButton>
+            <IconButton label='Cart' size='md'>
+              <IconCart />
+            </IconButton>
+            <IconButton label='Cart' size='lg'>
+              <IconCart />
+            </IconButton>
+            <IconButton label='Search' variant='ghost'>
+              <IconSearch />
+            </IconButton>
+            <IconButton label='Search' variant='solid'>
+              <IconSearch />
+            </IconButton>
           </div>
         </section>
 
@@ -225,26 +237,23 @@ export default function DesignCheck() {
                     <div className='text-[10px] uppercase tracking-[0.14em] text-white/55'>
                       {key}
                     </div>
-                    <div className='mt-0.5 text-xs text-white truncate'>
-                      {label}
-                    </div>
+                    <div className='mt-0.5 text-xs text-white truncate'>{label}</div>
                   </div>
                 </GlassCard>
               )
             })}
           </div>
           <div className='mt-2 text-[10.5px] text-white/45'>
-            Same label → same palette (determinista, {COVER_KEYS.length} paletas
-            disponibles).
+            Same label → same palette (determinista, {COVER_KEYS.length} paletas disponibles).
           </div>
         </section>
 
         <section className='pt-4'>
           <SectionTitle>Mesh modes</SectionTitle>
           <p className='text-xs text-white/55 mb-3 max-w-xl'>
-            Por default el mesh es dark-first: brand.ink (#0E0820) domina y el
-            violeta aparece como ambient lighting. <code>vivid</code> es la
-            paleta original brillante — usar solo para hero/auth screens.
+            Por default el mesh es dark-first: brand.ink (#0E0820) domina y el violeta aparece como
+            ambient lighting. <code>vivid</code> es la paleta original brillante — usar solo para
+            hero/auth screens.
           </p>
           <div className='grid grid-cols-3 gap-3'>
             <GlassCard depth='md' className='relative h-48 overflow-hidden p-0'>

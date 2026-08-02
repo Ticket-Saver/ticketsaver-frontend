@@ -15,9 +15,7 @@ export default function ArtistRow({ event, upcomingCount }: ArtistRowProps) {
   const initial = (event.title.trim()[0] || '?').toUpperCase()
 
   const upcomingText =
-    upcomingCount > 1
-      ? `${upcomingCount} upcoming dates`
-      : 'Single date · catch it'
+    upcomingCount > 1 ? `${upcomingCount} upcoming dates` : 'Single date · catch it'
 
   return (
     <div className='flex items-center gap-3'>
@@ -31,9 +29,7 @@ export default function ArtistRow({ event, upcomingCount }: ArtistRowProps) {
         {initial}
       </div>
       <div className='min-w-0 flex-1'>
-        <div className='text-xs font-medium text-white truncate'>
-          {event.title}
-        </div>
+        <div className='text-xs font-medium text-white truncate'>{event.title}</div>
         <div className='text-[10.5px] text-white/55 mt-0.5'>{upcomingText}</div>
       </div>
       <button

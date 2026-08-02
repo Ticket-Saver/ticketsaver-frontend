@@ -53,13 +53,7 @@ export default function MiniSurvey({
   )
 }
 
-const SurveyBtn = ({
-  onClick,
-  children
-}: {
-  onClick: () => void
-  children: string
-}) => (
+const SurveyBtn = ({ onClick, children }: { onClick: () => void; children: string }) => (
   <button
     type='button'
     onClick={onClick}

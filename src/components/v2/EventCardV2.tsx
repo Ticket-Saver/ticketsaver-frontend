@@ -89,11 +89,7 @@ export default function EventCardV2({
   onClick
 }: EventCardV2Props) {
   const widthStyle =
-    typeof width === 'number'
-      ? { width: `${width}px` }
-      : width
-        ? { width }
-        : undefined
+    typeof width === 'number' ? { width: `${width}px` } : width ? { width } : undefined
 
   if (variant === 'cinema')
     return (
@@ -217,18 +213,14 @@ export default function EventCardV2({
               {event.time && (
                 <>
                   <span className='h-1 w-1 rounded-full bg-white/30' />
-                  <span className='text-white/45 tracking-[0.14em]'>
-                    {event.time}
-                  </span>
+                  <span className='text-white/45 tracking-[0.14em]'>{event.time}</span>
                 </>
               )}
             </div>
             <div className='mt-1 font-display text-sm font-semibold text-white truncate tracking-tight'>
               {event.title}
             </div>
-            <div className='text-[11px] text-white/55 truncate mt-0.5'>
-              {event.subtitle}
-            </div>
+            <div className='text-[11px] text-white/55 truncate mt-0.5'>{event.subtitle}</div>
           </div>
           <div className='shrink-0 text-right font-display text-sm font-semibold text-white tabular-nums'>
             {formatPrice(event.priceFrom)}
@@ -275,13 +267,7 @@ export default function EventCardV2({
   )
 }
 
-const PriceLabel = ({
-  priceFrom,
-  compact
-}: {
-  priceFrom: number | null
-  compact?: boolean
-}) =>
+const PriceLabel = ({ priceFrom, compact }: { priceFrom: number | null; compact?: boolean }) =>
   compact ? (
     <span className='font-display text-[12.5px] font-semibold text-white tabular-nums'>
       {formatPrice(priceFrom)}

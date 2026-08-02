@@ -66,10 +66,7 @@ export default function HomeV2() {
   const greetingDate = DATE_FMT.format(now)
   const tonightCopy = isTonight(now)
 
-  const featuredCategory = useMemo(
-    () => pickFeaturedCategory(visible),
-    [visible]
-  )
+  const featuredCategory = useMemo(() => pickFeaturedCategory(visible), [visible])
 
   const trending = useMemo(
     () => visible.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 8),
@@ -92,8 +89,7 @@ export default function HomeV2() {
   // Selección para el cover-flow 3D — eventos visibles que no estén en
   // el hero, capados a 6 para que el efecto 3D no se sature.
   const closerLook = useMemo(
-    () =>
-      visible.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 6),
+    () => visible.filter((e) => !heroEvents.some((h) => h.id === e.id)).slice(0, 6),
     [visible, heroEvents]
   )
 
@@ -142,10 +138,7 @@ export default function HomeV2() {
             />
 
             {closerLook.length > 0 && (
-              <CoverFlow3D
-                events={closerLook}
-                className='mx-auto w-full max-w-[1280px]'
-              />
+              <CoverFlow3D events={closerLook} className='mx-auto w-full max-w-[1280px]' />
             )}
 
             {curatedCarousels.length > 0 ? (
@@ -242,9 +235,7 @@ const PrinciplesPanel = () => (
           <div className='font-display text-base font-semibold tracking-tight text-white'>
             {p.title}
           </div>
-          <p className='mt-2 text-[13px] text-white/65 leading-relaxed'>
-            {p.body}
-          </p>
+          <p className='mt-2 text-[13px] text-white/65 leading-relaxed'>{p.body}</p>
         </GlassCard>
       ))}
     </div>
@@ -268,12 +259,8 @@ const LoadingState = () => (
 const EmptyState = () => (
   <div className='px-5 lg:px-10 max-w-[1280px] mx-auto w-full'>
     <GlassCard depth='md' radius='lg' className='p-8 text-center'>
-      <div className='font-display text-lg font-semibold text-white'>
-        No upcoming events
-      </div>
-      <p className='mt-2 text-sm text-white/55'>
-        Stay tuned — we’re lining up the next wave.
-      </p>
+      <div className='font-display text-lg font-semibold text-white'>No upcoming events</div>
+      <p className='mt-2 text-sm text-white/55'>Stay tuned — we’re lining up the next wave.</p>
     </GlassCard>
   </div>
 )

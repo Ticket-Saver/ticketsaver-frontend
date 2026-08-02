@@ -2,10 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { Button, GlassCard, useToast } from '../../ui'
 import { cn } from '../../../types/ui'
-import {
-  sendContactForm,
-  validateContact
-} from '../../../services/contactFormService'
+import { sendContactForm, validateContact } from '../../../services/contactFormService'
 
 const TOPICS = ['Buying', 'Refunds', 'Wallet', 'Press', 'Promote a show', 'Other']
 
@@ -49,11 +46,18 @@ export default function ContactForm() {
   if (sent) {
     return (
       <GlassCard depth='md' radius='lg' className='p-6 text-center'>
-        <div className='mx-auto h-12 w-12 rounded-pill grid place-items-center mb-3'
+        <div
+          className='mx-auto h-12 w-12 rounded-pill grid place-items-center mb-3'
           style={{ background: 'radial-gradient(circle at 30% 30%, #E0C0FF, #7B3FE4)' }}
         >
           <svg width='20' height='20' viewBox='0 0 22 22' fill='none' aria-hidden>
-            <path d='M5 11.5 9 15.5 17 7' stroke='#fff' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' />
+            <path
+              d='M5 11.5 9 15.5 17 7'
+              stroke='#fff'
+              strokeWidth='2.2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
           </svg>
         </div>
         <h3 className='font-display text-lg font-semibold text-white'>
@@ -62,12 +66,7 @@ export default function ContactForm() {
         <p className='mt-2 text-[13px] text-white/65 max-w-sm mx-auto'>
           Your message is on its way. We usually reply within a few hours.
         </p>
-        <Button
-          variant='ghost'
-          size='md'
-          onClick={() => setSent(false)}
-          className='mt-4'
-        >
+        <Button variant='ghost' size='md' onClick={() => setSent(false)} className='mt-4'>
           Send another
         </Button>
       </GlassCard>
@@ -129,26 +128,14 @@ export default function ContactForm() {
         />
       </Field>
 
-      <Button
-        type='submit'
-        variant='primary'
-        size='lg'
-        fullWidth
-        disabled={submitting}
-      >
+      <Button type='submit' variant='primary' size='lg' fullWidth disabled={submitting}>
         {submitting ? 'Sending…' : 'Send message'}
       </Button>
     </form>
   )
 }
 
-const Field = ({
-  label,
-  children
-}: {
-  label: string
-  children: React.ReactNode
-}) => (
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <label className='block rounded-glass-md bg-white/[0.04] border border-white/[0.10] px-4 py-3 focus-within:border-brand-mid/60 transition'>
     <span className='block text-[9.5px] uppercase tracking-[0.14em] text-white/50 font-display font-bold mb-1.5'>
       {label}

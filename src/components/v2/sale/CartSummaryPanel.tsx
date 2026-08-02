@@ -28,21 +28,15 @@ const ItemBreakdownRows = ({ b }: { b: ItemBreakdown }) => (
   <div className='mt-2 pt-2 border-t border-white/[0.06] space-y-1 text-[10.5px]'>
     <div className='flex justify-between'>
       <span className='text-white/55'>Net seat</span>
-      <span className='text-white/80 tabular-nums font-display'>
-        ${b.net.toFixed(2)}
-      </span>
+      <span className='text-white/80 tabular-nums font-display'>${b.net.toFixed(2)}</span>
     </div>
     <div className='flex justify-between'>
       <span className='text-white/55'>Service fee</span>
-      <span className='text-white/80 tabular-nums font-display'>
-        ${b.fee.toFixed(2)}
-      </span>
+      <span className='text-white/80 tabular-nums font-display'>${b.fee.toFixed(2)}</span>
     </div>
     <div className='flex justify-between'>
       <span className='text-white/55'>Tax</span>
-      <span className='text-white/80 tabular-nums font-display'>
-        ${b.tax.toFixed(2)}
-      </span>
+      <span className='text-white/80 tabular-nums font-display'>${b.tax.toFixed(2)}</span>
     </div>
   </div>
 )
@@ -98,9 +92,7 @@ const PriceRow = ({
     <span
       className={cn(
         'font-display tabular-nums',
-        emphasize
-          ? 'text-xl font-bold text-white'
-          : 'text-[12.5px] font-semibold text-white/85'
+        emphasize ? 'text-xl font-bold text-white' : 'text-[12.5px] font-semibold text-white/85'
       )}
     >
       ${value.toFixed(2)}
@@ -111,12 +103,8 @@ const PriceRow = ({
 const BreakdownLines = ({ breakdown }: { breakdown: PricingBreakdown }) => (
   <div className='space-y-1.5'>
     <PriceRow label='Subtotal' value={breakdown.subtotal} />
-    {breakdown.serviceFee > 0 && (
-      <PriceRow label='Service fee' value={breakdown.serviceFee} />
-    )}
-    {breakdown.taxes > 0 && (
-      <PriceRow label='Taxes' value={breakdown.taxes} />
-    )}
+    {breakdown.serviceFee > 0 && <PriceRow label='Service fee' value={breakdown.serviceFee} />}
+    {breakdown.taxes > 0 && <PriceRow label='Taxes' value={breakdown.taxes} />}
   </div>
 )
 
@@ -134,8 +122,18 @@ const BreakdownLines = ({ breakdown }: { breakdown: PricingBreakdown }) => (
  * la sección principal (mapa / steppers).
  */
 export const CartSidebar = (props: BaseProps) => {
-  const { items, breakdown, count, max, ctaLabel, ctaDisabled, onCheckout, onBack, helperText, title } =
-    props
+  const {
+    items,
+    breakdown,
+    count,
+    max,
+    ctaLabel,
+    ctaDisabled,
+    onCheckout,
+    onBack,
+    helperText,
+    title
+  } = props
 
   return (
     <aside
@@ -188,9 +186,7 @@ export const CartSidebar = (props: BaseProps) => {
           </ul>
         )}
         {helperText && items.length > 0 && (
-          <p className='mt-3 text-[10.5px] text-white/40 text-center'>
-            {helperText}
-          </p>
+          <p className='mt-3 text-[10.5px] text-white/40 text-center'>{helperText}</p>
         )}
       </div>
 
@@ -203,13 +199,7 @@ export const CartSidebar = (props: BaseProps) => {
             </div>
           </>
         )}
-        <Button
-          variant='primary'
-          size='md'
-          onClick={onCheckout}
-          disabled={ctaDisabled}
-          fullWidth
-        >
+        <Button variant='primary' size='md' onClick={onCheckout} disabled={ctaDisabled} fullWidth>
           {ctaLabel}
         </Button>
         {onBack && (
@@ -239,15 +229,11 @@ export const CartMobileSheet = (props: BaseProps) => {
         aria-hidden
         className='absolute inset-x-0 bottom-0 h-40 pointer-events-none'
         style={{
-          background:
-            'linear-gradient(to top, rgba(10,10,12,0.92) 50%, rgba(10,10,12,0))'
+          background: 'linear-gradient(to top, rgba(10,10,12,0.92) 50%, rgba(10,10,12,0))'
         }}
       />
       <div
-        className={cn(
-          glass.glassLg,
-          'relative max-w-3xl mx-auto rounded-glass-lg overflow-hidden'
-        )}
+        className={cn(glass.glassLg, 'relative max-w-3xl mx-auto rounded-glass-lg overflow-hidden')}
       >
         <button
           type='button'
@@ -323,32 +309,17 @@ export const CartMobileSheet = (props: BaseProps) => {
               <BreakdownLines breakdown={breakdown} />
             </div>
 
-            {helperText && (
-              <p className='text-[10.5px] text-white/40 text-center'>
-                {helperText}
-              </p>
-            )}
+            {helperText && <p className='text-[10.5px] text-white/40 text-center'>{helperText}</p>}
           </div>
         )}
 
         <div className='px-3 pb-3 pt-2 border-t border-white/[0.08] flex gap-2'>
           {onBack && (
-            <Button
-              variant='ghost'
-              size='md'
-              onClick={onBack}
-              className='shrink-0'
-            >
+            <Button variant='ghost' size='md' onClick={onBack} className='shrink-0'>
               Back
             </Button>
           )}
-          <Button
-            variant='primary'
-            size='md'
-            onClick={onCheckout}
-            disabled={ctaDisabled}
-            fullWidth
-          >
+          <Button variant='primary' size='md' onClick={onCheckout} disabled={ctaDisabled} fullWidth>
             {ctaLabel}
           </Button>
         </div>

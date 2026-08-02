@@ -55,9 +55,9 @@ export default function AboutV2() {
             Live music, without the gatekeepers.
           </h1>
           <p className='mt-5 text-[15px] lg:text-base text-white/72 leading-relaxed'>
-            TicketSaver is a ticketing platform built by fans, for fans. We
-            sell tickets at face value, mint them as NFTs on Base so they
-            can’t be faked, and let resales happen only at fair prices.
+            TicketSaver is a ticketing platform built by fans, for fans. We sell tickets at face
+            value, mint them as NFTs on Base so they can’t be faked, and let resales happen only at
+            fair prices.
           </p>
         </header>
 
@@ -82,8 +82,7 @@ export default function AboutV2() {
             aria-hidden
             className='absolute inset-0'
             style={{
-              background:
-                'linear-gradient(135deg, rgba(124,91,196,0.30), rgba(255,177,200,0.12))'
+              background: 'linear-gradient(135deg, rgba(124,91,196,0.30), rgba(255,177,200,0.12))'
             }}
           />
           <div className='relative p-6 lg:p-10 text-center'>

@@ -62,16 +62,7 @@ const groupItems = (items: CartItem[]): Row[] => {
  */
 export default function CartDrawer() {
   const navigate = useNavigate()
-  const {
-    items,
-    isOpen,
-    closeDrawer,
-    eventLabel,
-    pricing,
-    addItem,
-    removeItem,
-    clear
-  } = useCart()
+  const { items, isOpen, closeDrawer, eventLabel, pricing, addItem, removeItem, clear } = useCart()
 
   const timer = useSessionTimer(eventLabel ?? undefined, 10)
   const rows = useMemo(() => groupItems(items), [items])
@@ -195,9 +186,7 @@ export default function CartDrawer() {
 const PriceRow = ({ label, value }: { label: string; value: number }) => (
   <div className='flex items-center justify-between'>
     <span className='text-white/55'>{label}</span>
-    <span className='text-white/85 font-display tabular-nums'>
-      ${value.toFixed(2)}
-    </span>
+    <span className='text-white/85 font-display tabular-nums'>${value.toFixed(2)}</span>
   </div>
 )
 
@@ -222,21 +211,13 @@ const HoldTimerBanner = ({
   >
     <ClockIcon />
     <span className='text-[11.5px]'>
-      <strong className='font-semibold'>Seats held for you.</strong>{' '}
-      Complete in{' '}
-      <span className='font-display font-bold tabular-nums'>{formatted}</span>{' '}
-      or they release.
+      <strong className='font-semibold'>Seats held for you.</strong> Complete in{' '}
+      <span className='font-display font-bold tabular-nums'>{formatted}</span> or they release.
     </span>
   </div>
 )
 
-const SeatRowCard = ({
-  item,
-  onRemove
-}: {
-  item: CartItem
-  onRemove: () => void
-}) => {
+const SeatRowCard = ({ item, onRemove }: { item: CartItem; onRemove: () => void }) => {
   const net = item.price_base ?? item.price_final
   const fee = Number(item.fee) || 0
   const tax = Number(item.tax) || 0
@@ -290,7 +271,9 @@ const GAGroupCard = ({
   onDecrement: () => void
 }) => {
   const qty = group.items.length
-  const groupNet = round2(group.items.reduce((s, it) => s + (it.price_base ?? it.price_final ?? 0), 0))
+  const groupNet = round2(
+    group.items.reduce((s, it) => s + (it.price_base ?? it.price_final ?? 0), 0)
+  )
   const groupFee = round2(group.items.reduce((s, it) => s + (Number(it.fee) || 0), 0))
   const groupTax = round2(group.items.reduce((s, it) => s + (Number(it.tax) || 0), 0))
   const groupTotal = round2(groupNet + groupFee + groupTax)
@@ -347,15 +330,7 @@ const StepperBtn = ({
   </button>
 )
 
-const BreakdownLines = ({
-  net,
-  fee,
-  tax
-}: {
-  net: number
-  fee: number
-  tax: number
-}) => (
+const BreakdownLines = ({ net, fee, tax }: { net: number; fee: number; tax: number }) => (
   <div className='mt-2 pt-2 border-t border-white/[0.06] space-y-0.5 text-[10.5px]'>
     <BreakdownRow label='Net' value={net} />
     <BreakdownRow label='Service fee' value={fee} />
@@ -366,9 +341,7 @@ const BreakdownLines = ({
 const BreakdownRow = ({ label, value }: { label: string; value: number }) => (
   <div className='flex justify-between'>
     <span className='text-white/55'>{label}</span>
-    <span className='text-white/80 tabular-nums font-display'>
-      ${value.toFixed(2)}
-    </span>
+    <span className='text-white/80 tabular-nums font-display'>${value.toFixed(2)}</span>
   </div>
 )
 
@@ -388,19 +361,12 @@ const EmptyState = ({ onClose }: { onClose: () => void }) => (
         <circle cx='17' cy='20' r='1.4' fill='currentColor' className='text-white/65' />
       </svg>
     </div>
-    <h3 className='font-display text-base font-semibold text-white'>
-      Your cart is empty
-    </h3>
+    <h3 className='font-display text-base font-semibold text-white'>Your cart is empty</h3>
     <p className='mt-2 text-[12px] text-white/55 max-w-xs'>
-      Browse events and add tickets to see them here. Your hold lasts 10
-      minutes once you pick your first seat.
+      Browse events and add tickets to see them here. Your hold lasts 10 minutes once you pick your
+      first seat.
     </p>
-    <Button
-      variant='ghost'
-      size='md'
-      onClick={onClose}
-      className='mt-5'
-    >
+    <Button variant='ghost' size='md' onClick={onClose} className='mt-5'>
       Keep browsing
     </Button>
   </div>
@@ -408,24 +374,12 @@ const EmptyState = ({ onClose }: { onClose: () => void }) => (
 
 const CloseIcon = () => (
   <svg width='12' height='12' viewBox='0 0 12 12' fill='none' aria-hidden>
-    <path
-      d='m3 3 6 6m0-6-6 6'
-      stroke='currentColor'
-      strokeWidth='1.6'
-      strokeLinecap='round'
-    />
+    <path d='m3 3 6 6m0-6-6 6' stroke='currentColor' strokeWidth='1.6' strokeLinecap='round' />
   </svg>
 )
 
 const ClockIcon = () => (
-  <svg
-    width='14'
-    height='14'
-    viewBox='0 0 14 14'
-    fill='none'
-    aria-hidden
-    className='shrink-0'
-  >
+  <svg width='14' height='14' viewBox='0 0 14 14' fill='none' aria-hidden className='shrink-0'>
     <circle cx='7' cy='7.6' r='5.4' stroke='currentColor' strokeWidth='1.4' />
     <path d='M7 5v3l2 1' stroke='currentColor' strokeWidth='1.4' strokeLinecap='round' />
   </svg>

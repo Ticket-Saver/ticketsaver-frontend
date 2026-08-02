@@ -14,11 +14,7 @@ interface TipRotatorProps {
   className?: string
 }
 
-export default function TipRotator({
-  small,
-  intervalMs = 3200,
-  className
-}: TipRotatorProps) {
+export default function TipRotator({ small, intervalMs = 3200, className }: TipRotatorProps) {
   const [i, setI] = useState(0)
   useEffect(() => {
     const t = window.setInterval(() => {
