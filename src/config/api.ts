@@ -2,15 +2,14 @@
  * Configuración de acceso a la API de HiEvents (panel admin).
  *
  * `VITE_API_BASE_URL` define la base sin el segmento de ruta:
- *   - DEV local:  http://localhost:1234       → `${base}/events`, `${base}/public/events/1`
- *   - PROD:       /.netlify/functions/proxy-api → el proxy normaliza agregando
- *                 /api → panel.ticketsaver.net/api/events, .../api/public/events/1
+ *   - DEV local:  http://localhost:1234        → `${base}/public/events`
+ *   - PROD:       /.netlify/functions/proxy-api → el proxy antepone `/api` y
+ *                 reenvía a panel.ticketsaver.net (same-origin, evita CORS).
  *
- * Así la construcción de rutas es idéntica en ambos entornos; solo cambia la base.
- * El listado (`/events`) es PRIVADO y requiere el token de organizador. En DEV
- * viaja en el bundle (front → localhost:1234 directo); en PROD lo inyecta el
- * proxy de Netlify server-side (ver netlify/functions/proxy-api.js) y nunca
- * entra al bundle del cliente.
+ * Todos los endpoints del sitio comprador son públicos (`/public/...`,
+ * `/customer-auth/...` con JWT de Supabase, `/resale/...`). El listado usa
+ * `/public/events` (GetEventsPublicAction → EventResourcePublic, solo eventos
+ * LIVE). Sin token de organizador: el proxy solo lo inyectaba en `/api/events`.
  */
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
@@ -32,8 +31,8 @@ export const HIEVENTS_CONFIG = {
   token: API_TOKEN,
   endpoints: {
     // --- Catálogo ---
-    /** Listado privado de eventos (requiere token). */
-    events: () => `/events`,
+    /** Listado público de eventos LIVE (sin token; EventResourcePublic). */
+    events: () => `/public/events`,
     /** Detalle público de un evento. */
     publicEvent: (eventId: string | number) => `/public/events/${eventId}`,
     /** Valida un código de preventa (público). */
