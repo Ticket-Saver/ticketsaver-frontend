@@ -3,14 +3,14 @@ const seatrangesToValues = (ranges: string[]): number[] => {
   const values: number[] = []
 
   // Iterar sobre cada string en la lista de rangos
-  ranges.forEach((r) => {
+  ranges.forEach(r => {
     const parsedNumber = parseInt(r, 10)
 
     if (!isNaN(parsedNumber)) {
       values.push(parsedNumber)
     } else {
       try {
-        let param = r.split(',', 3).map((s) => parseInt(s, 10))
+        let param = r.split(',', 3).map(s => parseInt(s, 10))
 
         if (param.length === 2) {
           param.push(1)
@@ -43,35 +43,16 @@ const zone_prices_file = (data: any): { prices: any; seatmap: any } => {
 }
 export { zone_prices_file }
 
-//dada los precios y sus zonas, se regresa el nombre de la zona y los precios
-const extractZonePrices = (result: any) => {
-  const { prices, zones } = result
-  const zonePriceList = []
-
-  for (const [zoneName, priceTiers] of Object.entries(zones)) {
-    const priceTierKeys = Object.keys(priceTiers as Record<string, any>)
-    const pricesForZone = priceTierKeys.map((priceTierKey) => {
-      const availableDates = Object.keys(prices[priceTierKey])
-      console.log('availableDates', availableDates)
-      const today = new Date()
-      const closestDate = availableDates
-        .map((date) => new Date(date)) // Convertir a Date
-        .sort(
-          (a, b) =>
-            Math.abs(a.getTime() - today.getTime()) - Math.abs(b.getTime() - today.getTime())
-        )[0]
-      const priceInfo =
-        prices[priceTierKey][closestDate.toISOString().split('T')[0] ?? availableDates[0]]
-      return {
-        priceBase: priceInfo.price_base,
-        priceFinal: priceInfo.price_final
-      }
-    })
-
-    zonePriceList.push({ zone: zoneName, prices: pricesForZone })
-  }
-
-  return zonePriceList
+// dada los precios y sus correspondientes zonas, se regresa el nombre de la zona y los precios
+const extractZonePrices = (tickets: any[]) => {
+  return tickets.map(ticket => ({
+    zone: ticket.title,
+    prices: ticket.prices.map((price: any) => ({
+      priceFinal: price.price_including_taxes_and_fees,
+      available: !price.is_sold_out && price.is_available !== false,
+      quantityAvailable: price.initial_quantity_available - price.quantity_sold
+    }))
+  }))
 }
 
 export { extractZonePrices }
@@ -82,6 +63,7 @@ const extractLatestPrices = (result: any) => {
   console.log('Starting extraction process...')
 
   for (const [priceTag, datePrices] of Object.entries(result.prices)) {
+    console.log(`Processing price tag: ${priceTag}`)
     const availableDates = Object.keys(datePrices as Record<string, any>)
 
     if (availableDates.length > 0) {
@@ -97,6 +79,7 @@ const extractLatestPrices = (result: any) => {
     }
   }
 
+  console.log('Final latestPricesList:', latestPricesList)
   return latestPricesList
 }
 
@@ -123,10 +106,10 @@ export { zoneseatToPrice }
 //dado un tipo de precio, se regresa el monto
 const pricetypeToAmount = (prices: any, priceType: string): number => {
   const priceHistory = prices[priceType]
-  const dateObjs = Object.keys(priceHistory).map((date) => new Date(date))
+  const dateObjs = Object.keys(priceHistory).map(date => new Date(date))
   dateObjs.sort((a, b) => a.getTime() - b.getTime())
 
-  const dateTs = dateObjs.filter((date) => date < new Date()).pop()
+  const dateTs = dateObjs.filter(date => date < new Date()).pop()
   if (!dateTs) {
     throw new Error('No valid date found')
   }

@@ -1,0 +1,6 @@
+# admission-tick lo invoca pg_cron con Authorization: Bearer QUEUE_TOKEN_SECRET
+# (un secreto compartido, no un JWT de Supabase). Sin esto el gateway responde
+# 401 antes de entrar a la función. La auth real la hace el chequeo del secret
+# dentro de index.ts.
+[functions.admission-tick]
+verify_jwt = false

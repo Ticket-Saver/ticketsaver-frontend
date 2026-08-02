@@ -9,11 +9,20 @@
         "price_base": 2499,
         "price_final": 3319
       }
+    },
+    "VIP1": {
+      "2025-12-10": {
+        "price_base": 7999,
+        "price_final": 9899
+      }
     }
   },
   "zones": {
     "General Admission": {
       "P1": {}
+    },
+    "VIP Lounge": {
+      "VIP1": {}
     }
   }
 }

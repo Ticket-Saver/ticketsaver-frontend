@@ -63,20 +63,6 @@ export const eventData: EventData = {
       zones: ['Orange', 'Green', 'Pink', 'Blue', 'Yellow', 'Purple'],
       priceTag: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']
     }
-    /* loge: {
-      zones: [
-        'Yellow',
-        'Purple',
-        'Gray',
-        'Section 1',
-        'Section 2',
-        'Section 3',
-        'Section 4',
-        'Section 5',
-        'Section 6'
-      ],
-      priceTag: ['P4', 'P5', 'P6', 'P3', 'P3', 'P4', 'P4', 'P4', 'P4']
-    }*/
   },
   india_yuridia02: {
     Map: {
@@ -155,6 +141,32 @@ export const mapConfig: MapConfig = {
       Map: {
         defaultMap: SanJoseMap,
         src: SanJoseMapPng
+      }
+    }
+  },
+  // Eventos demo para verificación del flujo v2 (Bloque 4b).
+  // Reutilizan el mapeo + SVG del Copernicus Center.
+  'demo_v2.01': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.02': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
+      }
+    }
+  },
+  'demo_v2.03': {
+    zones: {
+      Map: {
+        defaultMap: copernicusCenterMap,
+        src: CopernicusCenterSvg
       }
     }
   }

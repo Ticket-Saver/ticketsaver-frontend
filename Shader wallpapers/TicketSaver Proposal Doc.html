@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>TicketSaver · Propuesta de Rediseño</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0418;
+    --ink: #FFFFFF;
+    --ink-dim: rgba(255,255,255,0.62);
+    --ink-low: rgba(255,255,255,0.40);
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.14);
+    --card: rgba(255,255,255,0.04);
+    --violet-hi: #D4A8F0;
+    --violet:    #B57BE8;
+    --violet-lo: #7C5BC4;
+    --pink: #FFB1C8;
+    --green: #7DFFB0;
+    --amber: #FFC857;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  body { -webkit-font-smoothing: antialiased; }
+
+  /* Page system */
+  .page {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 96px 80px;
+    position: relative;
+  }
+  .page + .page { border-top: 0.5px solid var(--line); }
+  .page::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 0%, rgba(124,91,196,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 95% 10%, rgba(255,177,200,0.10) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page > * { position: relative; z-index: 1; }
+
+  /* Typography */
+  h1, h2, h3 { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+  .eyebrow {
+    font-family: 'Space Grotesk', system-ui;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--violet-hi);
+  }
+  .display { font-size: 76px; line-height: 0.95; letter-spacing: -0.035em; font-weight: 700; }
+  .h1 { font-size: 48px; line-height: 1.0; letter-spacing: -0.03em; font-weight: 700; }
+  .h2 { font-size: 28px; line-height: 1.1; letter-spacing: -0.022em; font-weight: 600; }
+  .h3 { font-size: 18px; line-height: 1.2; letter-spacing: -0.015em; font-weight: 600; }
+  .lead { font-size: 17px; line-height: 1.55; color: var(--ink-dim); text-wrap: pretty; max-width: 680px; }
+  p { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--ink-dim); text-wrap: pretty; }
+  strong { color: var(--ink); font-weight: 600; }
+  em { font-style: normal; color: var(--violet-hi); font-weight: 500; }
+
+  ul { margin: 12px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  ul li {
+    font-size: 13.5px; line-height: 1.55; color: var(--ink-dim);
+    padding-left: 18px; position: relative;
+  }
+  ul li::before {
+    content: ""; position: absolute; left: 0; top: 9px;
+    width: 5px; height: 5px; border-radius: 99px;
+    background: var(--violet-hi);
+  }
+  ul li strong { color: var(--ink); }
+
+  .footnote {
+    font-family: 'Space Grotesk', system-ui;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-low); font-weight: 600;
+  }
+
+  .divider { height: 0.5px; background: var(--line); margin: 56px 0; }
+  .divider-thick { height: 1px; background: var(--line-strong); margin: 64px 0; }
+
+  /* Components */
+  .card {
+    padding: 26px 28px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 0.5px solid var(--line-strong);
+    backdrop-filter: blur(14px) saturate(160%);
+  }
+  .card.thin { padding: 18px 20px; }
+  .card .num {
+    font-family: 'Space Grotesk', system-ui;
+    font-size: 12px; color: var(--violet-hi);
+    font-weight: 700; letter-spacing: 0.16em; margin-bottom: 8px;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid var(--line-strong);
+    font-size: 11px; font-weight: 600; color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .pill.violet { background: rgba(212,168,240,0.16); border-color: rgba(212,168,240,0.30); color: var(--violet-hi); }
+  .pill.green  { background: rgba(125,255,176,0.16); border-color: rgba(125,255,176,0.30); color: var(--green); }
+  .pill.pink   { background: rgba(255,177,200,0.16); border-color: rgba(255,177,200,0.30); color: var(--pink); }
+  .pill.amber  { background: rgba(255,200,87,0.16); border-color: rgba(255,200,87,0.30); color: var(--amber); }
+  .pill .dot { width: 5px; height: 5px; border-radius: 99px; background: currentColor; }
+
+  /* Grids */
+  .grid { display: grid; gap: 18px; }
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid.cols-aside { grid-template-columns: 240px 1fr; gap: 48px; }
+
+  .stat {
+    padding: 22px 24px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 0.5px solid var(--line-strong);
+  }
+  .stat .v { font-family: 'Space Grotesk', system-ui; font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .stat .l { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-low); font-weight: 600; margin-top: 12px; }
+
+  /* Cover page */
+  .cover {
+    min-height: 100vh; padding: 80px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background:
+      radial-gradient(ellipse 60% 80% at 0% 0%, rgba(124,91,196,0.45) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 60% at 100% 100%, rgba(255,177,200,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(212,168,240,0.20) 0%, transparent 60%),
+      var(--bg);
+    border-bottom: 0.5px solid var(--line);
+  }
+  .cover::before { display: none; }
+  .cover-meta {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--violet-hi), var(--violet-lo));
+    display: grid; place-items: center;
+    box-shadow: 0 6px 20px rgba(124,91,196,0.5);
+  }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .logo-name { font-family: 'Space Grotesk', system-ui; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+
+  .cover-main h1 { font-size: 152px; letter-spacing: -0.05em; line-height: 0.90; font-weight: 700; }
+  .cover-main h1 .lead-word { background: linear-gradient(135deg, var(--violet-hi), var(--pink)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .cover-lead { font-size: 22px; line-height: 1.45; color: rgba(255,255,255,0.78); max-width: 720px; margin-top: 28px; }
+
+  .cover-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 40px; }
+
+  .cover-foot { display: flex; align-items: center; justify-content: space-between; }
+  .cover-foot .col { display: flex; flex-direction: column; gap: 4px; }
+  .cover-foot .lbl { font-family: 'Space Grotesk', system-ui; font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-low); font-weight: 700; }
+  .cover-foot .val { font-size: 13.5px; color: var(--ink); font-weight: 500; }
+
+  /* Screen page layout */
+  .screen-page { padding: 96px 80px; }
+  .screen-row {
+    display: grid; grid-template-columns: 260px 1fr; gap: 56px;
+    padding: 36px 0;
+    border-top: 0.5px solid var(--line);
+  }
+  .screen-row.first { border-top: 0; padding-top: 0; }
+  .screen-meta { display: flex; flex-direction: column; gap: 10px; }
+  .screen-meta .pill-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .screen-meta .v { font-family: 'Space Grotesk', system-ui; font-size: 50px; font-weight: 700; letter-spacing: -0.035em; line-height: 0.95; color: rgba(255,255,255,0.18); }
+  .screen-meta .v sup { font-size: 0.5em; vertical-align: top; }
+  .screen-body { display: flex; flex-direction: column; gap: 14px; }
+  .screen-body .h3 { color: var(--ink); }
+  .screen-body .summary { font-size: 14.5px; line-height: 1.55; color: var(--ink-dim); max-width: 620px; }
+
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 16px;
+    margin-top: 8px;
+  }
+  .feat {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.025);
+    border: 0.5px solid var(--line);
+  }
+  .feat .ft {
+    font-size: 12.5px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.005em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .feat .ft::before {
+    content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--violet-hi);
+    flex-shrink: 0;
+  }
+  .feat .fb { font-size: 11.5px; color: var(--ink-dim); margin-top: 5px; line-height: 1.45; }
+
+  /* Color/Type sample */
+  .swatch-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 16px; }
+  .swatch {
+    aspect-ratio: 1/1.05;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    border: 0.5px solid rgba(255,255,255,0.10);
+    overflow: hidden; position: relative;
+  }
+  .swatch .hex { font-family: 'Space Grotesk', system-ui; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .swatch .nm { font-size: 10px; opacity: 0.65; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+
+  .type-row {
+    padding: 22px 24px; border-radius: 16px;
+    background: rgba(255,255,255,0.025);
+    border: 0.5px solid var(--line-strong);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  }
+  .type-row + .type-row { margin-top: 8px; }
+  .type-row .specimen { color: var(--ink); }
+  .type-row .meta {
+    display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; text-align: right;
+    font-family: 'Space Grotesk', system-ui;
+    font-size: 11px; color: var(--ink-low); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
+  }
+  .type-row .meta .nm { color: var(--ink); letter-spacing: -0.005em; text-transform: none; font-size: 13px; font-weight: 500; }
+
+  /* Section header */
+  .sec-header { margin-bottom: 48px; }
+  .sec-header .h1 { margin-top: 12px; max-width: 760px; }
+  .sec-header .lead { margin-top: 18px; }
+
+  /* TOC */
+  .toc { display: flex; flex-direction: column; gap: 2px; }
+  .toc-row {
+    display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
+    padding: 14px 10px;
+    border-top: 0.5px solid var(--line);
+    font-size: 14.5px;
+  }
+  .toc-row .n { font-family: 'Space Grotesk', system-ui; font-size: 12px; color: var(--violet-hi); font-weight: 700; letter-spacing: 0.14em; }
+  .toc-row .t { color: var(--ink); font-weight: 500; }
+  .toc-row .p { color: var(--ink-low); font-family: 'Space Grotesk', system-ui; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; }
+
+  /* Roadmap */
+  .roadmap { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+  .phase {
+    display: grid; grid-template-columns: 180px 1fr;
+    border-radius: 16px;
+    border: 0.5px solid var(--line-strong);
+    overflow: hidden;
+  }
+  .phase-tag {
+    padding: 24px 22px;
+    background: rgba(124,91,196,0.14);
+    border-right: 0.5px solid var(--line-strong);
+    display: flex; flex-direction: column; gap: 8px; justify-content: center;
+  }
+  .phase-tag .lbl { font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--violet-hi); font-weight: 700; }
+  .phase-tag .num { font-family: 'Space Grotesk', system-ui; font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+  .phase-body { padding: 22px 26px; }
+  .phase-body .h3 { font-size: 17px; }
+  .phase-body p { margin-top: 6px; font-size: 13.5px; }
+
+  /* Footer */
+  .page-foot {
+    padding: 56px 80px;
+    border-top: 0.5px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Grotesk', system-ui;
+    font-size: 11px; color: var(--ink-low); letter-spacing: 0.10em;
+    text-transform: uppercase; font-weight: 600;
+  }
+
+  @media print {
+    .page, .cover, .screen-page { page-break-inside: avoid; break-inside: avoid; }
+    .screen-row { page-break-inside: avoid; break-inside: avoid; }
+    .page { padding: 60px 60px; }
+    .cover { padding: 60px; min-height: auto; }
+  }
+</style>
+</head>
+<body data-screen-label="Propuesta TicketSaver">
+
+<!-- ─────────────────────── COVER ─────────────────────── -->
+<section class="cover">
+  <div class="cover-meta">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" fill="none">
+          <path d="M3 4 L7 2 L11 4 L11 10 L7 12 L3 10 Z" stroke="#0E0820" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="7" cy="7" r="1.5" fill="#0E0820"/>
+        </svg>
+      </div>
+      <div class="logo-name">ticketsaver</div>
+    </div>
+    <div class="pill violet"><span class="dot"></span>Propuesta de rediseño · v1.0</div>
+  </div>
+
+  <div class="cover-main">
+    <div class="eyebrow">Documento de propuesta</div>
+    <h1 style="margin-top:24px;">Un nuevo <span class="lead-word">TicketSaver.</span></h1>
+    <div class="cover-lead">
+      Rediseño completo de la plataforma — desde el home hasta la confirmación NFT.
+      Mobile-first, glassmorphism oscuro sobre mesh violeta, herramientas nuevas
+      para visualizar eventos, sala de espera virtual y multi-fecha por artista.
+    </div>
+    <div class="cover-tags">
+      <div class="pill">17 pantallas</div>
+      <div class="pill">Mobile + Desktop</div>
+      <div class="pill">Multi-fecha</div>
+      <div class="pill">Waiting room</div>
+      <div class="pill">NFT · Base</div>
+      <div class="pill">Stripe checkout intacto</div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <div class="col">
+      <div class="lbl">Para</div>
+      <div class="val">Ticket-Saver Inc.</div>
+    </div>
+    <div class="col">
+      <div class="lbl">Fecha</div>
+      <div class="val">Mayo 2026</div>
+    </div>
+    <div class="col">
+      <div class="lbl">Estado</div>
+      <div class="val">Prototipo navegable · listo para handoff</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── TOC ─────────────────────── -->
+<section class="page">
+  <div class="eyebrow">Índice</div>
+  <h2 class="h1" style="margin-top:12px;">Contenido</h2>
+
+  <div class="toc" style="margin-top:48px;">
+    <div class="toc-row"><div class="n">01</div><div class="t">Resumen ejecutivo</div><div class="p">Qué cambiamos y por qué</div></div>
+    <div class="toc-row"><div class="n">02</div><div class="t">Sistema de diseño</div><div class="p">Paleta · Tipografía · Componentes</div></div>
+    <div class="toc-row"><div class="n">03</div><div class="t">Home & descubrimiento</div><div class="p">Hero · Cover-flow · Netflix scrolls</div></div>
+    <div class="toc-row"><div class="n">04</div><div class="t">Detalle de evento</div><div class="p">Banner · Multi-fecha · Mapa</div></div>
+    <div class="toc-row"><div class="n">05</div><div class="t">Sala de espera virtual</div><div class="p">Queue para eventos de alta demanda</div></div>
+    <div class="toc-row"><div class="n">06</div><div class="t">Flujo de compra</div><div class="p">Mapa · Asientos · Timer · Stripe</div></div>
+    <div class="toc-row"><div class="n">07</div><div class="t">Ticket recibido & NFT</div><div class="p">Confirmación · Apple Wallet · Share</div></div>
+    <div class="toc-row"><div class="n">08</div><div class="t">Mis tickets & colección</div><div class="p">Upcoming · Past · NFT collection</div></div>
+    <div class="toc-row"><div class="n">09</div><div class="t">Páginas institucionales</div><div class="p">About · Contact · Footer</div></div>
+    <div class="toc-row"><div class="n">10</div><div class="t">Ayuda & legal</div><div class="p">FAQs · Términos · Privacidad</div></div>
+    <div class="toc-row"><div class="n">11</div><div class="t">Variantes desktop</div><div class="p">Estilo cinematográfico</div></div>
+    <div class="toc-row"><div class="n">12</div><div class="t">Roadmap & próximos pasos</div><div class="p">Plan de implementación</div></div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 01. EXECUTIVE SUMMARY ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">01 · Resumen ejecutivo</div>
+    <h2 class="h1">Cinco grandes cambios.</h2>
+    <p class="lead">
+      Este rediseño no es cosmético: redefine la identidad visual,
+      agrega herramientas nuevas para descubrir y visualizar eventos,
+      y resuelve los puntos de fricción que el cliente identificó en sesiones de uso.
+    </p>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <div class="num">01</div>
+      <div class="h3">Identidad visual renovadora</div>
+      <p style="margin-top:8px;">
+        Mesh gradient violeta como fondo global, glassmorphism oscuro para tarjetas,
+        tipografía moderna Space Grotesk + Inter. Una estética con personalidad —
+        más cercana a Disney+ o A24 que a un sitio de ticketing tradicional.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">02</div>
+      <div class="h3">Multi-fecha por artista</div>
+      <p style="margin-top:8px;">
+        Un mismo evento puede vender 1 o N fechas. El detalle del evento permite
+        elegir entre todas las fechas/ciudades, y todo el resto de la pantalla
+        (precio, venue, mapa, CTA) reacciona en vivo a la selección.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">03</div>
+      <div class="h3">Carrito + timer de compra</div>
+      <p style="margin-top:8px;">
+        Carrito flotante con resumen, timer real de 5 minutos durante el flujo de
+        asientos para evitar bloqueos eternos del inventario, banner pulsante
+        cuando quedan menos de 60 segundos.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">04</div>
+      <div class="h3">Sala de espera virtual</div>
+      <p style="margin-top:8px;">
+        Para shows muy concurridos, un waiting room con tu posición en cola,
+        ETA dinámico, visualización de stream y tips rotativos. Cuatro estados
+        — far, close, next, released — que liberan usuarios de a poco.
+      </p>
+    </div>
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="num">05</div>
+      <div class="h3">Ticket-as-NFT con anclaje cultural</div>
+      <p style="margin-top:8px;">
+        La confirmación de compra se vuelve un momento memorable: una tarjeta
+        coleccionable con shine animado, perforación, QR y atributos del show.
+        Add to Apple Wallet, share-as-image, view-on-Base — el ticket vive antes,
+        durante y después del show.
+      </p>
+    </div>
+  </div>
+
+  <div class="divider-thick"></div>
+
+  <div class="eyebrow">Anotaciones del cliente · todas resueltas</div>
+  <div class="grid cols-2" style="margin-top:18px; gap:10px;">
+    <div class="feat"><div class="ft">Carrito de compras</div><div class="fb">Drawer flotante con resumen, timer de hold de asientos y stepper de cantidad.</div></div>
+    <div class="feat"><div class="ft">Resumen en mapa · mobile</div><div class="fb">Sticky bottom sheet bajo el seat picker tipo Ticketmaster.</div></div>
+    <div class="feat"><div class="ft">Resumen en mapa · desktop</div><div class="fb">Sidebar derecho con asientos seleccionados y total en tiempo real.</div></div>
+    <div class="feat"><div class="ft">Prioridad al SVG del mapa</div><div class="fb">Pasa al frente, con título "Select a section · venue, fecha" arriba.</div></div>
+    <div class="feat"><div class="ft">Formulario de contacto</div><div class="fb">Página dedicada con canales rápidos, topic picker y form.</div></div>
+    <div class="feat"><div class="ft">Footer mejorado</div><div class="fb">4 columnas, newsletter, social, badge "Built on Base".</div></div>
+    <div class="feat"><div class="ft">About</div><div class="fb">Reescrito con story, stats, principios y team.</div></div>
+    <div class="feat"><div class="ft">Imagen de fondo en sesiones</div><div class="fb">Hero del evento full-bleed + cover blureado en queue/quick-views.</div></div>
+    <div class="feat"><div class="ft">Tiempo de compra</div><div class="fb">Pill countdown con estados normal · warning · expired.</div></div>
+    <div class="feat"><div class="ft">Mapa de selección de asientos</div><div class="fb">No tocado en lógica — solo restyled con la identidad violeta.</div></div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 02. DESIGN SYSTEM ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">02 · Sistema de diseño</div>
+    <h2 class="h1">El lenguaje visual.</h2>
+    <p class="lead">
+      Una paleta, dos tipografías, un puñado de componentes glass. Suficiente
+      para hacer 17 pantallas coherentes y dejar al equipo de desarrollo trabajando
+      con tokens, no con pixel perfects.
+    </p>
+  </div>
+
+  <div class="h2" style="margin-top:48px;">Paleta</div>
+  <p style="margin-top:8px; max-width:680px;">Violetas profundos como base, lavandas y mauve para acentos, rosas y verdes
+    para estados. Toda la app respira en penumbra: el contenido brilla cuando hace falta.</p>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#0A0418;">
+      <div class="nm" style="color:rgba(255,255,255,0.6);">Bg</div>
+      <div class="hex" style="color:#fff;">#0A0418</div>
+    </div>
+    <div class="swatch" style="background:#2A1554;">
+      <div class="nm" style="color:rgba(255,255,255,0.6);">Indigo</div>
+      <div class="hex" style="color:#fff;">#2A1554</div>
+    </div>
+    <div class="swatch" style="background:#5B3FA8;">
+      <div class="nm" style="color:rgba(255,255,255,0.7);">Violet</div>
+      <div class="hex" style="color:#fff;">#5B3FA8</div>
+    </div>
+    <div class="swatch" style="background:#7C5BC4;">
+      <div class="nm" style="color:rgba(255,255,255,0.7);">Mid</div>
+      <div class="hex" style="color:#fff;">#7C5BC4</div>
+    </div>
+    <div class="swatch" style="background:#B57BE8;">
+      <div class="nm" style="color:rgba(26,15,51,0.7);">Lavender</div>
+      <div class="hex" style="color:#1A0F33;">#B57BE8</div>
+    </div>
+    <div class="swatch" style="background:#D4A8F0;">
+      <div class="nm" style="color:rgba(26,15,51,0.7);">Mauve</div>
+      <div class="hex" style="color:#1A0F33;">#D4A8F0</div>
+    </div>
+    <div class="swatch" style="background:#FFB1C8;">
+      <div class="nm" style="color:rgba(26,15,51,0.7);">Pink · alert</div>
+      <div class="hex" style="color:#1A0F33;">#FFB1C8</div>
+    </div>
+  </div>
+  <div class="swatch-row" style="margin-top:10px;">
+    <div class="swatch" style="background:#FFC857;">
+      <div class="nm" style="color:rgba(26,15,51,0.7);">Selected · gold</div>
+      <div class="hex" style="color:#1A0F33;">#FFC857</div>
+    </div>
+    <div class="swatch" style="background:#7DFFB0;">
+      <div class="nm" style="color:rgba(0,0,0,0.7);">Success</div>
+      <div class="hex" style="color:#0A0418;">#7DFFB0</div>
+    </div>
+    <div class="swatch" style="background:#3F7BEC;">
+      <div class="nm" style="color:rgba(255,255,255,0.7);">Available</div>
+      <div class="hex" style="color:#fff;">#3F7BEC</div>
+    </div>
+    <div class="swatch" style="background:#C77FFF;">
+      <div class="nm" style="color:rgba(26,15,51,0.7);">Companion</div>
+      <div class="hex" style="color:#1A0F33;">#C77FFF</div>
+    </div>
+    <div class="swatch" style="background:#2F5BD6;">
+      <div class="nm" style="color:rgba(255,255,255,0.7);">Wheelchair</div>
+      <div class="hex" style="color:#fff;">#2F5BD6</div>
+    </div>
+    <div class="swatch" style="background:#3DD68C;">
+      <div class="nm" style="color:rgba(0,0,0,0.7);">Reduced</div>
+      <div class="hex" style="color:#0A0418;">#3DD68C</div>
+    </div>
+    <div class="swatch" style="background:rgba(255,255,255,0.15);">
+      <div class="nm" style="color:rgba(255,255,255,0.6);">Occupied</div>
+      <div class="hex" style="color:#fff;">rgba(255,255,255,.15)</div>
+    </div>
+  </div>
+
+  <div class="h2" style="margin-top:64px;">Tipografía</div>
+  <div style="margin-top:18px;">
+    <div class="type-row">
+      <div class="specimen" style="font-family:'Space Grotesk'; font-size:60px; font-weight:700; letter-spacing:-0.035em; line-height:0.95;">You're going.</div>
+      <div class="meta">
+        <div class="nm">Space Grotesk</div>
+        <div>Display · 600 / 700</div>
+        <div>Headlines · ticket data · stats</div>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="specimen" style="font-family:'Space Grotesk'; font-size:22px; font-weight:600; letter-spacing:-0.022em;">Section title — pick your date</div>
+      <div class="meta">
+        <div class="nm">Space Grotesk</div>
+        <div>H2 · 600</div>
+        <div>Section titles</div>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="specimen" style="font-family:'Inter'; font-size:15px; line-height:1.55; color:rgba(255,255,255,0.78); max-width:560px;">
+        Mitski returns to the East Coast with her most ambitious staging yet — four nights, three cities, one orchestra.
+      </div>
+      <div class="meta">
+        <div class="nm">Inter</div>
+        <div>Body · 400</div>
+        <div>UI · paragraphs · captions</div>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="specimen" style="font-family:'Space Grotesk'; font-size:11px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:var(--violet-hi);">EYEBROW · ALL CAPS</div>
+      <div class="meta">
+        <div class="nm">Space Grotesk</div>
+        <div>Eyebrow · 700 · tracking</div>
+        <div>Section markers · metadata</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="h2" style="margin-top:64px;">Componentes clave</div>
+  <div class="feature-grid">
+    <div class="feat"><div class="ft">Glass card</div><div class="fb">background rgba(255,255,255,.04) + 0.5px border + backdrop-filter blur 14-20px. Radio 14-22px.</div></div>
+    <div class="feat"><div class="ft">Pill / chip</div><div class="fb">Padding 5×12, radio 999. Variantes: default, violet, green, pink, amber. Live-dot opcional.</div></div>
+    <div class="feat"><div class="ft">CTA primario</div><div class="fb">Background blanco con leve gradient, color #1A0F33, radio 14-18, sombra violeta.</div></div>
+    <div class="feat"><div class="ft">Hold timer</div><div class="fb">Pill con ícono reloj. Estados normal · warn ≤60s · expired. Tabular-nums.</div></div>
+    <div class="feat"><div class="ft">Seat status legend</div><div class="fb">6 estados con color fijo — sin tocar la lógica del componente existente.</div></div>
+    <div class="feat"><div class="ft">Date card</div><div class="fb">Tile con día/mes en eyebrow, número grande, venue, ciudad, status, precio.</div></div>
+    <div class="feat"><div class="ft">Event cover</div><div class="fb">Procedural — sin assets externos. Gradients curados por evento + noise + tipografía.</div></div>
+    <div class="feat"><div class="ft">NFT ticket card</div><div class="fb">Perforación, muescas circulares, shine animado, QR, atributos seat.</div></div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 03. HOME ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">03 · Home & descubrimiento</div>
+    <h2 class="h1">Tres formas de descubrir.</h2>
+    <p class="lead">
+      El home apila tres mecánicas de descubrimiento que rinden distinto:
+      featured (alta intención), cover-flow (impulso) y filas horizontales
+      (browsing relajado). Más cuatro variantes de tarjeta intercambiables.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>01</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Home / Landing</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill violet">Hero carousel</div>
+        <div class="pill">Cover-flow 3D</div>
+        <div class="pill">Netflix rows</div>
+        <div class="pill">Categories</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Header limpio (logo · cart · avatar profile), greeting personalizado con
+        fecha, chips de categoría scrolleables, hero carousel full-bleed para
+        eventos destacados, cover-flow 3D para descubrir por impulso, tres
+        Netflix-style rows ("This week", "Popular near you", "Electronic nights")
+        y panel "Vibe Radar" — herramienta nueva para visualizar la energía,
+        intimidad, visuals y bass de cada evento.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">Hero full-bleed</div><div class="fb">Cover de 410px alto + gradient bottom + meta · pill "Featured · Selling fast" + CTA "Get tickets" con precio.</div></div>
+        <div class="feat"><div class="ft">Cover-flow 3D</div><div class="fb">Perspective 1100, rotateY/translateZ, opacity falloff. Solo decoración — al tap abre evento.</div></div>
+        <div class="feat"><div class="ft">Tarjetas — 4 variantes</div><div class="fb">Poster / Cinema (fecha grande) / Ticket-cut (con muesca) / Minimal. Tweakable.</div></div>
+        <div class="feat"><div class="ft">Vibe Radar</div><div class="fb">5-axis chart + 4 barras (Energy · Intimacy · Visuals · Bass) — filtra el feed al tocar.</div></div>
+        <div class="feat"><div class="ft">Desktop hero</div><div class="fb">720px alto, layout cinematográfico, vertical dots a la derecha, CTA con shadow.</div></div>
+        <div class="feat"><div class="ft">Search ⌘K</div><div class="fb">Solo desktop: barra de búsqueda con keyboard hint estilo Linear/Vercel.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 04. EVENT DETAIL ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">04 · Detalle de evento</div>
+    <h2 class="h1">Toda la info — antes del checkout.</h2>
+    <p class="lead">
+      Esta es la pantalla que más te pidió el cliente. Soporta una o muchas fechas.
+      El usuario decide qué noche le interesa, ve venue real en Google Maps, lee
+      sobre el show, ojea la galería, y entra al flujo de asientos sin perder contexto.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>02</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Event detail · multi-fecha</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill violet">Multi-date</div>
+        <div class="pill">Banner</div>
+        <div class="pill">Galería</div>
+        <div class="pill">Google Maps</div>
+        <div class="pill">Sticky CTA</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Banner del evento full-bleed con back/share/more y badge "4 dates · 3 cities".
+        Header con título grande, artist follow row, tags. Carrusel horizontal con
+        las fechas (tap → todo se actualiza). Card highlight de la fecha elegida
+        con venue, status y precio. Galería scroll horizontal (primera imagen grande
+        con play). Google Maps embebido con filtro dark. Fact pills. CTA sticky abajo
+        que muestra "Choose seats — From $X" actualizándose con la fecha.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">Multi-fecha real</div><div class="fb">Sirve para 1 fecha (oculta el carrusel) o N fechas en distintas ciudades/venues/precios.</div></div>
+        <div class="feat"><div class="ft">Date card · 3 estados</div><div class="fb">Selling fast / Few left / On sale — código de color en dot indicador.</div></div>
+        <div class="feat"><div class="ft">Banner del evento</div><div class="fb">320px mobile, 560px desktop. Tour name + dates count, back/share/more glass.</div></div>
+        <div class="feat"><div class="ft">Galería interactiva</div><div class="fb">Snap horizontal, primera imagen 200px+ con play overlay. Resto 140px thumbnails.</div></div>
+        <div class="feat"><div class="ft">Google Maps embed</div><div class="fb">Sin API key, query directa a venue+ciudad. Filter invert para dark mode.</div></div>
+        <div class="feat"><div class="ft">Desktop sticky sidebar</div><div class="fb">380px right rail con resumen sticky, precio, CTA y "Your ticket comes as NFT" badge.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 05. WAITING ROOM ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">05 · Sala de espera virtual</div>
+    <h2 class="h1">Para shows que rompen todo.</h2>
+    <p class="lead">
+      Cuando un evento es de altísima demanda, en vez de que el sitio caiga
+      ponemos a los usuarios en una sala de espera virtual. Liberamos personas
+      de a poco, comunicamos honestamente cuánto falta, y cuando entran
+      arrancan el flujo normal de compra con su timer.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>03</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Waiting room / Queue</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill green"><span class="dot"></span>Live status</div>
+        <div class="pill">4 estados</div>
+        <div class="pill">ETA dinámico</div>
+        <div class="pill">Stream viz</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Background con cover del evento blureado pesadamente. Pill "live" arriba
+        con dot pulsante que cambia de color según el estado. Posición en la cola
+        en tipografía gigante (Space Grotesk 120-320px). ETA en pill con ícono de
+        reloj. Visualización tipo stream de puntos con TU posición destacada y
+        animada. Card de tips rotativos cada 3 segundos ("don't refresh", "have
+        payment ready"). En estado "next" aparece banner verde. En "released" se
+        muestra "You're in." gigante y redirige al seat picker.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">Estado · Far</div><div class="fb">Posición ~4,287 / 12,480 · ETA 14 min · color lavanda</div></div>
+        <div class="feat"><div class="ft">Estado · Close</div><div class="fb">Posición ~127 · ETA 2 min · color pink, urgencia visual</div></div>
+        <div class="feat"><div class="ft">Estado · Next</div><div class="fb">Posición #3 · "Get ready ✨" · pill verde, tamaño aumenta</div></div>
+        <div class="feat"><div class="ft">Estado · Released</div><div class="fb">"You're in." en gradient + spinner + auto-redirect</div></div>
+        <div class="feat"><div class="ft">Stream visualization</div><div class="fb">44 dots desktop / 28 mobile · TU pulsante + glow + label "YOU" arriba.</div></div>
+        <div class="feat"><div class="ft">Tips rotativos</div><div class="fb">No refrescar · We hold your spot · Payment ready · 5 min once inside.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:36px;">
+    <div class="card">
+      <div class="num">¿Cuándo activarlo?</div>
+      <ul style="margin-top:8px;">
+        <li>Shows con &gt;5,000 personas esperando concurrentemente al abrir venta.</li>
+        <li>Eventos marcados manualmente como "high demand" por el admin.</li>
+        <li>Auto-activación si load del servidor pasa cierto umbral.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="num">Anti-frustración</div>
+      <ul style="margin-top:8px;">
+        <li>El refresco <strong>no</strong> pierde el lugar — se mantiene por sessionId/wallet.</li>
+        <li>Tip explícito: "Don't refresh — you'll lose your spot."</li>
+        <li>ETA se ajusta dinámicamente según ritmo real de liberación.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 06. PURCHASE FLOW ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">06 · Flujo de compra</div>
+    <h2 class="h1">Mapa → asientos → Stripe.</h2>
+    <p class="lead">
+      El flujo respeta tu seat picker actual: dos pasos (sección, luego asientos)
+      con SVG seleccionable y los 6 estados de legend exactos. Después del paso 2
+      se delega a Stripe sin modificación — esa página queda intacta por seguridad.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>04</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Section select</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill violet">Step 1 of 2</div>
+        <div class="pill amber"><span class="dot"></span>Hold timer</div>
+        <div class="pill">SVG venue</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        SVG completo del venue con todas las secciones (101-308) coloreadas por tier:
+        Premium (dorado), Orchestra (magenta), Mezzanine (naranja), Balcony (azul).
+        Cada sección con puntitos de seats como textura. Hover/tap muestra tooltip
+        con nombre y precio "from". Banner "Seats held for you" abajo. Timer
+        countdown visible siempre.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">22 secciones</div><div class="fb">101-103 frontales · 104-106 orchestra · 201-208 mezzanine · 301-308 balcony.</div></div>
+        <div class="feat"><div class="ft">4 tiers con precio</div><div class="fb">Premium $150+ · Orchestra $95+ · Mezzanine $65+ · Balcony $40+.</div></div>
+        <div class="feat"><div class="ft">Stage glow arriba</div><div class="fb">Banner "STAGE" con gradient radial sutil para anclar la orientación.</div></div>
+        <div class="feat"><div class="ft">Tier legend lateral</div><div class="fb">Mobile: bajo el mapa. Desktop: sidebar 360px con card por tier.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>05</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Seat select</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill violet">Step 2 of 2</div>
+        <div class="pill">6-estado legend</div>
+        <div class="pill">Hold timer</div>
+        <div class="pill">Sticky resumen</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Grid de asientos por filas I-O (7 filas) × 14 asientos. Cada cell con
+        color por estado (los mismos 6 que ya usa la plataforma). Asientos
+        seleccionados tienen ring blanco + glow. Mobile: footer sticky con resumen
+        + Cancel/Continue. Desktop: sidebar derecho de 380px con lista de asientos
+        elegidos + remove individual + breakdown + Continue.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">6 estados</div><div class="fb">Disponible · Ocupado · Tu selección · Acompañante · Silla de Ruedas · Movilidad Reducida.</div></div>
+        <div class="feat"><div class="ft">Ícono accesibilidad</div><div class="fb">Sillas de ruedas con badge ♿ visible en cell, sin perder grid alignment.</div></div>
+        <div class="feat"><div class="ft">Price + fee transparency</div><div class="fb">Footer muestra "Price per seat · Fee per seat" antes del total.</div></div>
+        <div class="feat"><div class="ft">Continue (N)</div><div class="fb">CTA muestra cantidad de asientos elegidos. Disabled si N=0.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>06</div>
+      <div>
+        <div class="footnote">Externo · No modificado</div>
+        <div class="h3" style="margin-top:6px;">Stripe Checkout</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill green">Sin cambios</div>
+        <div class="pill">PCI-DSS</div>
+        <div class="pill">Apple Pay</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        El checkout es la página de Stripe alojada, con su propio styling. No la
+        modificamos por motivos de seguridad/cumplimiento. Solo nos aseguramos
+        que el branding posterior (success page) absorba al usuario de vuelta
+        al diseño nuevo.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 07. TICKET RECEIVED ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">07 · Ticket recibido & NFT</div>
+    <h2 class="h1">Un momento memorable.</h2>
+    <p class="lead">
+      El cliente nos dijo que esta pantalla es la que más le gustó.
+      Hace que recibir el ticket se sienta como recibir un objeto coleccionable real:
+      un poster en miniatura que se puede compartir, guardar en Apple Wallet o ver on-chain.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>07</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Ticket received</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill green">You're in</div>
+        <div class="pill">NFT · Base</div>
+        <div class="pill">Apple Wallet</div>
+        <div class="pill">Share image</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Confirmación con checkmark glow violeta y "You're going." en display grande.
+        Card del ticket NFT con: número serial, badge "NFT · Base", fecha gigante
+        (96-200px), atributos seat (SEC/ROW/SEAT), QR generado, shine animado y
+        perforación con muescas circulares. Wallet info con direction abreviada
+        y view-on-Base link. Cuatro acciones: Apple Wallet, Share, Email backup,
+        Add to Calendar. CTA final "View in My Tickets".
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">Animated shine</div><div class="fb">Gradient radial que se mueve sutilmente sobre la tarjeta — vida sin distraer.</div></div>
+        <div class="feat"><div class="ft">Perforación realista</div><div class="fb">Línea punteada + muescas circulares ø16 que cortan en negro del fondo.</div></div>
+        <div class="feat"><div class="ft">QR pseudo-real</div><div class="fb">21×21 grid con corners de finder pattern y datos pseudo-aleatorios.</div></div>
+        <div class="feat"><div class="ft">No. 042</div><div class="fb">Número de serie único — humaniza la idea de NFT, suena coleccionable.</div></div>
+        <div class="feat"><div class="ft">Share as image</div><div class="fb">El ticket se exporta como PNG para Instagram/Twitter — el evento se hace viral.</div></div>
+        <div class="feat"><div class="ft">Wallet display</div><div class="fb">0x3f2a…b91d con dot gradient — abrevia sin esconder.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 08. MY TICKETS ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">08 · Mis tickets & colección</div>
+    <h2 class="h1">Tu historia con TicketSaver.</h2>
+    <p class="lead">
+      Dashboard mínimo, suficiente para todo lo que el usuario necesita: ver
+      lo que viene, lo que ya pasó, y la colección de NFTs acumulada como
+      hilo conductor de su vida nocturna.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>08</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">My tickets</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">Upcoming</div>
+        <div class="pill">Past</div>
+        <div class="pill">Collection</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Greeting con nombre + wallet chip. Stats: Upcoming, Collected, Rarity Gold.
+        Tres tabs. Upcoming/Past usan tarjetas con fecha grande lateral + perforación
+        con muescas + tags de seat + pulse "Doors in 14 days". Past se ve desaturado.
+        Collection es grid 3×3 (mobile) / 4×N (desktop) de NFTs como PFPs.
+      </p>
+      <div class="feature-grid">
+        <div class="feat"><div class="ft">Wallet chip header</div><div class="fb">0x3f2a…b91d con dot gradient, clickable para copiar.</div></div>
+        <div class="feat"><div class="ft">Upcoming card</div><div class="fb">Cover lateral 96px con fecha grande superpuesta, info derecha, pulse status.</div></div>
+        <div class="feat"><div class="ft">Past · desaturado</div><div class="fb">filter saturate(0.6) opacity(0.7) para diferenciar visualmente.</div></div>
+        <div class="feat"><div class="ft">Collection · NFT grid</div><div class="fb">Aspect ratio 1:1, número de serie top-left, artista bottom, gradient + noise.</div></div>
+        <div class="feat"><div class="ft">Pulse "Doors in N days"</div><div class="fb">Dot verde con animation pulse — recordatorio sin notificación push.</div></div>
+        <div class="feat"><div class="ft">Hover preview</div><div class="fb">Sólo desktop: hover en collection card muestra detalles del show.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 09. INFO PAGES ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">09 · Páginas institucionales</div>
+    <h2 class="h1">Marca, contacto, footer.</h2>
+    <p class="lead">
+      Tres pantallas que no son funcionales pero son la cara pública de la
+      empresa. Mismo lenguaje visual: nada de "About sad page".
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>09</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">About</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">Hero</div>
+        <div class="pill">Stats</div>
+        <div class="pill">Principles</div>
+        <div class="pill">Team</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Hero "Live music, without the gatekeepers." Stats (1.2K events · 84K fans
+        · $2.1M saved in fees). Cuatro principios numerados (Face value, Tickets
+        are yours, No scalpers, Built for the night). Team con avatars gradient.
+        CTA "Browse events". Footer embebido al final.
+      </p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>10</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Contact</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">2 canales rápidos</div>
+        <div class="pill">Topic picker</div>
+        <div class="pill">Form</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        "How can we help?" Dos canales rápidos: Live chat (3 min response) y
+        email hi@ticketsaver.io. Topic chips (Buying · Refunds · Wallet · Press ·
+        Promote · Other). Form name/email/message. Send button.
+      </p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>11</div>
+      <div>
+        <div class="footnote">Componente</div>
+        <div class="h3" style="margin-top:6px;">Footer global</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">4 columnas</div>
+        <div class="pill">Newsletter</div>
+        <div class="pill">Social</div>
+        <div class="pill">Built on Base</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Reutilizable. Logo + tagline, 4 columnas (Discover · Account · Company ·
+        Legal), newsletter input inline, social dots IG/TT/X/YT, badge "BUILT ON
+        BASE" en azul Coinbase. Bottom row con copyright y switches EN/ES/USD.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 10. HELP & LEGAL ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">10 · Ayuda & legal</div>
+    <h2 class="h1">Diseñadas para que se lean.</h2>
+    <p class="lead">
+      FAQs con acordeón filtrable. Terms y Privacy comparten una shell pulida con
+      tabla de contenidos clickeable, "short version" plain-language al inicio,
+      mini-encuesta de claridad y bottom-nav prev/next. Cero wall of text.
+    </p>
+  </div>
+
+  <div class="screen-row first">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>12</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">FAQs · Help center</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">Search ⌘K</div>
+        <div class="pill">6 categorías</div>
+        <div class="pill">Acordeón</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Hero + barra search. Chips de categorías (All · Buying · Wallet & NFT ·
+        Refunds · At the door · Selling) filtran en vivo. Acordeón con 8 preguntas
+        tipo (timer de 5 min, NFT, wallets, reembolsos, Apple Wallet, reventa,
+        olvido del teléfono). Card "Can't find what you need?" → live chat.
+      </p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>13</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Terms & conditions</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">8 secciones</div>
+        <div class="pill">Short version</div>
+        <div class="pill">TOC sticky</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Header con eyebrow, título grande, pills "Last updated" y "4 min read".
+        Card "The short version" con resumen plain-language. TOC clickeable.
+        Sección activa con bullets cuando aplica. Mini-encuesta "Yes / Confusing".
+        Bottom-nav Prev/Next. Related links. Footer.
+      </p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="screen-meta">
+      <div class="v"><sup>#</sup>14</div>
+      <div>
+        <div class="footnote">Mobile · Desktop</div>
+        <div class="h3" style="margin-top:6px;">Privacy policy</div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">8 secciones</div>
+        <div class="pill">GDPR · CCPA · 25.326</div>
+        <div class="pill">DPO contact</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="summary">
+        Misma shell que Terms. Contenido real, no lorem ipsum: qué recolectamos,
+        qué NO recolectamos, Stripe + Base, derechos GDPR/CCPA/Ley 25.326 (acceso,
+        rectificación, borrado, portabilidad, oposición), cookies (Plausible
+        anónimo, sin Meta/Google), retención (30 días tras cierre, 5 años por
+        obligación fiscal), menores (no &lt;13), DPO en dpo@ticketsaver.io.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 11. DESKTOP ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">11 · Variantes desktop</div>
+    <h2 class="h1">Cinematográfico, no responsive.</h2>
+    <p class="lead">
+      La versión desktop no es "el mobile estirado". Es una composición distinta,
+      con hero a pantalla completa, sidebar fijo izquierdo en flow de compra, search
+      con ⌘K, y density más editorial. Inspirada en Disney+ y A24.
+    </p>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:36px;">
+    <div class="card">
+      <div class="num">Top nav</div>
+      <div class="h3">Translucent header siempre arriba</div>
+      <p style="margin-top:8px;">
+        Logo · tabs (Home · Events · About · FAQs) · search ⌘K · cart con badge ·
+        avatar circular. Sobre las pantallas de browsing flota con gradient.
+        En queue/checkout se simplifica al mínimo.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">Layout</div>
+      <div class="h3">Hero 720px + grids amplios</div>
+      <p style="margin-top:8px;">
+        Home con hero full-bleed cinematográfico, rows de 4-5 covers, sin
+        sidebars. Event detail con split 1fr × 380px sticky. Seat picker
+        con split 1fr × 380px sidebar para resumen y total.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">Tipografía</div>
+      <div class="h3">Displays 96-200px</div>
+      <p style="margin-top:8px;">
+        En desktop usamos sin pudor displays gigantes: hero titles a 84-96px,
+        posiciones en queue a 220-320px, "You're going." a 200px. Espacio negro
+        intencional. Confidence sobre densidad.
+      </p>
+    </div>
+    <div class="card">
+      <div class="num">Interacciones</div>
+      <div class="h3">Hover states + tooltips</div>
+      <p style="margin-top:8px;">
+        Cards con hover scale, secciones del venue con hover label flotante,
+        cells de asiento con ring blanco al hover, dots de queue con animation
+        pulse. Cursor crosshair en mapas SVG.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── 12. ROADMAP ─────────────────────── -->
+<section class="page">
+  <div class="sec-header">
+    <div class="eyebrow">12 · Roadmap & próximos pasos</div>
+    <h2 class="h1">De propuesta a producción.</h2>
+    <p class="lead">
+      Una secuencia sugerida en cuatro fases. Cada fase entrega valor independiente
+      — se puede pausar y publicar entre fases sin dejar la app rota.
+    </p>
+  </div>
+
+  <div class="roadmap">
+    <div class="phase">
+      <div class="phase-tag">
+        <div class="lbl">Fase</div>
+        <div class="num">01</div>
+        <div class="lbl">2-3 semanas</div>
+      </div>
+      <div class="phase-body">
+        <div class="h3">Tokenización del design system</div>
+        <p>
+          Migrar colores, tipografía, radios y sombras a CSS variables / Tailwind tokens.
+          Crear componentes Card, Pill, GlassIcon, Button, Field reutilizables.
+          Aprobar nombres de tokens con el equipo de dev. <strong>Output:</strong> design tokens en código + Storybook.
+        </p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-tag">
+        <div class="lbl">Fase</div>
+        <div class="num">02</div>
+        <div class="lbl">3-4 semanas</div>
+      </div>
+      <div class="phase-body">
+        <div class="h3">Home + Event detail + Multi-fecha</div>
+        <p>
+          Implementar el descubrimiento completo (hero carousel, cover-flow, Netflix
+          rows). Cambiar el modelo de datos del evento para soportar múltiples
+          fechas/ciudades. Migrar el detalle al nuevo layout. <strong>Output:</strong> usuarios ven el nuevo home y pueden navegar
+          a un evento.
+        </p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-tag">
+        <div class="lbl">Fase</div>
+        <div class="num">03</div>
+        <div class="lbl">3-4 semanas</div>
+      </div>
+      <div class="phase-body">
+        <div class="h3">Flujo de compra + Timer + Ticket received</div>
+        <p>
+          Re-skinning del seat picker (la lógica no se toca). Implementar timer
+          real con backend (hold de asientos por 5 min). Diseñar la página de
+          success post-Stripe con tarjeta NFT, Apple Wallet, share. <strong>Output:</strong> compra end-to-end con el nuevo flujo.
+        </p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-tag">
+        <div class="lbl">Fase</div>
+        <div class="num">04</div>
+        <div class="lbl">2-3 semanas</div>
+      </div>
+      <div class="phase-body">
+        <div class="h3">Waiting room + My tickets + Legal pages</div>
+        <p>
+          Implementar la sala de espera virtual (requiere infra de queueing).
+          Dashboard de mis tickets con colección NFT. Migrar About, Contact,
+          FAQs, Terms, Privacy al nuevo lenguaje. <strong>Output:</strong> sistema completo en producción.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider-thick"></div>
+
+  <div class="grid cols-3">
+    <div class="stat">
+      <div class="v">17</div>
+      <div class="l">Pantallas entregadas</div>
+    </div>
+    <div class="stat">
+      <div class="v">34</div>
+      <div class="l">Mobile + Desktop</div>
+    </div>
+    <div class="stat">
+      <div class="v">~12sem</div>
+      <div class="l">Plan de implementación</div>
+    </div>
+  </div>
+
+  <div style="margin-top:48px; padding:28px 32px; border-radius:18px; background:linear-gradient(135deg, rgba(124,91,196,0.20), rgba(255,177,200,0.10)); border:0.5px solid rgba(255,255,255,0.12);">
+    <div class="eyebrow">Adjuntos</div>
+    <div class="h2" style="margin-top:8px;">Disponibles para handoff</div>
+    <ul style="margin-top:18px;">
+      <li><strong>Design canvas</strong> — TicketSaver Redesign.html · todas las pantallas mobile lado a lado, con Tweaks.</li>
+      <li><strong>Prototipo navegable</strong> — TicketSaver Prototype.html · toggle Mobile/Desktop arriba, todas las pantallas clickeables end-to-end.</li>
+      <li><strong>Versión imprimible</strong> — TicketSaver Prototype-print.html · documento PDF de 22 páginas con todas las vistas.</li>
+      <li><strong>Este documento</strong> — TicketSaver Proposal Doc.html · propuesta completa lista para presentar al cliente.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="page-foot">
+  <div>TicketSaver · Propuesta de rediseño · v1.0</div>
+  <div>17 pantallas · Mobile + Desktop</div>
+</div>
+
+</body>
+</html>

@@ -45,6 +45,14 @@ export const VenuesProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
+        // El venue ahora viene embebido en HiEvents (location_details) vía
+        // hiEventsAdapter. venuesContext queda como fallback legacy: si no hay
+        // VITE_GITHUB_API_URL configurado, no se hace fetch (evita el 404 a
+        // /undefined/venues.json y el "Bearer undefined").
+        if (!import.meta.env.VITE_GITHUB_API_URL) {
+          setVenues({})
+          return
+        }
         // Verificar si está en modo emergencia
         if (fallbackDataService.isEmergencyMode()) {
           console.warn('🚨 Modo emergencia: Usando venues locales')

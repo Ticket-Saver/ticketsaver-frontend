@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { releaseAllSeatsForSession, getSessionId } from '../services/sessionCleanupService'
 
 /**
  * Hook para manejar el timer de sesión de compra
@@ -26,6 +25,21 @@ export interface SessionTimerState {
   startTimer: () => void // Iniciar el timer manualmente
   resetTimer: () => void // Reiniciar el timer
   extendTimer: (minutes: number) => void // Extender tiempo
+  /** Ata el contador a un vencimiento absoluto del servidor (reserved_until de la orden). */
+  syncToServerExpiry: (expiresAtMs: number) => void
+}
+
+/**
+ * Custom event que se dispara cuando una instancia del hook escribe en
+ * localStorage. Permite que otras instancias (e.g. el CountdownPill del
+ * Header y el SeatGrid del paso 2) se mantengan sincronizadas dentro de
+ * la misma pestaña — el evento `storage` nativo sólo cross-tab.
+ */
+const SYNC_EVENT = 'tsv:session-timer:update'
+
+const broadcastSync = (storageKey: string) => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { storageKey } }))
 }
 
 export function useSessionTimer(
@@ -72,6 +86,8 @@ export function useSessionTimer(
     if (import.meta.env.DEV) {
       console.log('⏱️ Timer iniciado:', timeoutMinutes, 'minutos')
     }
+
+    broadcastSync(STORAGE_KEY)
   }, [STORAGE_KEY, TIMEOUT_MS, timeoutMinutes])
 
   /**
@@ -87,6 +103,8 @@ export function useSessionTimer(
     if (import.meta.env.DEV) {
       console.log('🔄 Timer reiniciado')
     }
+
+    broadcastSync(STORAGE_KEY)
   }, [STORAGE_KEY, timeoutMinutes])
 
   /**
@@ -112,46 +130,87 @@ export function useSessionTimer(
       if (import.meta.env.DEV) {
         console.log('⏱️ Timer extendido:', minutes, 'minutos')
       }
+
+      broadcastSync(STORAGE_KEY)
     },
     [expiresAt, STORAGE_KEY, TIMEOUT_MS]
   )
 
   /**
-   * Recuperar timer de localStorage al montar
+   * Ata el contador al vencimiento REAL de la reserva en HiEvents (reserved_until).
+   * Se llama al crear la orden (hold al confirmar): el reloj que ve el usuario pasa
+   * a reflejar los minutos reales que tiene para pagar, no el contador local.
+   */
+  const syncToServerExpiry = useCallback(
+    (expiresAtMs: number) => {
+      if (!expiresAtMs || Number.isNaN(expiresAtMs)) return
+      const now = Date.now()
+      setExpiresAt(expiresAtMs)
+      setHasStarted(true)
+      setIsExpired(expiresAtMs <= now)
+      setTimeRemaining(Math.max(0, Math.floor((expiresAtMs - now) / 1000)))
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ expiresAt: expiresAtMs, startedAt: now })
+      )
+      broadcastSync(STORAGE_KEY)
+    },
+    [STORAGE_KEY]
+  )
+
+  /**
+   * Recuperar timer de localStorage al montar — y re-hidratar cuando
+   * otra instancia del hook (misma pestaña) o cambios externos
+   * (cross-tab) modifican la clave.
    */
   useEffect(() => {
     if (!eventLabel) return
 
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    const hydrateFromStorage = () => {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (!stored) {
+        // Otra instancia limpió el timer → reseteamos nuestro estado.
+        setExpiresAt(null)
+        setHasStarted(false)
+        setIsExpired(false)
+        setTimeRemaining(timeoutMinutes * 60)
+        return
+      }
       try {
         const { expiresAt: storedExpiresAt } = JSON.parse(stored)
         const now = Date.now()
 
         if (storedExpiresAt > now) {
-          // Timer aún válido
           setExpiresAt(storedExpiresAt)
           setHasStarted(true)
           setIsExpired(false)
-
-          if (import.meta.env.DEV) {
-            console.log('✅ Timer recuperado de localStorage')
-          }
         } else {
-          // Timer expiró mientras estaba fuera
           setIsExpired(true)
           setHasStarted(true)
           setTimeRemaining(0)
-
-          if (import.meta.env.DEV) {
-            console.log('⏰ Timer expiró mientras estabas fuera')
-          }
         }
       } catch (error) {
         console.error('Error recuperando timer:', error)
       }
     }
-  }, [eventLabel, STORAGE_KEY])
+
+    hydrateFromStorage()
+
+    const onCustomSync = (e: Event) => {
+      const detail = (e as CustomEvent<{ storageKey: string }>).detail
+      if (!detail || detail.storageKey === STORAGE_KEY) hydrateFromStorage()
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === STORAGE_KEY) hydrateFromStorage()
+    }
+
+    window.addEventListener(SYNC_EVENT, onCustomSync)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener(SYNC_EVENT, onCustomSync)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [eventLabel, STORAGE_KEY, timeoutMinutes])
 
   /**
    * Actualizar cuenta regresiva cada segundo
@@ -168,24 +227,11 @@ export function useSessionTimer(
       if (remaining === 0) {
         setIsExpired(true)
         clearInterval(interval)
-
-        // Liberar asientos automáticamente
-        const sessionId = getSessionId()
-        if (sessionId && eventLabel) {
-          if (import.meta.env.DEV) {
-            console.log('⏰ Sesión expirada, liberando asientos...')
-          }
-
-          releaseAllSeatsForSession(sessionId, eventLabel)
-            .then(() => {
-              if (import.meta.env.DEV) {
-                console.log('✅ Asientos liberados por expiración')
-              }
-            })
-            .catch((error) => {
-              console.error('Error liberando asientos:', error)
-            })
-        }
+        // La liberación real del asiento la hace el backend: HiEvents cancela la
+        // orden RESERVED vencida con su cron (cada minuto) y devuelve el asiento
+        // al pool. El front sólo marca la expiración; el cartContext limpia el
+        // carrito local al detectar isExpired. (Antes esto pegaba al sistema de
+        // locks Supabase, que ya no existe.)
       }
     }, 1000)
 
@@ -214,6 +260,7 @@ export function useSessionTimer(
     formattedTime,
     startTimer,
     resetTimer,
-    extendTimer
+    extendTimer,
+    syncToServerExpiry
   }
 }

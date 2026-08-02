@@ -1,0 +1,69 @@
+.textBrand {
+  background: linear-gradient(90deg, var(--brand-hi) 0%, var(--brand-mid) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.textBrandSoft {
+  background: linear-gradient(90deg, #FFE0FF 0%, var(--brand-mid) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.textPink {
+  background: linear-gradient(135deg, var(--accent-pink) 0%, var(--brand-mid) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.bgBrand {
+  background: linear-gradient(135deg, var(--brand-hi) 0%, var(--brand-mid) 100%);
+}
+
+.bgBrandDeep {
+  background: linear-gradient(135deg, var(--brand-mid) 0%, var(--brand-lo) 100%);
+}
+
+.bgPinkBrand {
+  background: linear-gradient(135deg, var(--accent-pink) 0%, var(--brand-mid) 100%);
+}
+
+.bannerBottomFade {
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 12, 0.92) 0%,
+    rgba(10, 10, 12, 0.5) 50%,
+    transparent 100%
+  );
+}
+
+.bannerTopFade {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 12, 0.7) 0%,
+    transparent 100%
+  );
+}
+
+.coverOverlay {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(10, 10, 12, 0.4) 70%,
+    rgba(10, 10, 12, 0.85) 100%
+  );
+}
+
+.radialBrand {
+  background: radial-gradient(
+    ellipse at center top,
+    rgba(181, 123, 232, 0.35) 0%,
+    transparent 60%
+  );
+}

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>TicketSaver — Redesign</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #efe9e0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body data-screen-label="TicketSaver Redesign">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- vanilla helpers -->
+<script src="ts-mesh.js"></script>
+<script src="ts-events.js"></script>
+
+<!-- React components (in dependency order) -->
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="ts-cover.jsx"></script>
+<script type="text/babel" src="ts-home.jsx"></script>
+<script type="text/babel" src="ts-screens.jsx"></script>
+<script type="text/babel" src="ts-event-detail.jsx"></script>
+<script type="text/babel" src="ts-purchase-flow.jsx"></script>
+<script type="text/babel" src="ts-info-pages.jsx"></script>
+<script type="text/babel" src="ts-legal-pages.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+/* Wrap a screen in an iPhone bezel */
+function Phone({ children, dark = true }){
+  return (
+    <IOSDevice dark={dark} statusBarTime="9:41" homeIndicator>
+      {children}
+    </IOSDevice>
+  );
+}
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "cardVariant": "poster",
+  "showStatusBar": true
+}/*EDITMODE-END*/;
+
+function App(){
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  return (
+    <React.Fragment>
+      <DesignCanvas
+        title="TicketSaver — Redesign"
+        subtitle="Mobile-first · glassmorphism on violet mesh · home + carousels + new tools"
+      >
+        <DCSection
+          id="home"
+          title="Home"
+          subtitle="Hero carousel, cover-flow 3D, Netflix scrolls, vibe-radar tool"
+        >
+          <DCArtboard id="home-full" label="Home · full scroll" width={390} height={844}>
+            <Phone><HomeFull cardVariant={t.cardVariant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="hero" label="Hero carousel · 3 states" width={390} height={844}>
+            <Phone><HeroCloseup/></Phone>
+          </DCArtboard>
+          <DCArtboard id="coverflow" label="Cover-flow 3D · perspective" width={390} height={844}>
+            <Phone><CoverFlowDetail/></Phone>
+          </DCArtboard>
+          <DCArtboard id="netflix" label="Card variants · all 4" width={390} height={844}>
+            <Phone><NetflixDetail/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="detail"
+          title="Event detail"
+          subtitle="Banner, multi-date selector, gallery, description, Google map, sticky CTA"
+        >
+          <DCArtboard id="event-detail" label="Event detail · multi-date" width={390} height={844}>
+            <Phone><EventDetail/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="purchase"
+          title="Purchase flow"
+          subtitle="Seat picker → Stripe checkout → NFT ticket received"
+        >
+          <DCArtboard id="seats" label="Choose seats · venue map" width={390} height={844}>
+            <Phone><SeatPicker/></Phone>
+          </DCArtboard>
+          <DCArtboard id="received" label="Ticket received · NFT" width={390} height={844}>
+            <Phone><TicketReceived/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="dashboard"
+          title="My tickets"
+          subtitle="Upcoming, past, and the NFT collection"
+        >
+          <DCArtboard id="mytickets" label="My tickets · dashboard" width={390} height={844}>
+            <Phone><MyTickets/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="info"
+          title="About · Contact · Footer"
+          subtitle="Brand story, help center, and the global footer (also embedded inside both pages)"
+        >
+          <DCArtboard id="about" label="About page" width={390} height={844}>
+            <Phone><AboutPage/></Phone>
+          </DCArtboard>
+          <DCArtboard id="contact" label="Contact page" width={390} height={844}>
+            <Phone><ContactPage/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="legal"
+          title="Help & Legal"
+          subtitle="FAQs help center, Terms & Conditions, Privacy Policy — same dark-glass aesthetic, designed to actually be read"
+        >
+          <DCArtboard id="faqs" label="FAQs · Help center" width={390} height={844}>
+            <Phone><FaqsPage/></Phone>
+          </DCArtboard>
+          <DCArtboard id="terms" label="Terms & Conditions" width={390} height={844}>
+            <Phone><TermsPage/></Phone>
+          </DCArtboard>
+          <DCArtboard id="privacy" label="Privacy Policy" width={390} height={844}>
+            <Phone><PrivacyPage/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="overlays"
+          title="Cart"
+          subtitle="Cart drawer with hold timer"
+        >
+          <DCArtboard id="cart" label="Cart drawer · with hold timer" width={390} height={844}>
+            <Phone><CartDrawer/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        <DCPostIt x={40} y={60}>
+          {`Diseño base — primer pase\n\n• Mesh violeta global\n• Glassmorphism oscuro\n• Space Grotesk (display) + Inter (UI)\n• Mobile-first 390 × 844\n\nProbá las Tweaks → cambia el estilo de tarjeta\nen los carruseles Netflix (Home · full scroll).`}
+        </DCPostIt>
+        <DCPostIt x={40} y={300} color="#dff3c0">
+          {`Lo que viene (siguientes pases)\n\n· Detalle de evento (hero + agenda + lineup)\n· Checkout / pago con Stripe\n· Dashboard / mis tickets + NFT\n· About + Contact + Footer\n· Variantes desktop`}
+        </DCPostIt>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Cards">
+          <TweakSelect
+            label="Card style in Netflix rows"
+            value={t.cardVariant}
+            options={[
+              { value: 'poster',  label: 'Poster · big cover up top' },
+              { value: 'cinema',  label: 'Cinema · date column + mini cover' },
+              { value: 'ticket',  label: 'Ticket cut · perforation + bite' },
+              { value: 'minimal', label: 'Minimal · text-first row' },
+            ]}
+            onChange={(v) => setTweak('cardVariant', v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

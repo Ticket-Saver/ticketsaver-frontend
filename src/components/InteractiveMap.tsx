@@ -39,7 +39,7 @@ const InteractiveMap = ({
 
   useEffect(() => {
     const map = { ...getDefaultMap() }
-    map.areas = map.areas.map((mapArea) => {
+    map.areas = map.areas.map(mapArea => {
       const newArea = { ...mapArea }
 
       newArea.coords = newArea.coords.map((coord, index) => {
@@ -49,7 +49,7 @@ const InteractiveMap = ({
       })
 
       if (newArea.polygon) {
-        newArea.polygon = newArea.polygon.map((point) => {
+        newArea.polygon = newArea.polygon.map(point => {
           return point.map((coord, index) => {
             return index % 2 === 0
               ? (coord / ORIGINAL_WIDTH) * width
