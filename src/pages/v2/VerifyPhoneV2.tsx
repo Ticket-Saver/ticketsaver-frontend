@@ -31,6 +31,9 @@ export default function VerifyPhoneV2() {
   const [phone, setPhone] = useState(knownPhone)
   // 'phone' = confirmar número y enviar SMS; 'code' = ingresar el OTP recibido.
   const [step, setStep] = useState<'phone' | 'code'>('phone')
+  // Consentimiento explícito de recibir el SMS: requisito de opt-in de los carriers
+  // (A2P/toll-free). Sin el check no se habilita el envío.
+  const [consent, setConsent] = useState(false)
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sending, setSending] = useState(false)
@@ -95,9 +98,24 @@ export default function VerifyPhoneV2() {
           : 'Enter the 6-digit code we sent to your phone by SMS.'
       }
       footer={
-        <Link to='/login' className='text-brand-hi font-semibold hover:text-white transition'>
-          Back to login
-        </Link>
+        <div className='flex items-center justify-center gap-4'>
+          <Link to='/login' className='text-brand-hi font-semibold hover:text-white transition'>
+            Back to login
+          </Link>
+          <span className='text-white/20'>·</span>
+          <button
+            type='button'
+            onClick={() =>
+              toast.show({
+                variant: 'error',
+                message: 'Phone verification is required to buy and manage tickets.'
+              })
+            }
+            className='text-white/50 hover:text-white/80 transition'
+          >
+            Continue without phone
+          </button>
+        </div>
       }
     >
       {step === 'phone' ? (
@@ -105,12 +123,24 @@ export default function VerifyPhoneV2() {
           <Field label='Phone'>
             <PhoneInput value={phone} onChange={setPhone} />
           </Field>
+          <label className='flex items-start gap-3 text-[12.5px] leading-snug text-white/60'>
+            <input
+              type='checkbox'
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              className='mt-0.5 h-4 w-4 shrink-0 accent-brand-mid'
+            />
+            <span>
+              I agree to receive a one-time SMS verification code from TicketSaver at the number
+              provided. Message and data rates may apply. Reply STOP to opt out.
+            </span>
+          </label>
           <Button
             type='button'
             variant='primary'
             size='lg'
             fullWidth
-            disabled={sending || !phone}
+            disabled={sending || !phone || !consent}
             onClick={sendCode}
           >
             {sending ? 'Sending…' : 'Send code'}
