@@ -1,10 +1,20 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import AuthShell, { Field } from '../../components/v2/auth/AuthShell'
 import PhoneInput from '../../components/v2/auth/PhoneInput'
 import OtpInput from '../../components/v2/auth/OtpInput'
 import { Button, useToast } from '../../components/ui'
+
+// Traduce el error crudo de Supabase a un mensaje accionable para el usuario.
+const describeSendError = (err: unknown): string => {
+  const msg = err instanceof Error ? err.message : ''
+  const code = (err as { code?: string } | null)?.code
+  if (code === 'phone_exists' || /already been registered/i.test(msg)) {
+    return 'That phone number is already registered to another account. Use a different number.'
+  }
+  return msg || 'Could not send the code. Check the number and try again.'
+}
 
 export default function VerifyPhoneV2() {
   const { verifyPhone, resendOtp, refresh, user } = useAuth()
@@ -13,42 +23,26 @@ export default function VerifyPhoneV2() {
   const toast = useToast()
 
   const navState = location.state as { phone?: string; returnTo?: string } | null
-  // Teléfono ya conocido: viene del registro por email (pending_phone). En el
-  // alta con Google/Apple no hay teléfono, así que primero lo pedimos.
-  const forcedPhone = navState?.phone ?? user?.pendingPhone ?? ''
+  // Teléfono conocido: registro por email (pending_phone) o navState. En OAuth no
+  // hay teléfono. En ambos casos el usuario confirma el número y envía el código
+  // EXPLÍCITAMENTE: así el error (número inválido, phone_exists) siempre se ve.
+  const knownPhone = navState?.phone ?? user?.pendingPhone ?? ''
   const returnTo = navState?.returnTo ?? '/'
-  const [phone, setPhone] = useState(forcedPhone)
-  // 'phone' = pedir número y enviar SMS; 'code' = ingresar el OTP recibido.
-  const [step, setStep] = useState<'phone' | 'code'>(forcedPhone ? 'code' : 'phone')
+  const [phone, setPhone] = useState(knownPhone)
+  // 'phone' = confirmar número y enviar SMS; 'code' = ingresar el OTP recibido.
+  const [step, setStep] = useState<'phone' | 'code'>('phone')
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sending, setSending] = useState(false)
-  const sentOnMount = useRef(false)
 
-  // El user llega async (Supabase getSession) — si forcedPhone recién aparece,
-  // sincronizamos el estado local y saltamos directo al paso del código.
+  // El user llega async (Supabase getSession): si pending_phone aparece después
+  // y el usuario todavía no tocó el campo, lo precargamos.
   useEffect(() => {
-    if (forcedPhone && !phone) {
-      setPhone(forcedPhone)
-      setStep('code')
-    }
-  }, [forcedPhone, phone])
+    if (knownPhone && !phone) setPhone(knownPhone)
+  }, [knownPhone, phone])
 
-  // Registro por email: el teléfono ya se conoce pero Supabase aún no lo asoció.
-  // Lo asociamos al montar, lo que dispara el SMS (Send SMS Hook -> AWS SNS).
-  // En OAuth (sin forcedPhone) NO auto-enviamos: el usuario ingresa el número
-  // y recién ahí mandamos el código.
-  useEffect(() => {
-    if (forcedPhone && !sentOnMount.current) {
-      sentOnMount.current = true
-      resendOtp(forcedPhone, 'sms').catch(() => {
-        /* si falla el envío automático, el usuario puede tocar "Resend" */
-      })
-    }
-  }, [forcedPhone, resendOtp])
-
-  // Paso 1 (OAuth): el usuario confirma su teléfono -> asociamos y enviamos OTP.
-  const handleSendCode = async () => {
+  // updateUser({phone}) asocia el teléfono y dispara el SMS (Send SMS Hook -> SNS).
+  const sendCode = async () => {
     if (!phone) return
     setSending(true)
     try {
@@ -56,11 +50,7 @@ export default function VerifyPhoneV2() {
       setStep('code')
       toast.show({ variant: 'success', message: `We sent a code by SMS to ${phone}.` })
     } catch (err) {
-      toast.show({
-        variant: 'error',
-        title: 'Could not send code',
-        message: err instanceof Error ? err.message : 'Check the number and try again.'
-      })
+      toast.show({ variant: 'error', title: 'Could not send code', message: describeSendError(err) })
     } finally {
       setSending(false)
     }
@@ -74,11 +64,7 @@ export default function VerifyPhoneV2() {
       // Refrescamos el user para que phoneVerified quede en true antes de salir;
       // si no, el gate del Router rebota de nuevo a esta pantalla.
       await refresh()
-      toast.show({
-        variant: 'success',
-        title: 'Phone verified',
-        message: 'Your account is ready.'
-      })
+      toast.show({ variant: 'success', title: 'Phone verified', message: 'Your account is ready.' })
       navigate(returnTo, { replace: true })
     } catch (err) {
       toast.show({
@@ -91,28 +77,12 @@ export default function VerifyPhoneV2() {
     }
   }
 
-  const handleResend = async () => {
-    if (!phone) return
-    setSending(true)
-    try {
-      await resendOtp(phone, 'sms')
-      toast.show({ variant: 'success', message: 'We sent a new code by SMS.' })
-    } catch (err) {
-      toast.show({
-        variant: 'error',
-        message: err instanceof Error ? err.message : 'Could not resend the code.'
-      })
-    } finally {
-      setSending(false)
-    }
-  }
-
   return (
     <AuthShell
       title='Verify your phone'
       subtitle={
         step === 'phone'
-          ? 'Enter your phone number and we’ll send you a 6-digit code by SMS.'
+          ? 'Confirm your phone number and we’ll send you a 6-digit code by SMS.'
           : 'Enter the 6-digit code we sent to your phone by SMS.'
       }
       footer={
@@ -132,7 +102,7 @@ export default function VerifyPhoneV2() {
             size='lg'
             fullWidth
             disabled={sending || !phone}
-            onClick={handleSendCode}
+            onClick={sendCode}
           >
             {sending ? 'Sending…' : 'Send code'}
           </Button>
@@ -154,27 +124,23 @@ export default function VerifyPhoneV2() {
           <div className='flex items-center justify-center gap-3 text-[12.5px]'>
             <button
               type='button'
-              onClick={handleResend}
+              onClick={sendCode}
               disabled={sending || !phone}
               className='text-white/55 hover:text-white transition disabled:opacity-50'
             >
               {sending ? 'Resending…' : "Didn't get a code? Resend"}
             </button>
-            {!forcedPhone && (
-              <>
-                <span className='text-white/25'>·</span>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setCode('')
-                    setStep('phone')
-                  }}
-                  className='text-white/55 hover:text-white transition'
-                >
-                  Change number
-                </button>
-              </>
-            )}
+            <span className='text-white/25'>·</span>
+            <button
+              type='button'
+              onClick={() => {
+                setCode('')
+                setStep('phone')
+              }}
+              className='text-white/55 hover:text-white transition'
+            >
+              Change number
+            </button>
           </div>
         </div>
       )}
