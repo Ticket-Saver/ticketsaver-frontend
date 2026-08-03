@@ -98,24 +98,9 @@ export default function VerifyPhoneV2() {
           : 'Enter the 6-digit code we sent to your phone by SMS.'
       }
       footer={
-        <div className='flex items-center justify-center gap-4'>
-          <Link to='/login' className='text-brand-hi font-semibold hover:text-white transition'>
-            Back to login
-          </Link>
-          <span className='text-white/20'>·</span>
-          <button
-            type='button'
-            onClick={() =>
-              toast.show({
-                variant: 'error',
-                message: 'Phone verification is required to buy and manage tickets.'
-              })
-            }
-            className='text-white/50 hover:text-white/80 transition'
-          >
-            Continue without phone
-          </button>
-        </div>
+        <Link to='/login' className='text-brand-hi font-semibold hover:text-white transition'>
+          Back to login
+        </Link>
       }
     >
       {step === 'phone' ? (
