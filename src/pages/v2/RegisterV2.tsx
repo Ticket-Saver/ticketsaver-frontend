@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import AuthShell, { Field, inputClass } from '../../components/v2/auth/AuthShell'
+import PhoneInput from '../../components/v2/auth/PhoneInput'
 import SocialAuthButtons from '../../components/v2/auth/SocialAuthButtons'
 import { Button, useToast } from '../../components/ui'
 
@@ -111,15 +112,7 @@ export default function RegisterV2() {
           />
         </Field>
         <Field label='Phone'>
-          <input
-            type='tel'
-            required
-            autoComplete='tel'
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder='+1 555 123 4567'
-            className={inputClass}
-          />
+          <PhoneInput value={phone} onChange={setPhone} />
         </Field>
         <Field label='Password'>
           <input
