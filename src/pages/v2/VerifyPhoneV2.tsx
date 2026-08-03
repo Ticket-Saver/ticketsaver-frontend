@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import AuthShell, { Field, inputClass } from '../../components/v2/auth/AuthShell'
+import AuthShell, { Field } from '../../components/v2/auth/AuthShell'
+import PhoneInput from '../../components/v2/auth/PhoneInput'
 import OtpInput from '../../components/v2/auth/OtpInput'
 import { Button, useToast } from '../../components/ui'
 
@@ -123,14 +124,7 @@ export default function VerifyPhoneV2() {
       {step === 'phone' ? (
         <div className='space-y-5'>
           <Field label='Phone'>
-            <input
-              type='tel'
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder='+1 555 123 4567'
-              className={inputClass}
-            />
+            <PhoneInput value={phone} onChange={setPhone} />
           </Field>
           <Button
             type='button'
