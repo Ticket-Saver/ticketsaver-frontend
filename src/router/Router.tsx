@@ -7,6 +7,7 @@ import VerifyEmailV2 from '../pages/v2/VerifyEmailV2'
 import VerifyPhoneV2 from '../pages/v2/VerifyPhoneV2'
 import ForgotPasswordV2 from '../pages/v2/ForgotPasswordV2'
 import ResetPasswordV2 from '../pages/v2/ResetPasswordV2'
+import ChangePasswordV2 from '../pages/v2/ChangePasswordV2'
 import DesignCheck from '../pages/v2/_DesignCheck'
 import LayoutCheck from '../pages/v2/_LayoutCheck'
 import HomeV2 from '../pages/v2/HomeV2'
@@ -58,6 +59,11 @@ const VerifiedGate = () => {
   if (user && !user.phoneVerified) {
     return <Navigate to='/verify-phone' state={{ returnTo }} replace />
   }
+  // Usuarios migrados (evento 24): entraron con pass temporal, se les fuerza a
+  // definir una nueva antes de dejarlos navegar.
+  if (user && user.mustChangePassword) {
+    return <Navigate to='/change-password' state={{ returnTo }} replace />
+  }
   return <Outlet />
 }
 
@@ -94,6 +100,7 @@ export const AppRouter = () => (
           <Route path='/verify-phone' element={<VerifyPhoneV2 />} />
           <Route path='/forgot-password' element={<ForgotPasswordV2 />} />
           <Route path='/reset-password' element={<ResetPasswordV2 />} />
+          <Route path='/change-password' element={<ChangePasswordV2 />} />
 
           <Route path='/footer/contact' element={<ContactV2 />} />
           <Route path='/footer/terms&conditions' element={<TermsV2 />} />
