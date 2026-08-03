@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import AuthShell, { Field } from '../../components/v2/auth/AuthShell'
@@ -34,12 +34,17 @@ export default function VerifyPhoneV2() {
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sending, setSending] = useState(false)
+  const seeded = useRef(false)
 
-  // El user llega async (Supabase getSession): si pending_phone aparece después
-  // y el usuario todavía no tocó el campo, lo precargamos.
+  // El user llega async (Supabase getSession): precargamos pending_phone UNA sola
+  // vez cuando aparece. No reaccionar a `phone` vacío: si no, borrar todo el número
+  // lo volvería a rellenar solo.
   useEffect(() => {
-    if (knownPhone && !phone) setPhone(knownPhone)
-  }, [knownPhone, phone])
+    if (!seeded.current && knownPhone) {
+      seeded.current = true
+      setPhone(knownPhone)
+    }
+  }, [knownPhone])
 
   // updateUser({phone}) asocia el teléfono y dispara el SMS (Send SMS Hook -> SNS).
   const sendCode = async () => {
