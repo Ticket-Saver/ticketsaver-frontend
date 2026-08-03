@@ -50,7 +50,11 @@ export default function VerifyPhoneV2() {
       setStep('code')
       toast.show({ variant: 'success', message: `We sent a code by SMS to ${phone}.` })
     } catch (err) {
-      toast.show({ variant: 'error', title: 'Could not send code', message: describeSendError(err) })
+      toast.show({
+        variant: 'error',
+        title: 'Could not send code',
+        message: describeSendError(err)
+      })
     } finally {
       setSending(false)
     }
