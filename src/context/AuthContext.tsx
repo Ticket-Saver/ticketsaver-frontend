@@ -19,6 +19,8 @@ export interface AuthUser {
   emailVerified: boolean
   phoneVerified: boolean
   pendingPhone: string | null
+  /** Usuarios migrados (evento 24) arrancan con pass temporal: se les fuerza a definir una nueva. */
+  mustChangePassword: boolean
 }
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
@@ -31,7 +33,8 @@ const toAuthUser = (u: User): AuthUser => ({
   phone: u.phone ?? null,
   emailVerified: Boolean(u.email_confirmed_at),
   phoneVerified: Boolean(u.phone_confirmed_at),
-  pendingPhone: (u.user_metadata?.pending_phone as string | undefined) ?? null
+  pendingPhone: (u.user_metadata?.pending_phone as string | undefined) ?? null,
+  mustChangePassword: Boolean(u.user_metadata?.must_change_password)
 })
 
 export interface RegisterInput {
@@ -58,6 +61,8 @@ interface AuthContextValue {
   resendOtp: (identifier: string, channel: 'email' | 'sms') => Promise<void>
   forgotPassword: (email: string) => Promise<void>
   resetPassword: (password: string, passwordConfirmation: string) => Promise<void>
+  /** Cambio de pass forzado para usuarios migrados: setea la nueva y limpia must_change_password. */
+  changePassword: (password: string) => Promise<void>
   refresh: () => Promise<void>
 }
 
@@ -181,6 +186,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error
   }, [])
 
+  // Cambio forzado (usuarios migrados): define la pass nueva y limpia el flag en la
+  // misma llamada, así el gate deja de rebotar a /change-password.
+  const changePassword = useCallback(async (password: string) => {
+    const { error } = await requireSupabase().auth.updateUser({
+      password,
+      data: { must_change_password: false }
+    })
+    if (error) throw error
+  }, [])
+
   const refresh = useCallback(async () => {
     const { data } = await requireSupabase().auth.getSession()
     applySession(data.session)
@@ -199,6 +214,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       resendOtp,
       forgotPassword,
       resetPassword,
+      changePassword,
       refresh
     }),
     [
@@ -213,6 +229,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       resendOtp,
       forgotPassword,
       resetPassword,
+      changePassword,
       refresh
     ]
   )
