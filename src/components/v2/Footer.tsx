@@ -22,7 +22,6 @@ const COLS: { title: string; items: FooterLink[] }[] = [
     title: 'Account',
     items: [
       { label: 'My tickets', to: '/dashboard/tickets/upcomingevent' },
-      { label: 'Wallet', to: '/dashboard/web3' },
       { label: 'Profile', to: '/dashboard/profile' }
     ]
   },
@@ -98,11 +97,8 @@ export default function Footer() {
               <span className='font-display text-base font-semibold'>ticketsaver</span>
             </div>
             <p className='text-xs text-white/55 leading-relaxed max-w-xs font-body'>
-              Face-value tickets, NFTs on Base, no scalpers. Made with care.
+              Made with care.
             </p>
-            <div className='mt-3 inline-block rounded-pill bg-[rgba(0,82,255,0.18)] border border-[rgba(0,82,255,0.32)] text-[#9CBBFF] text-[10px] font-bold tracking-[0.10em] px-2.5 py-1 font-display'>
-              BUILT ON BASE
-            </div>
 
             <form onSubmit={onSubmit} className='mt-6 max-w-xs'>
               <label

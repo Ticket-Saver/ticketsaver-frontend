@@ -25,7 +25,6 @@ import ResaleEventV2 from '../pages/v2/ResaleEventV2'
 import QueueV2 from '../pages/v2/QueueV2'
 import DashboardV2 from '../pages/v2/DashboardV2'
 import MyProfileV2 from '../pages/v2/MyProfileV2'
-import Web3V2 from '../pages/v2/Web3V2'
 import MySettingsV2 from '../pages/v2/MySettingsV2'
 import YouNeedHelpV2 from '../pages/v2/YouNeedHelpV2'
 import AboutV2 from '../pages/v2/AboutV2'
@@ -114,7 +113,7 @@ export const AppRouter = () => (
               />
 
               <Route path='/checkout' element={<CheckoutPage />} />
-              {/* Post-pago: la pantalla de ticket de Claude Design (TicketCard NFT
+              {/* Post-pago: la pantalla de ticket de Claude Design (TicketCard
                   + Apple Wallet + Share), alimentada por el flujo HiEvents. */}
               <Route
                 path='/checkout/:venueId/:orderShortId/success'
@@ -142,7 +141,6 @@ export const AppRouter = () => (
               <Route path='/dashboard' element={<DashboardV2 />}>
                 <Route index element={<Navigate to='profile' replace />} />
                 <Route path='profile' element={<MyProfileV2 />} />
-                <Route path='web3' element={<Web3V2 />} />
                 <Route path='settings' element={<MySettingsV2 />} />
                 <Route path='help' element={<YouNeedHelpV2 />} />
               </Route>

@@ -1,12 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import LayoutV2 from '../../layouts/LayoutV2'
-import { config as wagmiConfig } from '../../components/mintWagmi/wagmi'
 import { cn } from '../../types/ui'
 import glass from '../../styles/effects/glass.module.css'
-
-const queryClient = new QueryClient()
 
 const UserIcon = () => (
   <svg width='15' height='15' viewBox='0 0 18 18' fill='none' aria-hidden>
@@ -28,13 +23,6 @@ const TicketIcon = () => (
       strokeWidth='1.4'
     />
     <path d='M9 4v9' stroke='currentColor' strokeWidth='1.4' strokeDasharray='1.5 1.5' />
-  </svg>
-)
-
-const WalletIcon = () => (
-  <svg width='15' height='15' viewBox='0 0 18 18' fill='none' aria-hidden>
-    <rect x='2' y='4.5' width='14' height='10' rx='2' stroke='currentColor' strokeWidth='1.4' />
-    <path d='M12 9.5h2.5' stroke='currentColor' strokeWidth='1.4' strokeLinecap='round' />
   </svg>
 )
 
@@ -70,36 +58,29 @@ const NAV_ITEMS = [
     icon: <TicketIcon />,
     matchPrefix: '/dashboard/tickets'
   },
-  { to: '/dashboard/web3', label: 'Wallet', icon: <WalletIcon /> },
   { to: '/dashboard/settings', label: 'Settings', icon: <CogIcon /> },
   { to: '/dashboard/help', label: 'Help', icon: <HelpIcon /> }
 ]
 
 /**
- * DashboardV2 — shell para /dashboard/*.
- *
- * Monta el `WagmiProvider` + `QueryClientProvider` (necesarios para
- * `Web3V2`) y un sidebar lateral con navegación entre secciones.
+ * DashboardV2 — shell para /dashboard/*. Sidebar lateral con navegación
+ * entre secciones.
  *
  * `/dashboard/tickets/*` queda excluido — esa vista tiene su propio
  * shell (`MyTicketsV2`) ya en B6.
  */
 export default function DashboardV2() {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <LayoutV2 hideFooter meshSeed={7}>
-          <div className='mx-auto max-w-7xl px-5 lg:px-10 pt-6 lg:pt-10 pb-16'>
-            <div className='grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start'>
-              <DashboardSidebar />
-              <main className='min-w-0'>
-                <Outlet />
-              </main>
-            </div>
-          </div>
-        </LayoutV2>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <LayoutV2 hideFooter meshSeed={7}>
+      <div className='mx-auto max-w-7xl px-5 lg:px-10 pt-6 lg:pt-10 pb-16'>
+        <div className='grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start'>
+          <DashboardSidebar />
+          <main className='min-w-0'>
+            <Outlet />
+          </main>
+        </div>
+      </div>
+    </LayoutV2>
   )
 }
 

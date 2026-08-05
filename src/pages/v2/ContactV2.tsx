@@ -7,7 +7,7 @@ const CHANNELS = [
   {
     icon: <MailIcon />,
     title: 'support@ticketsaver.net',
-    sub: 'Buyers — refunds, wallet, access',
+    sub: 'Buyers — refunds, tickets, access',
     href: 'mailto:support@ticketsaver.net'
   },
   {

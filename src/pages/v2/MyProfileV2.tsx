@@ -112,7 +112,7 @@ export default function MyProfileV2() {
           <div>
             <h3 className='font-display text-base font-semibold text-white'>Sign out</h3>
             <p className='text-[12px] text-white/55 mt-1'>
-              You can come back any time — your tickets stay in your wallet.
+              You can come back any time — your tickets stay in your account.
             </p>
           </div>
           <Button variant='danger' size='md' onClick={handleLogout}>

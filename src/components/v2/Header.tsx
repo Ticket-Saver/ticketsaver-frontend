@@ -227,9 +227,6 @@ const UserMenu = ({ name, email, picture, onLogout }: UserMenuProps) => {
           <MenuLink to='/dashboard/profile' onSelect={() => setOpen(false)}>
             Profile
           </MenuLink>
-          <MenuLink to='/dashboard/web3' onSelect={() => setOpen(false)}>
-            Wallet
-          </MenuLink>
           <MenuLink to='/dashboard/settings' onSelect={() => setOpen(false)}>
             Settings
           </MenuLink>

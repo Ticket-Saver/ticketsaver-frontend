@@ -11,13 +11,13 @@ interface Faq {
   a: string
 }
 
-const CATEGORIES = ['All', 'Buying', 'Wallet & NFT', 'Refunds', 'At the door', 'Selling']
+const CATEGORIES = ['All', 'Buying', 'Refunds', 'At the door', 'Selling']
 
 const FAQS: Faq[] = [
   {
     cat: 'Buying',
     q: 'How do I buy a ticket?',
-    a: 'Pick the event, choose a section and seats, pay with card or Apple Pay. Your ticket shows instantly in "My tickets" and, as an NFT, in your Base wallet.'
+    a: 'Create an account, pick an event, choose a section and seats, pay with card or Apple Pay. Your tickets will show instantly in "My tickets".'
   },
   {
     cat: 'Buying',
@@ -25,19 +25,9 @@ const FAQS: Faq[] = [
     a: 'We hold your seats for 10 minutes from when you enter the seat picker. If the timer expires, the seats return to the pool for everyone.'
   },
   {
-    cat: 'Wallet & NFT',
-    q: 'What is an NFT ticket?',
-    a: 'Every ticket we sell is also minted as an NFT on the Base network. It’s a collectible, impossible-to-fake version you can keep forever — even after the show.'
-  },
-  {
-    cat: 'Wallet & NFT',
-    q: "I don't have a wallet, can I still buy?",
-    a: 'Yes. We create a wallet for you automatically on your first purchase. If you later want to move it to MetaMask or another, we give you the option to export.'
-  },
-  {
     cat: 'Refunds',
     q: 'Do you offer refunds?',
-    a: 'If an event is cancelled or rescheduled, we refund 100% within 7 days to the original payment method. For change-of-mind, we offer platform credit within the first 48 hours.'
+    a: 'No, all sales are final. If an event is cancelled or rescheduled we will refund 100% to the original method of payment. For rescheduled events some policies might apply.'
   },
   {
     cat: 'At the door',
@@ -47,12 +37,12 @@ const FAQS: Faq[] = [
   {
     cat: 'Selling',
     q: 'Can I resell my ticket?',
-    a: 'Yes. From "My tickets" → "Sell ticket". We only allow resales at face value or below. When someone buys it, we transfer the NFT and refund you instantly.'
+    a: 'Yes. From "My tickets" click on "Sell ticket". Set the resale price. When someone buys it we will transfer the ticket to the purchaser and provide you payment for the ticket minus applicable fees.'
   },
   {
     cat: 'At the door',
     q: 'I forgot my phone, what do I do?',
-    a: 'Come to the door with your ID. We verify your identity against your wallet and let you in. We can also re-mint the ticket if needed.'
+    a: 'Come to the door with your ID. We verify your identity and let you in. We can also email your tickets again if needed.'
   }
 ]
 

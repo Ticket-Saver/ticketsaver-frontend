@@ -48,17 +48,6 @@ const CATEGORIES: HelpCategory[] = [
     )
   },
   {
-    id: 'wallet',
-    title: 'Wallet & NFTs',
-    description: 'Connect Base, claim collectibles, transfer NFTs.',
-    icon: (
-      <svg width='18' height='18' viewBox='0 0 18 18' fill='none' aria-hidden>
-        <rect x='2' y='4' width='14' height='11' rx='2' stroke='currentColor' strokeWidth='1.4' />
-        <circle cx='12.5' cy='9.5' r='1.2' fill='currentColor' />
-      </svg>
-    )
-  },
-  {
     id: 'venue',
     title: 'At the venue',
     description: 'Doors, bag policy, accessibility and parking.',

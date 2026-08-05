@@ -117,7 +117,7 @@ export default function HomeV2() {
           <p className='mt-3 text-sm lg:text-base text-white/55 max-w-xl'>
             {tonight.length > 0
               ? `${tonight.length} event${tonight.length > 1 ? 's' : ''} happening tonight, and many more this week.`
-              : 'Browse what’s coming up — face value, tickets are yours.'}
+              : 'Browse what’s coming up — tickets are almost yours'}
           </p>
         </header>
 
@@ -203,16 +203,16 @@ export default function HomeV2() {
 
 const PRINCIPLES = [
   {
-    title: 'Face value, always',
-    body: 'No dynamic pricing. The price you see is the one the artist asked for.'
+    title: 'Lower fees, always.',
+    body: "We believe clients shouldn't pay abusive fees"
   },
   {
-    title: 'Tickets are yours',
-    body: 'Every ticket lives in your wallet as an NFT. Yours forever, no platform lock-in.'
+    title: 'Easy to use site',
+    body: 'Our platform is user friendly, less hassle.'
   },
   {
-    title: 'No scalpers',
-    body: 'Resale capped at face value. Built so fans win.'
+    title: 'No third party resellers.',
+    body: 'If reselling tickets it must be done through our platform. No scams.'
   }
 ]
 

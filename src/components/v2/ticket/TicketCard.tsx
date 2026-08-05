@@ -109,10 +109,10 @@ const HeroTicket = ({
         className='absolute inset-0 w-full h-full pointer-events-none'
         style={{ opacity: 0.2, mixBlendMode: 'overlay' }}
       >
-        <filter id={`nft-noise-${noiseId}`}>
+        <filter id={`ticket-noise-${noiseId}`}>
           <feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves={2} />
         </filter>
-        <rect width='100%' height='100%' filter={`url(#nft-noise-${noiseId})`} />
+        <rect width='100%' height='100%' filter={`url(#ticket-noise-${noiseId})`} />
       </svg>
 
       {/* Top */}

@@ -59,7 +59,7 @@ const TABS: Tab[] = [
     id: 'profile',
     label: 'Profile',
     to: '/dashboard/profile',
-    match: ['/dashboard/profile', '/dashboard/settings', '/dashboard/help', '/dashboard/web3'],
+    match: ['/dashboard/profile', '/dashboard/settings', '/dashboard/help'],
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none' aria-hidden>
         <circle cx='9' cy='6.5' r='3' stroke='currentColor' strokeWidth='1.4' />

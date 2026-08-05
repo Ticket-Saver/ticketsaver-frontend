@@ -12,7 +12,7 @@ interface StatsRowProps {
 export default function StatsRow({ stats }: StatsRowProps) {
   return (
     <GlassCard depth='md' radius='lg' className='p-5 lg:p-6'>
-      <div className='grid grid-cols-3 gap-4 lg:gap-8'>
+      <div className='grid grid-cols-2 gap-4 lg:gap-8'>
         {stats.map((s) => (
           <div key={s.label}>
             <div className='font-display text-2xl lg:text-4xl font-bold text-white tracking-[-0.025em] leading-none'>

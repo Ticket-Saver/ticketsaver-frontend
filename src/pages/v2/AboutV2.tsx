@@ -2,42 +2,31 @@ import { useNavigate } from 'react-router-dom'
 import LayoutV2 from '../../layouts/LayoutV2'
 import StatsRow from '../../components/v2/info/StatsRow'
 import PrinciplesList from '../../components/v2/info/PrinciplesList'
-import TeamGrid from '../../components/v2/info/TeamGrid'
 import { Button } from '../../components/ui'
 import gradients from '../../styles/effects/gradients.module.css'
 
 const STATS = [
-  { label: 'Events', value: '1.2K' },
-  { label: 'Fans', value: '84K' },
-  { label: 'Saved in fees', value: '$2.1M' }
+  { label: 'Events', value: '250+' },
+  { label: 'Fans', value: '35,000+' }
 ]
 
 const PRINCIPLES = [
   {
-    title: 'Face value, always',
-    body: 'No dynamic pricing. No mystery fees. The price you see is what artists asked for.'
+    title: 'Lower fees, always.',
+    body: "We believe clients shouldn't pay abusive fees"
   },
   {
-    title: 'Tickets are yours',
-    body: 'Every ticket is an NFT in your wallet. You own it, control it, and keep it after the show.'
+    title: 'Easy to use site',
+    body: 'Our platform is user friendly, less hassle.'
   },
   {
-    title: 'Resales without scalpers',
-    body: 'Resell at face value or below. We cap markups so bots can’t profit at your expense.'
+    title: 'No third party resellers.',
+    body: 'If reselling tickets it must be done through our platform. No scams.'
   },
   {
     title: 'Built for the night',
-    body: 'Wallet QR at the door, Apple Wallet for the train, a collectible after — designed for real life.'
+    body: "Wallet QR at the door, easy to use and add to your phone's wallet"
   }
-]
-
-const TEAM = [
-  { name: 'Dani', role: 'Founder', color: '#FFB1C8' },
-  { name: 'Luca', role: 'Engineering', color: '#D4A8F0' },
-  { name: 'Mara', role: 'Design', color: '#7C5BC4' },
-  { name: 'Theo', role: 'Growth', color: '#7DFFB0' },
-  { name: 'Inés', role: 'Support', color: '#FFE0A0' },
-  { name: 'Bruno', role: 'Partnerships', color: '#B0F0FF' }
 ]
 
 export default function AboutV2() {
@@ -52,12 +41,11 @@ export default function AboutV2() {
           <h1
             className={`mt-3 font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.02] ${gradients.textBrandSoft}`}
           >
-            Live music, without the gatekeepers.
+            Live events, smooth experience
           </h1>
           <p className='mt-5 text-[15px] lg:text-base text-white/72 leading-relaxed'>
-            TicketSaver is a ticketing platform built by fans, for fans. We sell tickets at face
-            value, mint them as NFTs on Base so they can’t be faked, and let resales happen only at
-            fair prices.
+            TicketSaver is a ticketing platform built by promoters who understand better than
+            anyone that ticketing fees should not be excessive for customers
           </p>
         </header>
 
@@ -68,13 +56,6 @@ export default function AboutV2() {
             What we believe
           </h2>
           <PrinciplesList principles={PRINCIPLES} />
-        </section>
-
-        <section>
-          <h2 className='font-display text-xl lg:text-2xl font-semibold text-white tracking-tight mb-4'>
-            The team
-          </h2>
-          <TeamGrid members={TEAM} />
         </section>
 
         <section className='rounded-glass-lg overflow-hidden relative'>

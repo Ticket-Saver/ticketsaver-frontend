@@ -4,7 +4,7 @@ import { Button, GlassCard, useToast } from '../../ui'
 import { cn } from '../../../types/ui'
 import { sendContactForm, validateContact } from '../../../services/contactFormService'
 
-const TOPICS = ['Buying', 'Refunds', 'Wallet', 'Press', 'Promote a show', 'Other']
+const TOPICS = ['Buying', 'Refunds', 'Press', 'Promote a show', 'Other']
 
 export default function ContactForm() {
   const { user } = useAuth()
