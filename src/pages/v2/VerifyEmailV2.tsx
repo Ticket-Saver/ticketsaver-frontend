@@ -13,7 +13,6 @@ export default function VerifyEmailV2() {
 
   const state = location.state as { email?: string; phone?: string; returnTo?: string } | null
   const stateEmail = state?.email ?? ''
-  const statePhone = state?.phone ?? ''
   const returnTo = state?.returnTo
   const [email, setEmail] = useState(stateEmail)
   const [code, setCode] = useState('')
@@ -28,9 +27,10 @@ export default function VerifyEmailV2() {
       toast.show({
         variant: 'success',
         title: 'Email verified',
-        message: "Now let's confirm your phone number."
+        message: 'Your account is ready.'
       })
-      navigate('/verify-phone', { state: { phone: statePhone, returnTo } })
+      // ponytail: verificación de teléfono deshabilitada — vamos directo al destino
+      navigate(returnTo || '/', { replace: true })
     } catch (err) {
       toast.show({
         variant: 'error',
