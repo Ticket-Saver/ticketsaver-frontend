@@ -35,8 +35,7 @@ export default defineConfig({
             'react',
             'react-dom',
             'react-router-dom',
-            '@auth0/auth0-react',
-            '@tanstack/react-query'
+            '@auth0/auth0-react'
           ]
         }
       }
