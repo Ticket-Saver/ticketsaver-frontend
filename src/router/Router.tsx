@@ -45,7 +45,8 @@ const SaleRoute = () => {
   return label ? <SaleV2 eventLabel={label} eventId={eid} /> : <Navigate to='/events' />
 }
 
-/** Si hay sesión, debe estar verificada (email Y teléfono). Anónimo pasa. */
+/** Si hay sesión, debe tener el email verificado. Anónimo pasa.
+ *  ponytail: verificación de teléfono deshabilitada — ya no se exige phoneVerified. */
 const VerifiedGate = () => {
   const { status, user } = useAuth()
   const location = useLocation()
@@ -53,9 +54,6 @@ const VerifiedGate = () => {
   if (status === 'loading') return null
   if (user && !user.emailVerified) {
     return <Navigate to='/verify-email' state={{ email: user.email, returnTo }} replace />
-  }
-  if (user && !user.phoneVerified) {
-    return <Navigate to='/verify-phone' state={{ returnTo }} replace />
   }
   return <Outlet />
 }
