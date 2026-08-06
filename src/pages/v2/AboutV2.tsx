@@ -44,8 +44,8 @@ export default function AboutV2() {
             Live events, smooth experience
           </h1>
           <p className='mt-5 text-[15px] lg:text-base text-white/72 leading-relaxed'>
-            TicketSaver is a ticketing platform built by promoters who understand better than
-            anyone that ticketing fees should not be excessive for customers
+            TicketSaver is a ticketing platform built by promoters who understand better than anyone
+            that ticketing fees should not be excessive for customers
           </p>
         </header>
 
