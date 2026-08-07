@@ -19,6 +19,8 @@ export interface AuthUser {
   emailVerified: boolean
   phoneVerified: boolean
   pendingPhone: string | null
+  /** true para usuarios migrados con contraseña temporal; el gate fuerza el cambio. */
+  mustChangePassword: boolean
 }
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
@@ -31,7 +33,8 @@ const toAuthUser = (u: User): AuthUser => ({
   phone: u.phone ?? null,
   emailVerified: Boolean(u.email_confirmed_at),
   phoneVerified: Boolean(u.phone_confirmed_at),
-  pendingPhone: (u.user_metadata?.pending_phone as string | undefined) ?? null
+  pendingPhone: (u.user_metadata?.pending_phone as string | undefined) ?? null,
+  mustChangePassword: u.user_metadata?.must_change_password === true
 })
 
 export interface RegisterInput {
@@ -177,7 +180,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const resetPassword = useCallback(async (password: string, _passwordConfirmation: string) => {
-    const { error } = await requireSupabase().auth.updateUser({ password })
+    // Limpiamos must_change_password: cubre el reset normal y el cambio forzado
+    // de usuarios migrados (el gate deja de redirigir tras esto).
+    const { error } = await requireSupabase().auth.updateUser({
+      password,
+      data: { must_change_password: false }
+    })
     if (error) throw error
   }, [])
 
