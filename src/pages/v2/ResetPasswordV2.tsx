@@ -5,7 +5,7 @@ import AuthShell, { Field, inputClass } from '../../components/v2/auth/AuthShell
 import { Button, useToast } from '../../components/ui'
 
 export default function ResetPasswordV2() {
-  const { resetPassword } = useAuth()
+  const { resetPassword, status } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -27,7 +27,8 @@ export default function ResetPasswordV2() {
         title: 'Password updated',
         message: 'You can now log in with your new password.'
       })
-      navigate('/login')
+      // Cambio forzado (usuario migrado ya autenticado) -> home; recovery sin sesion -> login.
+      navigate(status === 'authenticated' ? '/' : '/login')
     } catch (err) {
       toast.show({
         variant: 'error',

@@ -55,6 +55,10 @@ const VerifiedGate = () => {
   if (user && !user.emailVerified) {
     return <Navigate to='/verify-email' state={{ email: user.email, returnTo }} replace />
   }
+  // Usuarios migrados con contraseña temporal: forzar cambio antes de seguir.
+  if (user && user.mustChangePassword) {
+    return <Navigate to='/reset-password' replace />
+  }
   return <Outlet />
 }
 
