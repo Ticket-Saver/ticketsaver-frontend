@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [applySession])
 
   const register = useCallback(async (input: RegisterInput) => {
-    const { error } = await requireSupabase().auth.signUp({
+    const { data, error } = await requireSupabase().auth.signUp({
       email: input.email,
       password: input.password,
       options: {
@@ -121,6 +121,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     })
     if (error) throw error
+    // Con confirmación de email activada, Supabase NO devuelve error si el email ya
+    // existe (protección anti-enumeración): retorna un user obfuscado con identities
+    // vacío. Sin este chequeo el registro parecía exitoso con un email ya usado.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      throw new Error('That email is already registered. Try logging in instead.')
+    }
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
