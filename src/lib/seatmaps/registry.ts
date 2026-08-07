@@ -25,10 +25,12 @@ import map1Svg from '../../assets/venue-maps/map1.svg?raw'
 import map2Svg from '../../assets/venue-maps/map2.svg?raw'
 import chicagoSvg from '../../assets/venue-maps/chicago_alucines.svg?raw'
 import sanJoseSvg from '../../assets/venue-maps/san_jose.svg?raw'
+import miamiSvg from '../../assets/venue-maps/miami.svg?raw'
 import map1Ranges from '../../assets/venue-maps/map1.ranges.json'
 import map2Ranges from '../../assets/venue-maps/map2.ranges.json'
 import chicagoRanges from '../../assets/venue-maps/chicago_alucines.ranges.json'
 import sanJoseRanges from '../../assets/venue-maps/san_jose.ranges.json'
+import miamiRanges from '../../assets/venue-maps/miami.ranges.json'
 
 /** Valores del ranges.json: string ("301-304", "1-16 | 101-122") o metadata (objeto). */
 export type RangesRaw = Record<string, unknown>
@@ -46,7 +48,9 @@ const REGISTRY: Record<string, SeatMapAsset> = {
   // chicago_alucines = Copernicus Center (Chicago) — platea + balcony (SVG class-based)
   chicago_alucines: { svg: chicagoSvg, ranges: chicagoRanges as RangesRaw },
   // san_jose = California Theatre (San José) — secciones numeradas (SVG class-based)
-  san_jose: { svg: sanJoseSvg, ranges: sanJoseRanges as RangesRaw }
+  san_jose: { svg: sanJoseSvg, ranges: sanJoseRanges as RangesRaw },
+  // miami = Manuel Artime Theater (Miami) — General + Balcony
+  miami: { svg: miamiSvg, ranges: miamiRanges as RangesRaw }
 }
 
 /** Devuelve el SVG + ranges del mapa, o null si el evento no es enumerado / el mapa no existe. */
