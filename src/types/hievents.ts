@@ -56,6 +56,9 @@ export interface HiEventSettings {
   website_url: string | null
   maps_url: string | null
   is_online_event: boolean
+  // La Location del panel se guarda acá (event_settings), NO en el top-level
+  // location_details del evento (ese viene null). Fuente de verdad de venue/ciudad.
+  location_details?: HiLocationDetails | null
   [key: string]: unknown
 }
 
