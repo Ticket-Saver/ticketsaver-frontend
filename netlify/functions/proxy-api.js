@@ -61,7 +61,10 @@ exports.handler = async (event) => {
   const url = `${API_ORIGIN}${normalizedPath}${queryString}`
 
   try {
-    const headers = { 'Content-Type': 'application/json' }
+    // Accept explícito: sin él Laravel cree que no se espera JSON y en errores
+    // (422 validación, 401 auth) REDIRIGE al SPA de login en vez de devolver JSON
+    // el front recibía HTML y mostraba "No pudimos reservar".
+    const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
     if (event.headers.authorization) {
       // JWT de Supabase del cliente (endpoints /public/... con auth:customer).
       headers['Authorization'] = event.headers.authorization

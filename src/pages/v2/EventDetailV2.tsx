@@ -189,7 +189,8 @@ export default function EventDetailV2() {
     new Date(detail.end_date).getTime() > new Date(detail.start_date).getTime()
       ? fmtTimeInTz(detail.end_date, detail.timezone)
       : ''
-  const address = formatAddress(detail?.location_details)
+  // La dirección vive en settings.location_details (el top-level viene null).
+  const address = formatAddress(detail?.settings?.location_details ?? detail?.location_details)
   const organizerName = detail?.organizer?.name
 
   const dates = useMemo(() => getDatesForEvent(visible, event), [visible, event])
@@ -343,7 +344,10 @@ export default function EventDetailV2() {
 
       <Section title='Good to know'>
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
-          <FactPill label='Doors' value={event.time || 'TBA'} />
+          {/* event.time es la hora de INICIO del show, no la de puertas. Antes se
+              rotulaba "Doors" (engañoso). Para puertas reales, agregar un campo
+              público "Doors" en el panel (Campos adicionales) → sale abajo. */}
+          <FactPill label='Start' value={event.time || 'TBA'} />
           {/* Campos custom públicos cargados desde el admin (attributes). */}
           {(detail?.attributes ?? []).map((attr) => (
             <FactPill key={attr.name} label={attr.name} value={String(attr.value ?? '')} />

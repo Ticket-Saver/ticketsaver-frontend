@@ -176,9 +176,12 @@ const buildDetailHref = (hi: HiEventPublic): string =>
 export const hiEventToUIEvent = (hi: HiEventPublic, context: { hero?: boolean } = {}): UIEvent => {
   const parts = toDateParts(hi.start_date, hi.timezone)
   const category = resolveCategory(hi.category, hi.title)
-  const venueName = hi.location_details?.venue_name ?? ''
-  const city = hi.location_details?.city ?? ''
-  const country = hi.location_details?.country ?? ''
+  // La Location del panel vive en settings.location_details; el top-level
+  // location_details del evento viene null. Leer settings primero.
+  const loc = hi.settings?.location_details ?? hi.location_details
+  const venueName = loc?.venue_name ?? ''
+  const city = loc?.city ?? ''
+  const country = loc?.country ?? ''
   const venueLabel = venueName ? slugify(venueName) : hi.slug
   // Sin inventar: si no hay venue/ciudad, subtítulo y venueName quedan vacíos
   // (no se cae al slug ni al título). La UI los oculta.
