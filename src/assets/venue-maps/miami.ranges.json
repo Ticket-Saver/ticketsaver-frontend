@@ -16,7 +16,11 @@
       "balconyrightcenter-blue-DD",
       "balconyright-blue-GG"
     ],
-    "reversed_sections": ["leftcenter-green", "leftcenter-pink", "leftcenter-yellow"],
+    "reversed_sections": [
+      "leftcenter-green",
+      "leftcenter-pink",
+      "leftcenter-yellow"
+    ],
     "seat_types": {
       "wheelchair": [
         "4-leftcenter-yellow-A",
@@ -54,7 +58,8 @@
       "rightcenter-green": 58,
       "rightcenter-pink": 66,
       "rightcenter-yellow": 31
-    }
+    },
+    "stage_direction": "south"
   },
   "balconyleft-blue-HH": "1-10",
   "balconyleft-blue-GG": "3-10",
