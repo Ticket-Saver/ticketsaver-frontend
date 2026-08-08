@@ -323,7 +323,7 @@ export default function SeatingMapV2({
     // Mostrar los colores ya (sin precio); completar el precio en paralelo.
     setLegend([...byColor.keys()].map((color) => ({ color, name: COLOR_LABELS[color] || color })))
     ;(async () => {
-      // Base + asiento representativo (el más barato) por color.
+      // Base mínima por color (el asiento más barato de la sección representativa).
       const reps = await Promise.all(
         [...byColor.entries()].map(async ([color, groupKey]) => {
           try {
@@ -334,39 +334,26 @@ export default function SeatingMapV2({
             return {
               color,
               name: min.price_range || COLOR_LABELS[color] || color,
-              price: min.price ?? undefined,
-              seatId: min.id
+              price: min.price ?? undefined
             }
           } catch {
             return { color, name: COLOR_LABELS[color] || color }
           }
         })
       )
-      // Con fees solo si el evento se configuró INCLUSIVE. /seats no trae el precio con
-      // impuestos → se pide por asiento representativo (1 POST para todos los colores).
+      // Con fees solo si el evento se configuró INCLUSIVE. El fee es por tier de precio
+      // (no por asiento), así que 1 llamada /tickets mapea base → con-fees para todo.
       const ev = await hiEventsService.getEvent(eventId).catch(() => null)
       const inclusive = ev?.settings?.price_display_mode === 'INCLUSIVE'
-      let inclById = new Map<number, number>()
-      if (inclusive) {
-        const ids = reps
-          .map((r) => (r as { seatId?: number }).seatId)
-          .filter((id): id is number => typeof id === 'number')
-        const pricing = await hiEventsService.getTicketsBySeatIds(eventId, ids).catch(() => [])
-        inclById = new Map(
-          pricing
-            .filter((p) => typeof p.price_including_taxes_and_fees === 'number')
-            .map((p) => [p.id, p.price_including_taxes_and_fees as number])
-        )
-      }
+      const tierByBase = inclusive
+        ? await hiEventsService.getPriceTiers(eventId).catch(() => null)
+        : null
       if (!mounted) return
       const rows = reps.map((r) => {
-        const seatId = (r as { seatId?: number }).seatId
         const base = (r as { price?: number }).price
-        return {
-          color: r.color,
-          name: r.name,
-          price: inclusive && seatId != null ? (inclById.get(seatId) ?? base) : base
-        }
+        const withFees =
+          base != null ? (tierByBase?.get(base)?.price_including_taxes_and_fees ?? base) : base
+        return { color: r.color, name: r.name, price: withFees }
       })
       rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
       setLegend(rows)

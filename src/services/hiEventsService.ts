@@ -15,6 +15,7 @@ import supabase from '../components/supabaseClient'
 import type {
   HiEventPublic,
   HiTicketPublic,
+  HiTicketPrice,
   HiSeatingMap,
   HiSeat,
   HiOrder,
@@ -266,10 +267,7 @@ export const hiEventsService = {
   },
 
   /**
-   * Tickets y precios de un evento. Pide hasta 100 por página (un general puede
-   * tener muchos tipos). No pagina de más a propósito: en un enumerado los asientos
-   * también son "tickets" y traerlos todos acá sería pesado (el detalle solo necesita
-   * una muestra para el "desde $"). Si un general supera 100 tipos, ver deuda técnica.
+   * Tickets y precios de un evento.
    */
   async getTickets(eventId: string | number, signal?: AbortSignal): Promise<HiTicketPublic[]> {
     // ponytail: 1 página de 1000. Eventos enumerados modelan 1 ticket por asiento
@@ -280,6 +278,28 @@ export const hiEventsService = {
       signal
     )
     return body.data
+  },
+
+  /**
+   * Mapa `precio base → tier` del evento (con precio con fees, tax y fee por tier).
+   * El fee es por tier de precio, no por asiento, así que una sola llamada a /tickets
+   * alcanza para poner el precio con fees a TODOS los asientos por su base — sin pedir
+   * asiento por asiento (/tickets/by-seat-ids topa a 100 ids y hacía N requests).
+   * ponytail: se asume que el precio base identifica el tier; si dos zonas comparten
+   * base con fees distintos, habría que indexar por price_range.
+   */
+  async getPriceTiers(
+    eventId: string | number,
+    signal?: AbortSignal
+  ): Promise<Map<number, HiTicketPrice>> {
+    const tickets = await this.getTickets(eventId, signal)
+    const byBase = new Map<number, HiTicketPrice>()
+    for (const t of tickets) {
+      for (const p of t.prices) {
+        if (typeof p.price === 'number' && !byBase.has(p.price)) byBase.set(p.price, p)
+      }
+    }
+    return byBase
   },
 
   // --- Mapa de asientos (C3) ---
