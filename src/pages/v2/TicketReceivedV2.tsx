@@ -96,8 +96,8 @@ export default function TicketReceivedV2() {
     if (confirmRan.current || !venueId || !orderShortId) return
     confirmRan.current = true
     ;(async () => {
+      const sessionId = extractSessionId()
       try {
-        const sessionId = extractSessionId()
         if (sessionId) {
           for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
             try {
@@ -116,10 +116,14 @@ export default function TicketReceivedV2() {
       } catch {
         // El pago igual se confirma vía webhook de HiEvents; no bloqueamos la UI.
       } finally {
-        try {
-          localStorage.removeItem('local_cart')
-        } catch {}
-        clearCart()
+        // Solo limpiar el carrito tras un checkout real (hay sessionId). En una
+        // visita desde el mail (sin sessionId) no tocamos el carrito activo.
+        if (sessionId) {
+          try {
+            localStorage.removeItem('local_cart')
+          } catch {}
+          clearCart()
+        }
       }
     })()
   }, [venueId, orderShortId, clearCart])
