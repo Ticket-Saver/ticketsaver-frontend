@@ -210,9 +210,7 @@ export default function SeatPickerV2({
       const seatRowNum = `${seat.row}${num}`.toLowerCase()
       const posLc = String(seat.position || '').toLowerCase()
       const secLc = String(seat.section || '').toLowerCase()
-      const miamiId = section.groupId
-        ? `${num}-${section.groupId}-${seat.row}`.toLowerCase()
-        : null
+      const miamiId = section.groupId ? `${num}-${section.groupId}-${seat.row}`.toLowerCase() : null
 
       const idMatches = (id: string): boolean => {
         const lc = id.toLowerCase()
@@ -492,9 +490,7 @@ export default function SeatPickerV2({
                 {/* Escenario en el borde que indica el JSON (stage_direction). */}
                 <div
                   className={
-                    stageVerticalAxis
-                      ? 'w-full'
-                      : 'flex flex-col items-center justify-center px-1'
+                    stageVerticalAxis ? 'w-full' : 'flex flex-col items-center justify-center px-1'
                   }
                 >
                   <div
