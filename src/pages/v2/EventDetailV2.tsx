@@ -125,7 +125,9 @@ export default function EventDetailV2() {
   const priceInclusive = detail?.settings?.price_display_mode === 'INCLUSIVE'
   const priceFrom = useMemo(() => {
     const all = tickets.flatMap((t) =>
-      t.prices.map((p) => (priceInclusive ? (p.price_including_taxes_and_fees ?? p.price) : p.price))
+      t.prices.map((p) =>
+        priceInclusive ? (p.price_including_taxes_and_fees ?? p.price) : p.price
+      )
     )
     return all.length > 0 ? Math.min(...all) : null
   }, [tickets, priceInclusive])
