@@ -122,6 +122,18 @@ export default function SeatingMapV2({
       .join(' ')
   }
 
+  // Etiqueta de una sub-sección de balcón/loge: separa zona + lado + color, sin pegar
+  // palabras ni repetir la zona. `balconyleftcenter` + `blue` → "Balcony Left Center Blue".
+  const zoneSideLabel = (position: string, color: string): string => {
+    const pos = position.toLowerCase()
+    const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z)) || ''
+    const side = pos.slice(zone.length) // 'left' | 'right' | 'leftcenter' | …
+    const zoneLabel = zone ? zone[0].toUpperCase() + zone.slice(1) : ''
+    return [zoneLabel, side && toTitleCaseFromKebab(side), color && toTitleCaseFromKebab(color)]
+      .filter(Boolean)
+      .join(' ')
+  }
+
   useEffect(() => {
     let isMounted = true
     const load = async () => {
@@ -1245,23 +1257,29 @@ export default function SeatingMapV2({
             return
           }
 
-          // Balcón/loge son UN solo grupo por color (`balcony-blue`), no uno por lado.
-          // Así los agrupa el backend; el rangeKey trae `position-color-zone` (p.ej.
-          // `balconyright-blue-balcony`), que abría siempre el mismo lado y con etiqueta
-          // repetida ("Balconyright Blue Balcony"). Normalizar a zona-color.
+          // Balcón/loge: el backend agrupa TODO el balcón en un solo grupo `${zone}-${color}`
+          // (`balcony-blue`); `?group=balconyright-blue` devuelve 0. La zona NO va en def.zone
+          // (queda vacío): va embebida en el prefijo de position (balconyright → balcony). Cada
+          // asiento trae `position` (balconyleft/right/…), así que cargamos el grupo real del API
+          // y filtramos por el lado clickeado. Etiqueta limpia ("Balcony Right Blue"); groupId
+          // queda en el grupo real del API para el refetch de disponibilidad.
           const clickedDef = ranges[key]
-          const canonicalGroup =
-            clickedDef?.zone && clickedDef?.color
-              ? `${clickedDef.zone}-${clickedDef.color}`
-              : groupKey
+          const pos = (clickedDef?.position || '').toLowerCase()
+          const color = String(clickedDef?.color || '')
+          const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z))
+          const apiGroup = zone && color ? `${zone}-${color}` : groupKey
 
-          // Asientos de la sección on-demand (/seats?group=), no de una lista global.
-          const groupSeats = await loadGroupSeats(canonicalGroup)
+          const groupSeats = await loadGroupSeats(apiGroup)
           if (groupSeats.length === 0) return
+
+          const sideSeats = zone
+            ? groupSeats.filter((s) => (s.position || '').toLowerCase() === pos)
+            : groupSeats
+
           onSelectSection({
-            label: toTitleCaseFromKebab(canonicalGroup),
-            seats: groupSeats,
-            groupId: canonicalGroup
+            label: zone ? zoneSideLabel(pos, color) : toTitleCaseFromKebab(apiGroup),
+            seats: sideSeats.length > 0 ? sideSeats : groupSeats,
+            groupId: apiGroup
           })
         }
 
