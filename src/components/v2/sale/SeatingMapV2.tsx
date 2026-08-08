@@ -1258,13 +1258,23 @@ export default function SeatingMapV2({
             return
           }
 
+          // Balcón/loge son UN solo grupo por color (`balcony-blue`), no uno por lado.
+          // Así los agrupa el backend; el rangeKey trae `position-color-zone` (p.ej.
+          // `balconyright-blue-balcony`), que abría siempre el mismo lado y con etiqueta
+          // repetida ("Balconyright Blue Balcony"). Normalizar a zona-color.
+          const clickedDef = ranges[key]
+          const canonicalGroup =
+            clickedDef?.zone && clickedDef?.color
+              ? `${clickedDef.zone}-${clickedDef.color}`
+              : groupKey
+
           // Asientos de la sección on-demand (/seats?group=), no de una lista global.
-          const groupSeats = await loadGroupSeats(groupKey)
+          const groupSeats = await loadGroupSeats(canonicalGroup)
           if (groupSeats.length === 0) return
           onSelectSection({
-            label: toTitleCaseFromKebab(groupKey),
+            label: toTitleCaseFromKebab(canonicalGroup),
             seats: groupSeats,
-            groupId: groupKey
+            groupId: canonicalGroup
           })
         }
 

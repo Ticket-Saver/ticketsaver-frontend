@@ -359,13 +359,22 @@ export const hiEventsService = {
     signal?: AbortSignal
   ): Promise<HiSeatPricing[]> {
     if (seatIds.length === 0) return []
-    const body = await request<{ tickets?: HiSeatPricing[] }>(
-      'POST',
-      HIEVENTS_CONFIG.endpoints.ticketsBySeatIds(eventId),
-      { seat_ids: seatIds },
-      signal
+    // El backend rechaza >100 ids por request (secciones grandes como el balcón de
+    // Miami traen 114 → fallaba y caía a precio base sin fees). Trocear en lotes de 100.
+    const CHUNK = 100
+    const chunks: number[][] = []
+    for (let i = 0; i < seatIds.length; i += CHUNK) chunks.push(seatIds.slice(i, i + CHUNK))
+    const results = await Promise.all(
+      chunks.map((ids) =>
+        request<{ tickets?: HiSeatPricing[] }>(
+          'POST',
+          HIEVENTS_CONFIG.endpoints.ticketsBySeatIds(eventId),
+          { seat_ids: ids },
+          signal
+        )
+      )
     )
-    return body.tickets ?? []
+    return results.flatMap((body) => body.tickets ?? [])
   },
 
   async updateOrder(eventId: string | number, shortId: string, payload: unknown): Promise<HiOrder> {
