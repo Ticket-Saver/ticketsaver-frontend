@@ -1317,7 +1317,7 @@ export default function SeatingMapV2({
             ariaLabel='Venue map. Scroll or pinch to zoom, drag to pan. Click a section to view its seats.'
           >
             <div
-              className='w-[min(94vw,1000px)]'
+              className='flex h-[380px] w-[min(94vw,1000px)] items-center justify-center sm:h-[480px] lg:h-[620px]'
               dangerouslySetInnerHTML={{
                 __html: svgContent
                   .replace(/<title[\s\S]*?<\/title>/gi, '')
@@ -1325,7 +1325,10 @@ export default function SeatingMapV2({
                   .replace(/\s+title="[^"]*"/gi, '')
                   .replace(
                     /<svg([^>]*)>/gi,
-                    '<svg$1 style="width: 100%; height: auto; max-width: 100%; user-select: none; -webkit-user-select: none;" class="w-full h-auto" preserveAspectRatio="xMidYMid meet">'
+                    // Ajusta al recuadro por ancho Y alto (letterbox). El wrapper tiene alto
+                    // definido (= ZoomPanContainer), así max-height:100% resuelve. Sin esto,
+                    // mapas altos/angostos (Miami) desbordan el alto y se recortan.
+                    '<svg$1 style="max-width: 100%; max-height: 100%; width: auto; height: auto; user-select: none; -webkit-user-select: none;" class="max-w-full max-h-full" preserveAspectRatio="xMidYMid meet">'
                   )
               }}
             />
