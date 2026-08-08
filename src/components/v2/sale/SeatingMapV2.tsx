@@ -307,37 +307,74 @@ export default function SeatingMapV2({
     const defs = Object.values(ranges)
     if (defs.length === 0) return
     let mounted = true
-    const byColor = new Map<string, string>() // color → groupKey representativo
+    // color → groupKey representativo. Balcón/loge se agrupan por ZONA (`balcony-blue`),
+    // no por posición (`balconyleft-blue` no existe como grupo → devolvía 0 asientos y el
+    // color quedaba sin precio). El resto va por posición (`left-green`).
+    const byColor = new Map<string, string>()
     for (const def of defs) {
-      if (def.color && def.position && !byColor.has(def.color)) {
-        byColor.set(def.color, `${def.position}-${def.color}`)
-      }
+      if (!def.color || byColor.has(def.color)) continue
+      const key = def.zone
+        ? `${def.zone}-${def.color}`
+        : def.position
+          ? `${def.position}-${def.color}`
+          : null
+      if (key) byColor.set(def.color, key)
     }
     // Mostrar los colores ya (sin precio); completar el precio en paralelo.
     setLegend([...byColor.keys()].map((color) => ({ color, name: COLOR_LABELS[color] || color })))
-    Promise.all(
-      [...byColor.entries()].map(async ([color, groupKey]) => {
-        try {
-          const gs = await loadGroupSeats(groupKey)
-          const withPrice = gs.find((s) => typeof s.price === 'number')
-          return {
-            color,
-            name: withPrice?.price_range || COLOR_LABELS[color] || color,
-            price: withPrice?.price ?? undefined
+    ;(async () => {
+      // Base + asiento representativo (el más barato) por color.
+      const reps = await Promise.all(
+        [...byColor.entries()].map(async ([color, groupKey]) => {
+          try {
+            const gs = await loadGroupSeats(groupKey)
+            const priced = gs.filter((s) => typeof s.price === 'number')
+            if (priced.length === 0) return { color, name: COLOR_LABELS[color] || color }
+            const min = priced.reduce((a, b) => ((b.price as number) < (a.price as number) ? b : a))
+            return {
+              color,
+              name: min.price_range || COLOR_LABELS[color] || color,
+              price: min.price ?? undefined,
+              seatId: min.id
+            }
+          } catch {
+            return { color, name: COLOR_LABELS[color] || color }
           }
-        } catch {
-          return { color, name: COLOR_LABELS[color] || color, price: undefined }
+        })
+      )
+      // Con fees solo si el evento se configuró INCLUSIVE. /seats no trae el precio con
+      // impuestos → se pide por asiento representativo (1 POST para todos los colores).
+      const ev = await hiEventsService.getEvent(eventId).catch(() => null)
+      const inclusive = ev?.settings?.price_display_mode === 'INCLUSIVE'
+      let inclById = new Map<number, number>()
+      if (inclusive) {
+        const ids = reps
+          .map((r) => (r as { seatId?: number }).seatId)
+          .filter((id): id is number => typeof id === 'number')
+        const pricing = await hiEventsService.getTicketsBySeatIds(eventId, ids).catch(() => [])
+        inclById = new Map(
+          pricing
+            .filter((p) => typeof p.price_including_taxes_and_fees === 'number')
+            .map((p) => [p.id, p.price_including_taxes_and_fees as number])
+        )
+      }
+      if (!mounted) return
+      const rows = reps.map((r) => {
+        const seatId = (r as { seatId?: number }).seatId
+        const base = (r as { price?: number }).price
+        return {
+          color: r.color,
+          name: r.name,
+          price: inclusive && seatId != null ? (inclById.get(seatId) ?? base) : base
         }
       })
-    ).then((rows) => {
-      if (!mounted) return
       rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
       setLegend(rows)
-    })
+    })()
     return () => {
       mounted = false
     }
-  }, [ranges, loadGroupSeats])
+  }, [ranges, loadGroupSeats, eventId])
 
   const sectionStats = useMemo(() => {
     const bySection: Record<string, { total: number; available: number; position?: string }> = {}

@@ -120,13 +120,15 @@ export default function EventDetailV2() {
   // Evento base: de la lista (rápido) o construido desde el detalle (deep-link).
   const baseEvent: UIEvent | null = eventFromList ?? (detail ? hiEventToUIEvent(detail) : null)
 
-  // priceFrom real: mínimo con impuestos de los tickets.
+  // priceFrom real: mínimo de los tickets. Con fees solo si el evento se configuró
+  // INCLUSIVE (price_display_mode); si no, precio base.
+  const priceInclusive = detail?.settings?.price_display_mode === 'INCLUSIVE'
   const priceFrom = useMemo(() => {
     const all = tickets.flatMap((t) =>
-      t.prices.map((p) => p.price_including_taxes_and_fees ?? p.price)
+      t.prices.map((p) => (priceInclusive ? (p.price_including_taxes_and_fees ?? p.price) : p.price))
     )
     return all.length > 0 ? Math.min(...all) : null
-  }, [tickets])
+  }, [tickets, priceInclusive])
 
   // Countdown: si ningún ticket está en venta y hay una fecha de apertura futura,
   // mostramos "On sale {fecha}" (la más temprana) y se deshabilita la compra.
