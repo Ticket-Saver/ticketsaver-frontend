@@ -452,6 +452,14 @@ export default function SeatPickerV2({
           ? 'flex-row'
           : 'flex-row-reverse'
 
+  // Proximidad fila↔escenario: por convención la fila menor (A/1) es la de adelante,
+  // pegada al escenario. gridRows viene en orden ascendente (A→Z), que deja A junto al
+  // escenario cuando éste está arriba/izquierda. Cuando el escenario está abajo/derecha
+  // invertimos para que A quede en ese borde (más cerca) y Z al fondo.
+  // ponytail: asume A=frente. Si un mapa numera al revés, agregar metadata `rows_reversed`.
+  const rowsForRender =
+    stagePos === 'bottom' || stagePos === 'right' ? [...gridRows].reverse() : gridRows
+
   const disabledCta = cart.length === 0 || cart.length > MAX_SEATS || confirming
   const ctaLabel = confirming
     ? 'Reservando tus asientos…'
@@ -516,7 +524,7 @@ export default function SeatPickerV2({
 
                 <div className='min-w-0 flex-1 overflow-auto'>
                   <div className='mx-auto flex w-max min-w-full flex-col items-center gap-1.5 py-3'>
-                    {gridRows.map((row) => {
+                    {rowsForRender.map((row) => {
                       const layoutRow = sectionLayout?.[row]
                         ? reversed
                           ? [...sectionLayout[row]].reverse()
