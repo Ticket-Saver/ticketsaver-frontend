@@ -65,7 +65,7 @@ export default function StickyCTA({
     return 'Choose seats'
   })()
 
-  const priceLabel = priceFrom !== null ? `From $${Math.round(priceFrom)}` : ''
+  const priceLabel = priceFrom !== null ? `From $${priceFrom.toFixed(2)}` : ''
 
   const queueHref = `/queue/${encodeURIComponent(event.id)}`
 

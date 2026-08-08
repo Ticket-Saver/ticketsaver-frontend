@@ -7,13 +7,10 @@ import { CartSidebar, CartMobileSheet, type CartSummaryItem } from './CartSummar
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { validateSeatAddByNumber, type RowSeatInfo } from '../../../hooks/useSeatContiguity'
 import { useCart } from '../../../router/cartContext'
-import {
-  hiEventsService,
-  HiEventsApiError,
-  type HiSeatPricing
-} from '../../../services/hiEventsService'
+import { hiEventsService, HiEventsApiError } from '../../../services/hiEventsService'
 import type { PricingBreakdown } from '../../../lib/pricing'
 import type { UIEvent } from '../../../types/uiEvent'
+import type { HiTicketPrice } from '../../../types/hievents'
 import type { SeatItem } from './seatTypes'
 
 const MAX_SEATS = 10
@@ -91,19 +88,21 @@ export default function SeatPickerV2({
 
   // El mapa masivo NO trae precio (performance). Al abrir la sección traemos el precio
   // + impuestos SOLO de sus asientos (pocos → <0.6s) vía /tickets/by-seat-ids.
-  const [pricing, setPricing] = useState<Map<number, HiSeatPricing>>(new Map())
+  // Precio con fees por TIER (base → tier), no por asiento: el fee depende del tier,
+  // así que una sola llamada /tickets sirve para todos los asientos y todas las
+  // secciones (antes: /tickets/by-seat-ids por sección, topaba a 100 ids).
+  const [tierByBase, setTierByBase] = useState<Map<number, HiTicketPrice>>(new Map())
   const [pricingReady, setPricingReady] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
     let mounted = true
     setPricingReady(false)
-    const ids = section.seats.map((s) => s.id)
     hiEventsService
-      .getTicketsBySeatIds(event.eventId, ids, controller.signal)
-      .then((rows) => {
+      .getPriceTiers(event.eventId, controller.signal)
+      .then((map) => {
         if (!mounted) return
-        setPricing(new Map(rows.map((r) => [r.id, r])))
+        setTierByBase(map)
         setPricingReady(true)
       })
       .catch(() => {
@@ -114,7 +113,7 @@ export default function SeatPickerV2({
       mounted = false
       controller.abort()
     }
-  }, [section.seats, event.eventId])
+  }, [event.eventId])
 
   // B1 · Disponibilidad EN VIVO. Refrescamos los asientos de la sección cada ~11s
   // (pausado si la pestaña está oculta). Si un asiento que tenías seleccionado lo
@@ -310,8 +309,8 @@ export default function SeatPickerV2({
     }
 
     setWarning(null)
-    const p = pricing.get(seat.id)
-    const base = p?.price ?? seat.price ?? 0
+    const base = seat.price ?? 0
+    const p = tierByBase.get(base)
     const final = p?.price_including_taxes_and_fees ?? base
     addItem({
       ticketId: `seat-${seat.id}`,

@@ -122,6 +122,18 @@ export default function SeatingMapV2({
       .join(' ')
   }
 
+  // Etiqueta de una sub-sección de balcón/loge: separa zona + lado + color, sin pegar
+  // palabras ni repetir la zona. `balconyleftcenter` + `blue` → "Balcony Left Center Blue".
+  const zoneSideLabel = (position: string, color: string): string => {
+    const pos = position.toLowerCase()
+    const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z)) || ''
+    const side = pos.slice(zone.length) // 'left' | 'right' | 'leftcenter' | …
+    const zoneLabel = zone ? zone[0].toUpperCase() + zone.slice(1) : ''
+    return [zoneLabel, side && toTitleCaseFromKebab(side), color && toTitleCaseFromKebab(color)]
+      .filter(Boolean)
+      .join(' ')
+  }
+
   useEffect(() => {
     let isMounted = true
     const load = async () => {
@@ -323,7 +335,7 @@ export default function SeatingMapV2({
     // Mostrar los colores ya (sin precio); completar el precio en paralelo.
     setLegend([...byColor.keys()].map((color) => ({ color, name: COLOR_LABELS[color] || color })))
     ;(async () => {
-      // Base + asiento representativo (el más barato) por color.
+      // Base mínima por color (el asiento más barato de la sección representativa).
       const reps = await Promise.all(
         [...byColor.entries()].map(async ([color, groupKey]) => {
           try {
@@ -334,39 +346,26 @@ export default function SeatingMapV2({
             return {
               color,
               name: min.price_range || COLOR_LABELS[color] || color,
-              price: min.price ?? undefined,
-              seatId: min.id
+              price: min.price ?? undefined
             }
           } catch {
             return { color, name: COLOR_LABELS[color] || color }
           }
         })
       )
-      // Con fees solo si el evento se configuró INCLUSIVE. /seats no trae el precio con
-      // impuestos → se pide por asiento representativo (1 POST para todos los colores).
+      // Con fees solo si el evento se configuró INCLUSIVE. El fee es por tier de precio
+      // (no por asiento), así que 1 llamada /tickets mapea base → con-fees para todo.
       const ev = await hiEventsService.getEvent(eventId).catch(() => null)
       const inclusive = ev?.settings?.price_display_mode === 'INCLUSIVE'
-      let inclById = new Map<number, number>()
-      if (inclusive) {
-        const ids = reps
-          .map((r) => (r as { seatId?: number }).seatId)
-          .filter((id): id is number => typeof id === 'number')
-        const pricing = await hiEventsService.getTicketsBySeatIds(eventId, ids).catch(() => [])
-        inclById = new Map(
-          pricing
-            .filter((p) => typeof p.price_including_taxes_and_fees === 'number')
-            .map((p) => [p.id, p.price_including_taxes_and_fees as number])
-        )
-      }
+      const tierByBase = inclusive
+        ? await hiEventsService.getPriceTiers(eventId).catch(() => null)
+        : null
       if (!mounted) return
       const rows = reps.map((r) => {
-        const seatId = (r as { seatId?: number }).seatId
         const base = (r as { price?: number }).price
-        return {
-          color: r.color,
-          name: r.name,
-          price: inclusive && seatId != null ? (inclById.get(seatId) ?? base) : base
-        }
+        const withFees =
+          base != null ? (tierByBase?.get(base)?.price_including_taxes_and_fees ?? base) : base
+        return { color: r.color, name: r.name, price: withFees }
       })
       rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
       setLegend(rows)
@@ -1258,13 +1257,29 @@ export default function SeatingMapV2({
             return
           }
 
-          // Asientos de la sección on-demand (/seats?group=), no de una lista global.
-          const groupSeats = await loadGroupSeats(groupKey)
+          // Balcón/loge: el backend agrupa TODO el balcón en un solo grupo `${zone}-${color}`
+          // (`balcony-blue`); `?group=balconyright-blue` devuelve 0. La zona NO va en def.zone
+          // (queda vacío): va embebida en el prefijo de position (balconyright → balcony). Cada
+          // asiento trae `position` (balconyleft/right/…), así que cargamos el grupo real del API
+          // y filtramos por el lado clickeado. Etiqueta limpia ("Balcony Right Blue"); groupId
+          // queda en el grupo real del API para el refetch de disponibilidad.
+          const clickedDef = ranges[key]
+          const pos = (clickedDef?.position || '').toLowerCase()
+          const color = String(clickedDef?.color || '')
+          const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z))
+          const apiGroup = zone && color ? `${zone}-${color}` : groupKey
+
+          const groupSeats = await loadGroupSeats(apiGroup)
           if (groupSeats.length === 0) return
+
+          const sideSeats = zone
+            ? groupSeats.filter((s) => (s.position || '').toLowerCase() === pos)
+            : groupSeats
+
           onSelectSection({
-            label: toTitleCaseFromKebab(groupKey),
-            seats: groupSeats,
-            groupId: groupKey
+            label: zone ? zoneSideLabel(pos, color) : toTitleCaseFromKebab(apiGroup),
+            seats: sideSeats.length > 0 ? sideSeats : groupSeats,
+            groupId: apiGroup
           })
         }
 
