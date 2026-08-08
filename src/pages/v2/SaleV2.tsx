@@ -35,6 +35,19 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
   const event = (eventId ? byId(eventId) : undefined) ?? byLabel(eventLabel)
   const mapAsset = useMemo(() => (event ? getSeatMapAsset(event.map) : null), [event])
   const mapLayout = useMemo(() => (event ? getSeatMapLayout(event.map) : null), [event])
+  // Escenario + secciones invertidas salen del ranges.json (metadata).
+  const mapMeta = useMemo(() => {
+    const m = (mapAsset?.ranges?.metadata ?? {}) as {
+      stage_direction?: 'north' | 'south' | 'east' | 'west'
+      reversed_sections?: string[]
+      seat_types?: Record<string, string[]>
+    }
+    return {
+      stageDirection: m.stage_direction ?? 'north',
+      reversedSections: m.reversed_sections ?? [],
+      seatTypes: m.seat_types ?? {}
+    }
+  }, [mapAsset])
 
   const [step, setStep] = useState<SaleStep>('venue')
   const [section, setSection] = useState<SelectedSection | null>(null)
@@ -91,6 +104,14 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
             event={event}
             section={section}
             sectionLayout={mapLayout && section.groupId ? mapLayout[section.groupId] : undefined}
+            stageDirection={mapMeta.stageDirection}
+            seatTypes={mapMeta.seatTypes}
+            reversed={
+              !!section.groupId &&
+              mapMeta.reversedSections.some(
+                (r) => section.groupId === r || section.groupId!.startsWith(`${r}-`)
+              )
+            }
             onBack={() => setStep('venue')}
           />
         ) : (

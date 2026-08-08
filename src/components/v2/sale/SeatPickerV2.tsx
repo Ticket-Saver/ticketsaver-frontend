@@ -39,8 +39,28 @@ interface SeatPickerV2Props {
    * REAL (cada butaca en su columna, con huecos); si no, se renderiza por filas.
    */
   sectionLayout?: Record<string, (number | null)[]>
+  /** Lado del escenario según el ranges.json (metadata.stage_direction). */
+  stageDirection?: 'north' | 'south' | 'east' | 'west'
+  /** Sección con orden de asientos invertido (metadata.reversed_sections). */
+  reversed?: boolean
+  /** Asientos especiales por tipo (metadata.seat_types): tipo → lista de ids. */
+  seatTypes?: Record<string, string[]>
   onBack: () => void
 }
+
+// Colores conocidos del ranges (se descartan al tokenizar un id de asiento especial).
+const KNOWN_COLORS = new Set([
+  'orange',
+  'cyan',
+  'red',
+  'green',
+  'purple',
+  'blue',
+  'yellow',
+  'pink',
+  'brown',
+  'lgreen'
+])
 
 /**
  * Paso 2 del flujo de venta enumerado — selección de asientos de una sección,
@@ -49,7 +69,15 @@ interface SeatPickerV2Props {
  * (fila/número) y usa los precios con tax/fee reales. Conserva la contigüidad y
  * el timer de sesión del flujo original.
  */
-export default function SeatPickerV2({ event, section, sectionLayout, onBack }: SeatPickerV2Props) {
+export default function SeatPickerV2({
+  event,
+  section,
+  sectionLayout,
+  stageDirection = 'north',
+  reversed = false,
+  seatTypes = {},
+  onBack
+}: SeatPickerV2Props) {
   const navigate = useNavigate()
   const toast = useToast()
   const { items: cart, addItem, removeItem } = useCart()
@@ -171,6 +199,45 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     for (const s of section.seats) m.set(`${s.row}|${SEAT_NUM(s)}`, s)
     return m
   }, [section.seats])
+
+  // Tipo de asiento especial (accesibilidad) según metadata.seat_types del ranges.json.
+  // Soporta 2 formatos de id: Miami `${num}-${groupId}-${row}` (position-color) y el
+  // legacy de sección numérica `${section}-${color}-[zona-]${row}${num}` (san_jose).
+  const seatTypeOf = useCallback(
+    (seat: SeatItem): string | null => {
+      const num = SEAT_NUM(seat)
+      const rowLc = String(seat.row).toLowerCase()
+      const seatRowNum = `${seat.row}${num}`.toLowerCase()
+      const posLc = String(seat.position || '').toLowerCase()
+      const secLc = String(seat.section || '').toLowerCase()
+      const miamiId = section.groupId
+        ? `${num}-${section.groupId}-${seat.row}`.toLowerCase()
+        : null
+
+      const idMatches = (id: string): boolean => {
+        const lc = id.toLowerCase()
+        if (miamiId && lc === miamiId) return true
+        const tokens = lc.split('-').filter((t) => !KNOWN_COLORS.has(t))
+        // Legacy: sección numérica + token fila+número (ej. "101-purple-B5").
+        const sectionToken = tokens.find((t) => /^\d+$/.test(t))
+        if (sectionToken && (sectionToken === secLc || sectionToken === posLc)) {
+          if (tokens.some((t) => t === seatRowNum)) return true
+        }
+        // Genérico: position + fila + número por separado (Miami sin groupId).
+        const hasPos = tokens.some((t) => t === posLc || t === secLc)
+        if (hasPos && tokens.some((t) => t === rowLc) && tokens.some((t) => t === String(num))) {
+          return true
+        }
+        return false
+      }
+
+      for (const [typeKey, ids] of Object.entries(seatTypes)) {
+        if (ids.some(idMatches)) return typeKey
+      }
+      return null
+    },
+    [section.groupId, seatTypes]
+  )
 
   // Filas a renderizar: del molde (en su orden) si hay; si no, las de los asientos.
   const gridRows = useMemo(
@@ -366,6 +433,27 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
     }
   }
 
+  // Escenario: lado del borde según metadata.stage_direction. Los asientos se rotan
+  // para "mirar" al escenario (prop stageDirection en SeatIcon) y el rótulo "Stage"
+  // se ubica en ese mismo borde. north=arriba, south=abajo, east=derecha, west=izq.
+  const stagePos =
+    stageDirection === 'south'
+      ? 'bottom'
+      : stageDirection === 'east'
+        ? 'right'
+        : stageDirection === 'west'
+          ? 'left'
+          : 'top'
+  const stageVerticalAxis = stagePos === 'top' || stagePos === 'bottom'
+  const stageDirClass =
+    stagePos === 'top'
+      ? 'flex-col'
+      : stagePos === 'bottom'
+        ? 'flex-col-reverse'
+        : stagePos === 'left'
+          ? 'flex-row'
+          : 'flex-row-reverse'
+
   const disabledCta = cart.length === 0 || cart.length > MAX_SEATS || confirming
   const ctaLabel = confirming
     ? 'Reservando tus asientos…'
@@ -395,72 +483,107 @@ export default function SeatPickerV2({ event, section, sectionLayout, onBack }: 
           </header>
 
           <GlassCard depth='md' radius='lg' className='p-3 lg:p-4'>
-            <div className='py-2 text-center font-display text-[10px] font-bold uppercase tracking-[0.22em] text-white/55'>
-              Stage
-            </div>
-            <div
-              aria-hidden
-              className='mx-8 mb-3 h-0.5 rounded-pill'
-              style={{
-                background:
-                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)'
-              }}
-            />
             {section.seats.length === 0 ? (
               <div className='grid h-[300px] place-items-center text-[12px] text-white/45'>
                 No seats available in this section.
               </div>
             ) : (
-              <div className='overflow-auto'>
-                <div className='mx-auto flex w-max min-w-full flex-col items-center gap-1.5 py-3'>
-                  {gridRows.map((row) => (
-                    <div key={row} className='flex items-center'>
-                      <div className='mr-3 w-8 shrink-0 text-right font-display text-[11px] font-semibold text-white/45'>
-                        {row}
-                      </div>
-                      <div className='flex items-center gap-1'>
-                        {sectionLayout?.[row]
-                          ? sectionLayout[row].map((sn, col) => {
-                              const seat = sn !== null ? seatByKey.get(`${row}|${sn}`) : undefined
-                              if (!seat) {
-                                // Hueco/pasillo (o butaca no cargada) → espacio para conservar la forma real.
-                                return (
-                                  <span
-                                    key={col}
-                                    aria-hidden
-                                    className='inline-block h-[38px] w-[38px]'
+              <div className={`flex items-stretch ${stageDirClass}`}>
+                {/* Escenario en el borde que indica el JSON (stage_direction). */}
+                <div
+                  className={
+                    stageVerticalAxis
+                      ? 'w-full'
+                      : 'flex flex-col items-center justify-center px-1'
+                  }
+                >
+                  <div
+                    className='py-2 text-center font-display text-[10px] font-bold uppercase tracking-[0.22em] text-white/55'
+                    style={stageVerticalAxis ? undefined : { writingMode: 'vertical-rl' }}
+                  >
+                    Stage
+                  </div>
+                  <div
+                    aria-hidden
+                    className={
+                      stageVerticalAxis
+                        ? 'mx-8 my-2 h-0.5 rounded-pill'
+                        : 'mx-2 my-1 w-0.5 flex-1 rounded-pill'
+                    }
+                    style={{
+                      background: stageVerticalAxis
+                        ? 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)'
+                        : 'linear-gradient(180deg, transparent, rgba(255,255,255,0.6), transparent)'
+                    }}
+                  />
+                </div>
+
+                <div className='min-w-0 flex-1 overflow-auto'>
+                  <div className='mx-auto flex w-max min-w-full flex-col items-center gap-1.5 py-3'>
+                    {gridRows.map((row) => {
+                      const layoutRow = sectionLayout?.[row]
+                        ? reversed
+                          ? [...sectionLayout[row]].reverse()
+                          : sectionLayout[row]
+                        : null
+                      const rowSeats = reversed
+                        ? [...(seatsByRow[row] ?? [])].reverse()
+                        : (seatsByRow[row] ?? [])
+                      return (
+                        <div key={row} className='flex items-center'>
+                          <div className='mr-3 w-8 shrink-0 text-right font-display text-[11px] font-semibold text-white/45'>
+                            {row}
+                          </div>
+                          <div className='flex items-center gap-1'>
+                            {layoutRow
+                              ? layoutRow.map((sn, col) => {
+                                  const seat =
+                                    sn !== null ? seatByKey.get(`${row}|${sn}`) : undefined
+                                  if (!seat) {
+                                    // Hueco/pasillo (o butaca no cargada) → espacio para conservar la forma real.
+                                    return (
+                                      <span
+                                        key={col}
+                                        aria-hidden
+                                        className='inline-block h-[38px] w-[38px]'
+                                      />
+                                    )
+                                  }
+                                  return (
+                                    <SeatIcon
+                                      key={col}
+                                      isAvailable={isSeatAvailable(seat)}
+                                      isSelected={selectedSeatIds.has(seat.id)}
+                                      seatNumber={seat.seat_number}
+                                      row={seat.row}
+                                      stageDirection={stageDirection}
+                                      seatType={seatTypeOf(seat)}
+                                      onClick={() => handleSeatClick(seat)}
+                                      className='transition-transform hover:scale-110'
+                                    />
+                                  )
+                                })
+                              : rowSeats.map((seat) => (
+                                  <SeatIcon
+                                    key={seat.id}
+                                    isAvailable={isSeatAvailable(seat)}
+                                    isSelected={selectedSeatIds.has(seat.id)}
+                                    seatNumber={seat.seat_number}
+                                    row={seat.row}
+                                    stageDirection={stageDirection}
+                                    seatType={seatTypeOf(seat)}
+                                    onClick={() => handleSeatClick(seat)}
+                                    className='transition-transform hover:scale-110'
                                   />
-                                )
-                              }
-                              return (
-                                <SeatIcon
-                                  key={col}
-                                  isAvailable={isSeatAvailable(seat)}
-                                  isSelected={selectedSeatIds.has(seat.id)}
-                                  seatNumber={seat.seat_number}
-                                  row={seat.row}
-                                  onClick={() => handleSeatClick(seat)}
-                                  className='transition-transform hover:scale-110'
-                                />
-                              )
-                            })
-                          : (seatsByRow[row] ?? []).map((seat) => (
-                              <SeatIcon
-                                key={seat.id}
-                                isAvailable={isSeatAvailable(seat)}
-                                isSelected={selectedSeatIds.has(seat.id)}
-                                seatNumber={seat.seat_number}
-                                row={seat.row}
-                                onClick={() => handleSeatClick(seat)}
-                                className='transition-transform hover:scale-110'
-                              />
-                            ))}
-                      </div>
-                      <div className='ml-3 w-8 shrink-0 opacity-0' aria-hidden>
-                        {row}
-                      </div>
-                    </div>
-                  ))}
+                                ))}
+                          </div>
+                          <div className='ml-3 w-8 shrink-0 opacity-0' aria-hidden>
+                            {row}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             )}
