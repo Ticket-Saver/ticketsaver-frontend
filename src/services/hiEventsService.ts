@@ -272,8 +272,11 @@ export const hiEventsService = {
    * una muestra para el "desde $"). Si un general supera 100 tipos, ver deuda técnica.
    */
   async getTickets(eventId: string | number, signal?: AbortSignal): Promise<HiTicketPublic[]> {
+    // ponytail: 1 página de 1000. Eventos enumerados modelan 1 ticket por asiento
+    // (~866 en Miami); con per_page=100 el "desde $X" salía del mínimo de la 1ª página,
+    // no el global. Si algún evento supera 1000 tickets, paginar acá.
     const body = await getJson<HiPaginated<HiTicketPublic>>(
-      `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ per_page: 100 })}`,
+      `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ per_page: 1000 })}`,
       signal
     )
     return body.data
