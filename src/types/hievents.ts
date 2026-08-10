@@ -134,6 +134,19 @@ export interface HiTicketPrice {
   quantity_remaining: number | null
 }
 
+/** GET /public/events/{id}/tickets?summary=1 — agregados server-side sobre TODOS
+ *  los tickets del evento (el listado paginado solo muestra la primera página). */
+export interface HiTicketsSummary {
+  tickets_count: number
+  min_price: number | null
+  min_price_including_taxes_and_fees: number | null
+  any_available: boolean
+  next_sale_start: string | null
+  tiers: Array<
+    Pick<HiTicketPrice, 'price' | 'price_including_taxes_and_fees' | 'tax_total' | 'fee_total'>
+  >
+}
+
 export type HiTicketType = 'FREE' | 'PAID' | 'DONATION' | 'TIERED' | 'REGISTRATION'
 
 /** Item de `data` en GET /public/events/{id}/tickets. */

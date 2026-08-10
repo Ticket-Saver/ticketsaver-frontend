@@ -20,6 +20,7 @@ import type {
   HiAvailability,
   HiEventPublic,
   HiTicketPublic,
+  HiTicketsSummary,
   HiLocationDetails
 } from '../../types/hievents'
 
@@ -83,31 +84,39 @@ export default function EventDetailV2() {
   const eventFromList = byId(id)
 
   const [detail, setDetail] = useState<HiEventPublic | null>(null)
+  const [summary, setSummary] = useState<HiTicketsSummary | null>(null)
   const [tickets, setTickets] = useState<HiTicketPublic[]>([])
   const [queueSettings, setQueueSettings] = useState<HiQueueSettingsPublic | null>(null)
   const [detailError, setDetailError] = useState(false)
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
-  // Detalle rico + tickets + queue-settings desde HiEvents. Sirve también de
-  // deep-link: si el evento no está en la lista cargada, igual se resuelve por su id.
+  // Detalle rico + summary de tickets + queue-settings desde HiEvents. El summary
+  // agrega server-side (mínimo global, disponibilidad, próxima apertura) — antes se
+  // traían hasta 1000 tickets y el mínimo salía solo de la primera página. La lista
+  // completa se pide únicamente si es corta (≤12, la única que se renderiza).
   useEffect(() => {
     if (!id) return
     let cancelled = false
     setDetail(null)
+    setSummary(null)
     setTickets([])
     setQueueSettings(null)
     setDetailError(false)
     ;(async () => {
       try {
-        const [d, t, q] = await Promise.all([
+        const [d, s, q] = await Promise.all([
           hiEventsService.getEvent(id),
-          hiEventsService.getTickets(id).catch(() => [] as HiTicketPublic[]),
+          hiEventsService.getTicketsSummary(id).catch(() => null),
           hiEventsService.getQueueSettings(id).catch(() => null)
         ])
         if (cancelled) return
         setDetail(d)
-        setTickets(t)
+        setSummary(s)
         setQueueSettings(q)
+        if (s && s.tickets_count > 0 && s.tickets_count <= 12) {
+          const t = await hiEventsService.getTickets(id).catch(() => [] as HiTicketPublic[])
+          if (!cancelled) setTickets(t)
+        }
       } catch {
         if (!cancelled) setDetailError(true)
       }
@@ -120,17 +129,15 @@ export default function EventDetailV2() {
   // Evento base: de la lista (rápido) o construido desde el detalle (deep-link).
   const baseEvent: UIEvent | null = eventFromList ?? (detail ? hiEventToUIEvent(detail) : null)
 
-  // priceFrom real: mínimo de los tickets. Con fees solo si el evento se configuró
-  // INCLUSIVE (price_display_mode); si no, precio base.
+  // priceFrom real: mínimo global del summary. Con fees solo si el evento se
+  // configuró INCLUSIVE (price_display_mode); si no, precio base.
   const priceInclusive = detail?.settings?.price_display_mode === 'INCLUSIVE'
   const priceFrom = useMemo(() => {
-    const all = tickets.flatMap((t) =>
-      t.prices.map((p) =>
-        priceInclusive ? (p.price_including_taxes_and_fees ?? p.price) : p.price
-      )
-    )
-    return all.length > 0 ? Math.min(...all) : null
-  }, [tickets, priceInclusive])
+    if (!summary) return null
+    return priceInclusive
+      ? (summary.min_price_including_taxes_and_fees ?? summary.min_price)
+      : summary.min_price
+  }, [summary, priceInclusive])
 
   // Countdown: si ningún ticket está en venta y hay una fecha de apertura futura,
   // mostramos "On sale {fecha}" (la más temprana) y se deshabilita la compra.
@@ -140,23 +147,17 @@ export default function EventDetailV2() {
       saleStartsLabel: undefined as string | undefined,
       saleStartsAt: null as Date | null
     }
-    if (tickets.length === 0) return active
-    if (tickets.some((t) => t.is_available)) return active
-    const upcoming = tickets
-      .map((t) => t.sale_start_date)
-      .filter((s): s is string => Boolean(s))
-      .map((s) => new Date(s))
-      .filter((d) => !Number.isNaN(d.getTime()) && d.getTime() > Date.now())
-      .sort((a, b) => a.getTime() - b.getTime())
-    if (upcoming.length > 0) {
+    if (!summary || summary.tickets_count === 0 || summary.any_available) return active
+    const start = summary.next_sale_start ? new Date(summary.next_sale_start) : null
+    if (start && !Number.isNaN(start.getTime()) && start.getTime() > Date.now()) {
       return {
         isSaleActive: false,
-        saleStartsLabel: `On sale ${SALE_DATE_FMT.format(upcoming[0])}`,
-        saleStartsAt: upcoming[0]
+        saleStartsLabel: `On sale ${SALE_DATE_FMT.format(start)}`,
+        saleStartsAt: start
       }
     }
     return active
-  }, [tickets])
+  }, [summary])
 
   // Evento enriquecido con datos reales del detalle (precio, disponibilidad,
   // vibe), sin tocar los subcomponentes que ya consumen UIEvent.
