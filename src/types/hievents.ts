@@ -199,6 +199,8 @@ export interface HiAttendeeTicket {
   row?: string | null
   seat_number?: string | null
   position?: string | null
+  /** Position crudo del asiento ("balconyright"); `position` viene pisado por seat_number. */
+  subZone?: string | null
   price_range?: string | null
 }
 

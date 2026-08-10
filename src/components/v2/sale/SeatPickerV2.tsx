@@ -94,12 +94,16 @@ export default function SeatPickerV2({
   const [tierByBase, setTierByBase] = useState<Map<number, HiTicketPrice>>(new Map())
   const [pricingReady, setPricingReady] = useState(false)
 
+  // Todos los asientos del grupo comparten position (groupId = position-color),
+  // así que filtramos /tickets a la sección abierta en vez de traer todo el evento.
+  const sectionPosition = section.seats[0]?.position || undefined
+
   useEffect(() => {
     const controller = new AbortController()
     let mounted = true
     setPricingReady(false)
     hiEventsService
-      .getPriceTiers(event.eventId, controller.signal)
+      .getPriceTiers(event.eventId, controller.signal, { position: sectionPosition })
       .then((map) => {
         if (!mounted) return
         setTierByBase(map)
@@ -113,7 +117,7 @@ export default function SeatPickerV2({
       mounted = false
       controller.abort()
     }
-  }, [event.eventId])
+  }, [event.eventId, sectionPosition])
 
   // B1 · Disponibilidad EN VIVO. Refrescamos los asientos de la sección cada ~11s
   // (pausado si la pestaña está oculta). Si un asiento que tenías seleccionado lo
