@@ -523,11 +523,6 @@ const SelectedDateHighlight = ({
         </span>
       </div>
     </div>
-    <span className='shrink-0 px-2 py-1 rounded-glass-sm bg-accent-coral/20 text-accent-coral font-display text-[9.5px] font-bold uppercase tracking-[0.10em]'>
-      {event.presale?.active && !event.presale?.salesStarted
-        ? 'presale'
-        : event.availability.replace('-', ' ')}
-    </span>
     <BuyNowButton
       event={event}
       priceFrom={priceFrom}
