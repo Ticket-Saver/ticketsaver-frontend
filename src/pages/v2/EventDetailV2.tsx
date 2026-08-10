@@ -7,6 +7,7 @@ import TagList from '../../components/v2/eventDetail/TagList'
 import Gallery from '../../components/v2/eventDetail/Gallery'
 import VenueMap from '../../components/v2/eventDetail/VenueMap'
 import StickyCTA, { buildSaleHref } from '../../components/v2/eventDetail/StickyCTA'
+import BuyNowButton from '../../components/v2/eventDetail/BuyNowButton'
 import EventResaleSection from '../../components/v2/resale/EventResaleSection'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
@@ -288,7 +289,15 @@ export default function EventDetailV2() {
       </div>
 
       <div className='mt-6 px-5 lg:px-10 max-w-7xl mx-auto'>
-        <SelectedDateHighlight event={event} endTime={endTime} />
+        <SelectedDateHighlight
+          event={event}
+          endTime={endTime}
+          priceFrom={priceFrom}
+          isSaleActive={isSaleActive}
+          saleStartsLabel={saleStartsLabel}
+          presaleActive={presaleGateActive}
+          onChooseSeats={handleChooseSeats}
+        />
       </div>
 
       <SaleSchedule event={event} />
@@ -469,9 +478,27 @@ const TitleBlock = ({ event, organizer }: { event: UIEvent; organizer?: string }
   </div>
 )
 
-const SelectedDateHighlight = ({ event, endTime }: { event: UIEvent; endTime?: string }) => (
+interface SelectedDateHighlightProps {
+  event: UIEvent
+  endTime?: string
+  priceFrom: number | null
+  isSaleActive: boolean
+  saleStartsLabel?: string
+  presaleActive?: boolean
+  onChooseSeats: () => void
+}
+
+const SelectedDateHighlight = ({
+  event,
+  endTime,
+  priceFrom,
+  isSaleActive,
+  saleStartsLabel,
+  presaleActive,
+  onChooseSeats
+}: SelectedDateHighlightProps) => (
   <div
-    className='flex items-center gap-3 p-3.5 rounded-glass-md border border-brand-hi/30 backdrop-blur-glass-strong'
+    className='flex flex-wrap items-center gap-3 p-3.5 rounded-glass-md border border-brand-hi/30 backdrop-blur-glass-strong'
     style={{ background: 'rgba(212,168,240,0.12)' }}
   >
     <div className='h-[52px] w-[52px] shrink-0 rounded-glass-sm bg-white text-brand-ink flex flex-col items-center justify-center font-display'>
@@ -501,6 +528,14 @@ const SelectedDateHighlight = ({ event, endTime }: { event: UIEvent; endTime?: s
         ? 'presale'
         : event.availability.replace('-', ' ')}
     </span>
+    <BuyNowButton
+      event={event}
+      priceFrom={priceFrom}
+      isSaleActive={isSaleActive}
+      saleStartsLabel={saleStartsLabel}
+      presaleActive={presaleActive}
+      onChooseSeats={onChooseSeats}
+    />
   </div>
 )
 

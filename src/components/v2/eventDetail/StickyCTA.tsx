@@ -41,21 +41,25 @@ export const buildSaleHref = (event: UIEvent): string => {
   return `/sale/${safe(event.title)}/${safe(event.venueLabel)}/${safe(cityForRoute)}/${safe(event.raw.event_date)}/${safe(event.id)}/${safe(deleteParam)}?eid=${eid}`
 }
 
-export default function StickyCTA({
-  event,
-  priceFrom,
-  isSaleActive,
-  saleStartsLabel,
-  overrideHref,
-  presaleActive,
-  onChooseSeats
-}: StickyCTAProps) {
+/**
+ * Estado del CTA de compra (label + disabled + href) derivado del evento.
+ * Única fuente de verdad: la comparten StickyCTA y cualquier otro botón de
+ * compra (ej. "Buy now" del resumen de fecha) para no divergir en la lógica.
+ */
+export const getCtaState = (
+  event: UIEvent,
+  priceFrom: number | null,
+  isSaleActive: boolean,
+  saleStartsLabel: string | undefined,
+  presaleActive: boolean | undefined,
+  overrideHref?: string
+) => {
   const isSoldOut = event.availability === 'sold-out'
   // La preventa activa también habilita la compra (con código).
   const effectiveActive = isSaleActive || !!presaleActive
   const disabled = !effectiveActive || event.expired || isSoldOut
 
-  const ctaLabel = (() => {
+  const label = (() => {
     if (event.expired) return 'Event ended'
     // La pre-venta tiene prioridad: 0 disponibles antes de abrir ≠ agotado.
     if (!effectiveActive) return saleStartsLabel ?? 'Coming soon'
@@ -76,6 +80,27 @@ export default function StickyCTA({
       : event.requiresQueue
         ? queueHref
         : buildSaleHref(event))
+
+  return { disabled, label, priceLabel, targetHref, isSoldOut }
+}
+
+export default function StickyCTA({
+  event,
+  priceFrom,
+  isSaleActive,
+  saleStartsLabel,
+  overrideHref,
+  presaleActive,
+  onChooseSeats
+}: StickyCTAProps) {
+  const { disabled, label: ctaLabel, priceLabel, targetHref } = getCtaState(
+    event,
+    priceFrom,
+    isSaleActive,
+    saleStartsLabel,
+    presaleActive,
+    overrideHref
+  )
 
   const content = (
     <>

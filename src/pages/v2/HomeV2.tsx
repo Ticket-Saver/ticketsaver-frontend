@@ -133,7 +133,7 @@ export default function HomeV2() {
           <>
             <HeroEvent
               events={heroEvents.slice(0, 5)}
-              autoPlayMs={9000}
+              autoPlayMs={3500}
               className='mx-auto w-full max-w-[1280px]'
             />
 
