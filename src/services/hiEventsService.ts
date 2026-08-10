@@ -123,6 +123,9 @@ async function request<T>(
 const getJson = <T>(path: string, signal?: AbortSignal) =>
   request<T>('GET', path, undefined, signal)
 
+/** Cache de getTicketsSummary por evento (60s) — ver doc del método. */
+const summaryCache = new Map<string, { at: number; promise: Promise<HiTicketsSummary> }>()
+
 /**
  * POST/PUT autenticado con el access_token de la sesión Supabase — usado por
  * los endpoints de orden (`auth:customer` en el backend, no el token estático
@@ -288,19 +291,28 @@ export const hiEventsService = {
 
   /**
    * Agregados de los tickets del evento (GET /tickets?summary=1): mínimos, hay
-   * disponibles, próxima apertura de venta y tiers completos. El backend recorre
-   * TODOS los tickets (2741 en San Jose — el fetch paginado del front veía solo
-   * la página 1) y responde bytes en vez de megas.
+   * disponibles, próxima apertura de venta y tiers completos. El backend agrega
+   * por SQL sobre TODOS los tickets (2741 en San Jose — el fetch paginado del
+   * front veía solo la página 1) y responde bytes en vez de megas.
+   *
+   * Memoizado 60s por evento: detalle, leyenda del mapa y cada sección del seat
+   * picker comparten UNA llamada (el summary compartido no es abortable; los
+   * callers ya se protegen con su flag mounted).
    */
   async getTicketsSummary(
     eventId: string | number,
     signal?: AbortSignal
   ): Promise<HiTicketsSummary> {
-    const body = await getJson<HiResource<HiTicketsSummary>>(
+    const key = String(eventId)
+    const cached = summaryCache.get(key)
+    if (cached && Date.now() - cached.at < 60_000) return cached.promise
+    const promise = getJson<HiResource<HiTicketsSummary>>(
       `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ summary: 1 })}`,
       signal
-    )
-    return body.data
+    ).then((body) => body.data)
+    summaryCache.set(key, { at: Date.now(), promise })
+    promise.catch(() => summaryCache.delete(key))
+    return promise
   },
 
   /**
