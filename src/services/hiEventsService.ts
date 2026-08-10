@@ -267,14 +267,19 @@ export const hiEventsService = {
   },
 
   /**
-   * Tickets y precios de un evento.
+   * Tickets y precios de un evento. `filter.position` (match exacto) limita a los
+   * asientos de una sección del mapa — el backend ya lo soporta.
    */
-  async getTickets(eventId: string | number, signal?: AbortSignal): Promise<HiTicketPublic[]> {
+  async getTickets(
+    eventId: string | number,
+    signal?: AbortSignal,
+    filter?: { position?: string; section?: string }
+  ): Promise<HiTicketPublic[]> {
     // ponytail: 1 página de 1000. Eventos enumerados modelan 1 ticket por asiento
     // (~866 en Miami); con per_page=100 el "desde $X" salía del mínimo de la 1ª página,
     // no el global. Si algún evento supera 1000 tickets, paginar acá.
     const body = await getJson<HiPaginated<HiTicketPublic>>(
-      `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ per_page: 1000 })}`,
+      `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ per_page: 1000, ...filter })}`,
       signal
     )
     return body.data
@@ -290,9 +295,10 @@ export const hiEventsService = {
    */
   async getPriceTiers(
     eventId: string | number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    filter?: { position?: string; section?: string }
   ): Promise<Map<number, HiTicketPrice>> {
-    const tickets = await this.getTickets(eventId, signal)
+    const tickets = await this.getTickets(eventId, signal, filter)
     const byBase = new Map<number, HiTicketPrice>()
     for (const t of tickets) {
       for (const p of t.prices) {

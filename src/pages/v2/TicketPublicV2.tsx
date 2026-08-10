@@ -9,6 +9,7 @@ import { useUIEvents } from '../../hooks/useUIEvents'
 import { hiEventsService } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverHash, coverSeed } from '../../lib/covers/coverHash'
+import { ticketSection } from '../../lib/ticketSection'
 import type { HiAttendee } from '../../types/hievents'
 import type { UIEvent } from '../../types/uiEvent'
 
@@ -94,7 +95,7 @@ export default function TicketPublicV2() {
   }
 
   const seatInfo = {
-    section: attendee.ticket?.section ?? undefined,
+    section: ticketSection(attendee.ticket),
     row: attendee.ticket?.row ?? undefined,
     seat: attendee.ticket?.seat_number ?? undefined
   }

@@ -11,6 +11,7 @@ import { useCart } from '../../router/cartContext'
 import { hiEventsService } from '../../services/hiEventsService'
 import type { HiOrder } from '../../types/hievents'
 import { coverHash, coverSeed } from '../../lib/covers/coverHash'
+import { ticketSection } from '../../lib/ticketSection'
 import gradients from '../../styles/effects/gradients.module.css'
 import type { UIEvent } from '../../types/uiEvent'
 
@@ -57,27 +58,6 @@ const readCartSnapshot = (): CartCheckoutSnapshot | null => {
   } catch {
     return null
   }
-}
-
-const SIDE_LABEL: Record<string, string> = {
-  left: 'Left',
-  right: 'Right',
-  center: 'Center',
-  leftcenter: 'Left Center',
-  rightcenter: 'Right Center'
-}
-
-/** Sección para mostrar. En zonas (balcony/loge) el backend guarda `section` como la
- *  zona sola ("Balcony") y el lado vive en `position` ("balconyright") → "Balcony Right".
- *  Fuera de esas zonas, deja la sección tal cual. */
-const sectionWithSide = (section?: string | null, position?: string | null): string | undefined => {
-  const sec = section?.trim() || undefined
-  const pos = (position || '').toLowerCase()
-  if (!sec || !pos) return sec
-  const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z))
-  if (!zone) return sec
-  const side = SIDE_LABEL[pos.slice(zone.length)]
-  return side ? `${sec} ${side}` : sec
 }
 
 /** "A15" / "K-7" → { row: "A", seat: "15" }. Los asientos de HiEvents traen el
@@ -174,7 +154,7 @@ export default function TicketReceivedV2() {
         qrValue: a.public_id || undefined,
         ticketNumber: i + 1,
         seatInfo: {
-          section: sectionWithSide(a.ticket?.section, a.ticket?.position),
+          section: ticketSection(a.ticket),
           row: a.ticket?.row ?? undefined,
           seat: a.ticket?.seat_number ?? undefined
         }
