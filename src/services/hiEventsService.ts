@@ -16,6 +16,7 @@ import type {
   HiEventPublic,
   HiTicketPublic,
   HiTicketPrice,
+  HiTicketsSummary,
   HiSeatingMap,
   HiSeat,
   HiOrder,
@@ -121,6 +122,9 @@ async function request<T>(
 
 const getJson = <T>(path: string, signal?: AbortSignal) =>
   request<T>('GET', path, undefined, signal)
+
+/** Cache de getTicketsSummary por evento (60s) — ver doc del método. */
+const summaryCache = new Map<string, { at: number; promise: Promise<HiTicketsSummary> }>()
 
 /**
  * POST/PUT autenticado con el access_token de la sesión Supabase — usado por
@@ -286,10 +290,35 @@ export const hiEventsService = {
   },
 
   /**
+   * Agregados de los tickets del evento (GET /tickets?summary=1): mínimos, hay
+   * disponibles, próxima apertura de venta y tiers completos. El backend agrega
+   * por SQL sobre TODOS los tickets (2741 en San Jose — el fetch paginado del
+   * front veía solo la página 1) y responde bytes en vez de megas.
+   *
+   * Memoizado 60s por evento: detalle, leyenda del mapa y cada sección del seat
+   * picker comparten UNA llamada (el summary compartido no es abortable; los
+   * callers ya se protegen con su flag mounted).
+   */
+  async getTicketsSummary(
+    eventId: string | number,
+    signal?: AbortSignal
+  ): Promise<HiTicketsSummary> {
+    const key = String(eventId)
+    const cached = summaryCache.get(key)
+    if (cached && Date.now() - cached.at < 60_000) return cached.promise
+    const promise = getJson<HiResource<HiTicketsSummary>>(
+      `${HIEVENTS_CONFIG.endpoints.eventTickets(eventId)}${toQuery({ summary: 1 })}`,
+      signal
+    ).then((body) => body.data)
+    summaryCache.set(key, { at: Date.now(), promise })
+    promise.catch(() => summaryCache.delete(key))
+    return promise
+  },
+
+  /**
    * Mapa `precio base → tier` del evento (con precio con fees, tax y fee por tier).
-   * El fee es por tier de precio, no por asiento, así que una sola llamada a /tickets
-   * alcanza para poner el precio con fees a TODOS los asientos por su base — sin pedir
-   * asiento por asiento (/tickets/by-seat-ids topa a 100 ids y hacía N requests).
+   * Sin filtro usa el summary del backend (tiers globales, payload mínimo); con
+   * `filter.position/section` trae los tickets de esa sección y arma el mapa local.
    * ponytail: se asume que el precio base identifica el tier; si dos zonas comparten
    * base con fees distintos, habría que indexar por price_range.
    */
@@ -298,8 +327,16 @@ export const hiEventsService = {
     signal?: AbortSignal,
     filter?: { position?: string; section?: string }
   ): Promise<Map<number, HiTicketPrice>> {
-    const tickets = await this.getTickets(eventId, signal, filter)
     const byBase = new Map<number, HiTicketPrice>()
+    if (!filter?.position && !filter?.section) {
+      const summary = await this.getTicketsSummary(eventId, signal)
+      for (const t of summary.tiers) {
+        if (typeof t.price === 'number' && !byBase.has(t.price))
+          byBase.set(t.price, t as HiTicketPrice)
+      }
+      return byBase
+    }
+    const tickets = await this.getTickets(eventId, signal, filter)
     for (const t of tickets) {
       for (const p of t.prices) {
         if (typeof p.price === 'number' && !byBase.has(p.price)) byBase.set(p.price, p)
