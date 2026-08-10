@@ -93,14 +93,12 @@ export default function StickyCTA({
   presaleActive,
   onChooseSeats
 }: StickyCTAProps) {
-  const { disabled, label: ctaLabel, priceLabel, targetHref } = getCtaState(
-    event,
-    priceFrom,
-    isSaleActive,
-    saleStartsLabel,
-    presaleActive,
-    overrideHref
-  )
+  const {
+    disabled,
+    label: ctaLabel,
+    priceLabel,
+    targetHref
+  } = getCtaState(event, priceFrom, isSaleActive, saleStartsLabel, presaleActive, overrideHref)
 
   const content = (
     <>
