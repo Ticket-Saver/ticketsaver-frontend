@@ -87,6 +87,26 @@ exports.handler = async (event) => {
       else process.env.NODE_TLS_REJECT_UNAUTHORIZED = prevTlsEnv
     }
 
+    // Respuestas binarias (p.ej. el .pkpass de Apple Wallet) NO se pueden leer como
+    // texto: `response.text()` reinterpreta los bytes no-ASCII como UTF-8 y los
+    // reemplaza por U+FFFD, corrompiendo el ZIP. Base64 + isBase64Encoded para que
+    // Netlify los reenvíe intactos, preservando el Content-Type del upstream.
+    const upstreamType = response.headers.get('content-type') || ''
+    const isTextual = /\b(json|text|xml|javascript|html|x-www-form-urlencoded)\b/i.test(upstreamType)
+
+    if (!isTextual) {
+      const buffer = Buffer.from(await response.arrayBuffer())
+      const passthrough = { ...corsHeaders, 'Content-Type': upstreamType || 'application/octet-stream' }
+      const disposition = response.headers.get('content-disposition')
+      if (disposition) passthrough['Content-Disposition'] = disposition
+      return {
+        statusCode: response.status,
+        headers: passthrough,
+        body: buffer.toString('base64'),
+        isBase64Encoded: true
+      }
+    }
+
     const data = await response.text()
     let responseBody
     try {

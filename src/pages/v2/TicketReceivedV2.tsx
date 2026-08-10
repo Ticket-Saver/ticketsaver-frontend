@@ -59,6 +59,27 @@ const readCartSnapshot = (): CartCheckoutSnapshot | null => {
   }
 }
 
+const SIDE_LABEL: Record<string, string> = {
+  left: 'Left',
+  right: 'Right',
+  center: 'Center',
+  leftcenter: 'Left Center',
+  rightcenter: 'Right Center'
+}
+
+/** Sección para mostrar. En zonas (balcony/loge) el backend guarda `section` como la
+ *  zona sola ("Balcony") y el lado vive en `position` ("balconyright") → "Balcony Right".
+ *  Fuera de esas zonas, deja la sección tal cual. */
+const sectionWithSide = (section?: string | null, position?: string | null): string | undefined => {
+  const sec = section?.trim() || undefined
+  const pos = (position || '').toLowerCase()
+  if (!sec || !pos) return sec
+  const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z))
+  if (!zone) return sec
+  const side = SIDE_LABEL[pos.slice(zone.length)]
+  return side ? `${sec} ${side}` : sec
+}
+
 /** "A15" / "K-7" → { row: "A", seat: "15" }. Los asientos de HiEvents traen el
  *  seatLabel como `${row}${seat_number}`; el flujo Seatchart viejo usaba coords. */
 const parseSeatLabel = (label?: string): { row?: string; seat?: string } => {
@@ -153,7 +174,7 @@ export default function TicketReceivedV2() {
         qrValue: a.public_id || undefined,
         ticketNumber: i + 1,
         seatInfo: {
-          section: a.ticket?.section ?? undefined,
+          section: sectionWithSide(a.ticket?.section, a.ticket?.position),
           row: a.ticket?.row ?? undefined,
           seat: a.ticket?.seat_number ?? undefined
         }
