@@ -22,6 +22,8 @@ interface TicketCardProps {
   qrValue?: string
   /** Hace toda la card un Link al detalle (variant list). */
   href?: string
+  /** Chip con el asiento en el variant 'list' ("Zona 205 · Fila A · Asiento 1"). */
+  seatLabel?: string
   /** Cuando true, hace el filter saturate(.6) opacity(.7) para "past events". */
   past?: boolean
   className?: string
@@ -42,6 +44,7 @@ export default function TicketCard({
   ticketNumber,
   qrValue,
   href,
+  seatLabel,
   past,
   className
 }: TicketCardProps) {
@@ -57,7 +60,7 @@ export default function TicketCard({
     )
   }
 
-  const card = <ListTicket event={event} past={past} className={className} />
+  const card = <ListTicket event={event} past={past} seatLabel={seatLabel} className={className} />
   if (href) {
     return (
       <Link to={href} className='block focus-visible:outline-none'>
@@ -244,10 +247,12 @@ const FakeQR = ({ seed }: { seed: string }) => {
 const ListTicket = ({
   event,
   past,
+  seatLabel,
   className
 }: {
   event: UIEvent
   past?: boolean
+  seatLabel?: string
   className?: string
 }) => {
   const palette = getCoverPalette(event.cover)
@@ -306,8 +311,9 @@ const ListTicket = ({
             {event.venueName}
             {event.city && ` · ${event.city}`}
           </div>
-          <div className='mt-auto flex items-center gap-1.5'>
+          <div className='mt-auto flex items-center gap-1.5 min-w-0'>
             <Tag>{event.time || 'TBA'}</Tag>
+            {seatLabel && <Tag>{seatLabel}</Tag>}
           </div>
         </div>
       </div>

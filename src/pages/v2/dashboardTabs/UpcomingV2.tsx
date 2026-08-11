@@ -4,11 +4,11 @@ import TicketGrid from '../../../components/v2/ticket/TicketGrid'
 import { userTicketsEventToUIEvent } from '../../../services/hiEventsAdapter'
 import { hiEventsService } from '../../../services/hiEventsService'
 import type { MyTicketsContext } from '../MyTicketsV2'
-import { ticketHref, TicketListSkeleton } from './_shared'
+import { toGridItems, TicketListSkeleton } from './_shared'
 
 /**
  * Tickets próximos del usuario (eventos con fecha futura), reales de HiEvents.
- * Una card por evento; el link lleva a su ticketera pública (QR real).
+ * Una card por ASIENTO; cada link lleva a la ticketera pública de ese QR.
  *
  * Con `?event=<id>&order=<shortId>` (link de los mails de compra) filtramos a
  * los tickets de esa orden: resolvemos la orden y cruzamos sus `public_id` con
@@ -51,18 +51,13 @@ export default function UpcomingV2() {
       .filter((e) => e.tickets.length > 0)
   }, [upcoming, orderTicketIds])
 
-  const events = useMemo(() => filtered.map(userTicketsEventToUIEvent), [filtered])
-  const hrefBySlug = useMemo(
-    () => new Map(filtered.map((e) => [e.eventId, ticketHref(e)])),
-    [filtered]
-  )
+  const items = useMemo(() => toGridItems(filtered, userTicketsEventToUIEvent), [filtered])
 
   if (loading || orderLoading) return <TicketListSkeleton />
 
   return (
     <TicketGrid
-      events={events}
-      hrefFor={(e) => hrefBySlug.get(e.id)}
+      items={items}
       emptyMessage={
         orderTicketIds
           ? 'No encontramos los tickets de esta compra.'
