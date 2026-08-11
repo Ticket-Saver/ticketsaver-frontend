@@ -3,15 +3,22 @@ import { GlassCard } from '../../ui'
 import { cn } from '../../../types/ui'
 import type { UIEvent } from '../../../types/uiEvent'
 
+export interface TicketGridItem {
+  key: string
+  event: UIEvent
+  href?: string
+  /** "Zona 205 · Fila A · Asiento 1" — distingue cards del mismo evento. */
+  seatLabel?: string
+}
+
 interface TicketGridProps {
-  events: UIEvent[]
+  /** Una card por TICKET (asiento), no por evento. */
+  items: TicketGridItem[]
   /** Marca todas como pasadas (visual saturado). */
   past?: boolean
-  /** Mensaje cuando no hay eventos. */
+  /** Mensaje cuando no hay tickets. */
   emptyMessage?: string
   className?: string
-  /** Builder del href de cada ticket. */
-  hrefFor?: (event: UIEvent) => string | undefined
 }
 
 /**
@@ -19,13 +26,12 @@ interface TicketGridProps {
  * Para upcoming y past.
  */
 export default function TicketGrid({
-  events,
+  items,
   past,
   emptyMessage = "You don't have any events here yet.",
-  className,
-  hrefFor
+  className
 }: TicketGridProps) {
-  if (events.length === 0) {
+  if (items.length === 0) {
     return (
       <GlassCard depth='sm' radius='lg' className='p-8 text-center'>
         <div className='font-display text-base font-semibold text-white'>Nothing here yet</div>
@@ -35,13 +41,14 @@ export default function TicketGrid({
   }
   return (
     <div className={cn('grid gap-3 sm:grid-cols-2', className)}>
-      {events.map((event) => (
+      {items.map((item) => (
         <TicketCard
-          key={event.id}
-          event={event}
+          key={item.key}
+          event={item.event}
           variant='list'
           past={past}
-          href={hrefFor?.(event)}
+          href={item.href}
+          seatLabel={item.seatLabel}
         />
       ))}
     </div>

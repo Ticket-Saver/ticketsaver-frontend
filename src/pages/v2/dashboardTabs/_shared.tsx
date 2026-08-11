@@ -1,18 +1,44 @@
 import type { HiUserTicketsEvent } from '../../../types/hievents'
+import type { UIEvent } from '../../../types/uiEvent'
 
-/**
- * Link a la ticketera pública (QR real) de un evento. Toma el primer ticket
- * ACTIVE (o el primero que haya) → `/ticket/:eventIdNumber/:publicId`.
- *
- * Nota (deuda): un evento puede tener varios tickets (varios asientos), cada
- * uno con su propio QR. Por ahora la card del evento linkea al primero; mostrar
- * todos los QR de una compra es una mejora futura.
- */
-export const ticketHref = (e: HiUserTicketsEvent): string | undefined => {
-  const t = e.tickets?.find((x) => x.status === 'ACTIVE') ?? e.tickets?.[0]
-  if (!t) return undefined
-  return `/ticket/${e.eventIdNumber}/${encodeURIComponent(t.ticketId)}`
+/** Una card por ASIENTO (antes era una por evento y solo linkeaba al primer
+ *  ticket — un comprador con 2 asientos veía "un solo boleto"). */
+export interface TicketEntry {
+  key: string
+  href?: string
+  seatLabel?: string
 }
+
+/** Entradas por ticket de un evento del usuario. Excluye CANCELLED. En el
+ *  endpoint de my-tickets `zone` es el position crudo y `section` es la FILA
+ *  (mapeo histórico del backend). */
+export const ticketEntries = (e: HiUserTicketsEvent): TicketEntry[] => {
+  const active = (e.tickets ?? []).filter((t) => t.status !== 'CANCELLED')
+  return active.map((t, i) => {
+    const seat = [
+      t.zone && `Zona ${t.zone}`,
+      t.section && `Fila ${t.section}`,
+      t.seatNumber && `Asiento ${t.seatNumber}`
+    ]
+      .filter(Boolean)
+      .join(' · ')
+    return {
+      key: t.ticketId,
+      href: `/ticket/${e.eventIdNumber}/${encodeURIComponent(t.ticketId)}`,
+      seatLabel: seat || (active.length > 1 ? `Ticket ${i + 1} de ${active.length}` : undefined)
+    }
+  })
+}
+
+/** Aplana eventos del usuario a items del grid: una card por asiento. */
+export const toGridItems = (
+  events: HiUserTicketsEvent[],
+  toUIEvent: (e: HiUserTicketsEvent) => UIEvent
+): Array<TicketEntry & { event: UIEvent }> =>
+  events.flatMap((e) => {
+    const ui = toUIEvent(e)
+    return ticketEntries(e).map((t) => ({ ...t, event: ui }))
+  })
 
 /** Skeleton de la lista de tickets mientras carga el endpoint. */
 export const TicketListSkeleton = () => (
