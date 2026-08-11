@@ -181,7 +181,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   )
 
   const forgotPassword = useCallback(async (email: string) => {
-    const { error } = await requireSupabase().auth.resetPasswordForEmail(email)
+    // redirectTo explicito: sin el, el link del mail aterriza en el "Site URL"
+    // del proyecto Supabase (config externa al repo) y el usuario queda en la
+    // home con la sesion de recovery, sin la pantalla para elegir password.
+    // Requiere que la URL este en Authentication > URL Configuration > Redirect URLs.
+    const { error } = await requireSupabase().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    })
     if (error) throw error
   }, [])
 
