@@ -140,25 +140,39 @@ export default function EventDetailV2() {
       : summary.min_price
   }, [summary, priceInclusive])
 
-  // Countdown: si ningún ticket está en venta y hay una fecha de apertura futura,
-  // mostramos "On sale {fecha}" (la más temprana) y se deshabilita la compra.
+  // Countdown: si la venta aún no abrió, mostramos "On sale {fecha}" y se
+  // deshabilita la compra. Hay DOS agendas de venta y se consultan en orden de
+  // autoridad:
+  //  1. EVENTO (`sales_started` / `ticket_sales_start_date`): es el gate que el
+  //     backend aplica de verdad al crear la orden (areTicketSalesStarted). El
+  //     switch de "programar venta" del panel escribe acá y NO propaga la fecha
+  //     a los tickets — los asientos generados en masa nacen con
+  //     `sale_start_date` null, así que el summary nunca la ve.
+  //  2. TICKETS (`any_available` / `next_sale_start` del summary), para eventos
+  //     con la ventana configurada ticket a ticket.
   const { isSaleActive, saleStartsLabel, saleStartsAt } = useMemo(() => {
     const active = {
       isSaleActive: true,
       saleStartsLabel: undefined as string | undefined,
       saleStartsAt: null as Date | null
     }
-    if (!summary || summary.tickets_count === 0 || summary.any_available) return active
-    const start = summary.next_sale_start ? new Date(summary.next_sale_start) : null
-    if (start && !Number.isNaN(start.getTime()) && start.getTime() > Date.now()) {
-      return {
-        isSaleActive: false,
-        saleStartsLabel: `On sale ${SALE_DATE_FMT.format(start)}`,
-        saleStartsAt: start
-      }
+    const parse = (raw?: string | null) => {
+      const d = raw ? new Date(raw) : null
+      return d && !Number.isNaN(d.getTime()) ? d : null
     }
+    const blocked = (start: Date | null) => ({
+      isSaleActive: false,
+      saleStartsLabel: start ? `On sale ${SALE_DATE_FMT.format(start)}` : 'Coming soon',
+      saleStartsAt: start
+    })
+    // La preventa no se pisa: si su ventana está abierta, getCtaState habilita
+    // igual el CTA (effectiveActive) y pide el código.
+    if (detail?.sales_started === false) return blocked(parse(detail.ticket_sales_start_date))
+    if (!summary || summary.tickets_count === 0 || summary.any_available) return active
+    const start = parse(summary.next_sale_start)
+    if (start && start.getTime() > Date.now()) return blocked(start)
     return active
-  }, [summary])
+  }, [summary, detail])
 
   // Evento enriquecido con datos reales del detalle (precio, disponibilidad,
   // vibe), sin tocar los subcomponentes que ya consumen UIEvent.
