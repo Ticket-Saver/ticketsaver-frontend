@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import LayoutV2 from '../../layouts/LayoutV2'
 import StepHeader, { type SaleStep } from '../../components/v2/sale/StepHeader'
 import SeatingMapV2 from '../../components/v2/sale/SeatingMapV2'
@@ -7,8 +7,18 @@ import SeatPickerV2, { type SelectedSection } from '../../components/v2/sale/Sea
 import SaleNoSeatsV2 from './SaleNoSeatsV2'
 import { GlassCard } from '../../components/ui'
 import { useUIEvents } from '../../hooks/useUIEvents'
+import { hiEventsService } from '../../services/hiEventsService'
 import { getSeatMapAsset, getSeatMapLayout } from '../../lib/seatmaps/registry'
 import { coverSeed } from '../../lib/covers/coverHash'
+
+/** Mismo formato que el "On sale {fecha}" del detalle, con la hora de apertura. */
+const SALE_GATE_FMT = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})
 
 interface SaleV2Props {
   /** event_label (slug) del evento. */
@@ -52,6 +62,38 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
   const [step, setStep] = useState<SaleStep>('venue')
   const [section, setSection] = useState<SelectedSection | null>(null)
 
+  // Gate de venta para el deep-link: a /sale se llega por URL directa, así que el
+  // `disabled` del CTA del detalle es puramente cosmético. Replica lo que valida
+  // el backend al crear la orden (areTicketSalesStarted + código de preventa).
+  const numericId = event?.eventId
+  const [saleGate, setSaleGate] = useState<'checking' | 'open' | 'blocked'>('checking')
+  const [saleStartsAt, setSaleStartsAt] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!numericId) return
+    let cancelled = false
+    setSaleGate('checking')
+    ;(async () => {
+      try {
+        const d = await hiEventsService.getEvent(numericId)
+        if (cancelled) return
+        // Con la preventa abierta, el código validado en el detalle es el pase.
+        const presaleOk =
+          !!d.presale_active && !!sessionStorage.getItem(`presale_code_${numericId}`)
+        setSaleStartsAt(d.ticket_sales_start_date ?? null)
+        setSaleGate(d.sales_started !== false || presaleOk ? 'open' : 'blocked')
+      } catch {
+        // Si el detalle no responde no cerramos la venta: el backend rechaza
+        // igual al crear la orden, y bloquear acá dejaría el flujo caído por un
+        // hipo de la API.
+        if (!cancelled) setSaleGate('open')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [numericId])
+
   if (eventsLoading) {
     return (
       <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={2}>
@@ -64,6 +106,33 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
     return (
       <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={2}>
         <ErrorState title='Event not found' message='That event is not currently available.' />
+      </LayoutV2>
+    )
+  }
+
+  // Venta todavía cerrada → se corta antes del mapa y del flujo general.
+  if (saleGate === 'checking') {
+    return (
+      <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={2}>
+        <LoadingState />
+      </LayoutV2>
+    )
+  }
+
+  if (saleGate === 'blocked') {
+    const start = saleStartsAt ? new Date(saleStartsAt) : null
+    const when = start && !Number.isNaN(start.getTime()) ? SALE_GATE_FMT.format(start) : null
+    return (
+      <LayoutV2 hideHeader hideFooter hideMobileTabBar meshSeed={2}>
+        <ErrorState
+          title='Tickets not on sale yet'
+          message={
+            when
+              ? `Tickets for this event go on sale on ${when}.`
+              : 'Ticket sales for this event have not started yet.'
+          }
+          action={{ label: 'Back to event', to: event.detailHref }}
+        />
       </LayoutV2>
     )
   }
@@ -181,11 +250,27 @@ const LoadingState = () => (
   </div>
 )
 
-const ErrorState = ({ title, message }: { title: string; message: string }) => (
+const ErrorState = ({
+  title,
+  message,
+  action
+}: {
+  title: string
+  message: string
+  action?: { label: string; to: string }
+}) => (
   <div className='mx-auto max-w-md px-4 py-16 text-center'>
     <GlassCard depth='md' radius='lg' className='p-8'>
       <div className='font-display text-lg font-semibold text-white'>{title}</div>
       <p className='mt-2 text-sm text-white/55'>{message}</p>
+      {action && (
+        <Link
+          to={action.to}
+          className='mt-5 inline-flex h-10 items-center justify-center rounded-pill bg-gradient-to-br from-brand-hi to-brand-mid px-5 font-display text-xs font-semibold tracking-tight text-brand-ink transition hover:brightness-110'
+        >
+          {action.label}
+        </Link>
+      )}
     </GlassCard>
   </div>
 )
