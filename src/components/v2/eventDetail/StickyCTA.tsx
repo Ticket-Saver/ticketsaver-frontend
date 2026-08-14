@@ -71,7 +71,8 @@ export const getCtaState = (
 
   const priceLabel = priceFrom !== null ? `From $${priceFrom.toFixed(2)}` : ''
 
-  const queueHref = `/queue/${encodeURIComponent(event.id)}`
+  // eventId numérico (único por fecha): el slug se repite en multifecha.
+  const queueHref = `/queue/${encodeURIComponent(event.eventId)}`
 
   const targetHref =
     overrideHref ??

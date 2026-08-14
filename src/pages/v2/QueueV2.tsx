@@ -24,7 +24,9 @@ const buildSaleHref = (event: UIEvent): string => {
   const safe = (s: string | undefined | null) => encodeURIComponent(s ?? '')
   const cityForRoute = event.city || event.venueLabel
   const deleteParam = event.raw.event_deleted_at ?? 'null'
-  return `/sale/${safe(event.title)}/${safe(event.venueLabel)}/${safe(cityForRoute)}/${safe(event.raw.event_date)}/${safe(event.id)}/${safe(deleteParam)}`
+  // ?eid = eventId numérico. En multifecha el slug se repite entre horarios, así que sin
+  // esto el usuario salía de la cola de las 18:30 al mapa de las 16:00.
+  return `/sale/${safe(event.title)}/${safe(event.venueLabel)}/${safe(cityForRoute)}/${safe(event.raw.event_date)}/${safe(event.id)}/${safe(deleteParam)}?eid=${safe(event.eventId)}`
 }
 
 /**
@@ -37,8 +39,9 @@ const buildSaleHref = (event: UIEvent): string => {
 export default function QueueV2() {
   const { label } = useParams<{ label: string }>()
   const navigate = useNavigate()
-  const { loading: eventsLoading, byLabel } = useUIEvents()
-  const event = byLabel(label)
+  const { loading: eventsLoading, byLabel, byId } = useUIEvents()
+  // :label acepta el eventId numérico (multifecha) o el slug (compat con links viejos).
+  const event = byId(label) ?? byLabel(label)
   const eventId = event ? Number(event.eventId) : undefined
 
   const {

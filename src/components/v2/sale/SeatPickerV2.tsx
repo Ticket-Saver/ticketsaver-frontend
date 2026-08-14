@@ -418,7 +418,7 @@ export default function SeatPickerV2({
         e.status === 403 &&
         (e.body as { error_code?: string } | null)?.error_code?.startsWith('QUEUE_TOKEN')
       if (queueRequired) {
-        navigate(`/queue/${event.id}`)
+        navigate(`/queue/${event.eventId}`)
         return
       }
       const conflict = e instanceof HiEventsApiError && (e.status === 409 || e.status === 422)
