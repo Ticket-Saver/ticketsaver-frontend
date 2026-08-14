@@ -31,10 +31,26 @@ export default function CheckoutV2() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { items: cart, eventLabel, pricing } = useCart()
-  const { byLabel } = useUIEvents()
+  const { byLabel, byId } = useUIEvents()
   const timer = useSessionTimer(eventLabel ?? undefined, 10)
 
-  const event = byLabel(eventLabel ?? undefined)
+  // MULTIFECHA: el slug se repite entre horarios (mismo título/venue, otra hora), así
+  // que `byLabel` devuelve siempre la fecha más temprana. El seat-picker ya dejó el
+  // eventId numérico correcto en `cart_checkout` → ese manda. Sin esto, una compra de
+  // las 18:30 reservaba en el evento correcto pero pagaba contra el de las 16:00:
+  // updateOrder/createStripeCheckoutSession fallaban y la orden moría en RESERVED.
+  const snapshotEventId = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('cart_checkout')
+      if (!raw) return undefined
+      const snap = JSON.parse(raw) as { eventInfo?: { eventId?: string } }
+      return snap.eventInfo?.eventId
+    } catch {
+      return undefined
+    }
+  }, [])
+
+  const event = byId(snapshotEventId) ?? byLabel(eventLabel ?? undefined)
 
   const eventInfo = useMemo(
     () =>
@@ -73,7 +89,16 @@ export default function CheckoutV2() {
   // webhook / ReturnPage legacy lo necesita.
   useEffect(() => {
     if (cart.length === 0 || !eventInfo) return
-    localStorage.setItem('cart_checkout', JSON.stringify({ cart, eventInfo, customer }))
+    // MERGE, no overwrite: el seat-picker dejó acá orderShortId/priceIds/sessionIdentifier
+    // y CheckoutStripe los necesita. Pisarlos hacía que un refresh en /checkout creara una
+    // orden nueva (segundo hold sobre los mismos asientos).
+    let prev: Record<string, unknown> = {}
+    try {
+      prev = JSON.parse(localStorage.getItem('cart_checkout') ?? '{}') as Record<string, unknown>
+    } catch {
+      prev = {}
+    }
+    localStorage.setItem('cart_checkout', JSON.stringify({ ...prev, cart, eventInfo, customer }))
   }, [cart, eventInfo, customer])
 
   if (cart.length === 0 || !event || !eventInfo) {
