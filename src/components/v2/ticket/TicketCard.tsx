@@ -134,7 +134,7 @@ const HeroTicket = ({
       {/* Big date */}
       <div className='relative px-5 pt-8 pb-5 text-center text-white'>
         <div className='text-[9.5px] font-display font-bold uppercase tracking-[0.2em] opacity-70'>
-          {event.day} · {event.month}
+          {event.day} · {event.month} {event.year}
         </div>
         <div className='font-display font-bold leading-[0.9] tracking-[-0.04em] text-[88px] sm:text-[96px] mt-1'>
           {String(event.date).padStart(2, '0')}
@@ -311,8 +311,13 @@ const ListTicket = ({
             {event.venueName}
             {event.city && ` · ${event.city}`}
           </div>
+          {/* Hora + año: el strip de la izquierda ya da día/mes. Dos funciones
+              del mismo show caen el mismo día y solo la hora las distingue,
+              así que va como texto legible y no como tag chico en mayúsculas. */}
+          <div className='text-[11px] font-semibold text-white/85 truncate'>
+            {event.time || 'TBA'} · {event.year}
+          </div>
           <div className='mt-auto flex items-center gap-1.5 min-w-0'>
-            <Tag>{event.time || 'TBA'}</Tag>
             {seatLabel && <Tag>{seatLabel}</Tag>}
           </div>
         </div>
