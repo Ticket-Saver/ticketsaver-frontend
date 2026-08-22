@@ -107,6 +107,8 @@ export interface HiEventPublic {
   resale_max_price_percent?: number | null
   resale_seller_fee_percent?: number | null
   resale_buyer_fee_percent?: number | null
+  /** false = oculto del listado/home; sigue accesible por URL directa. Default true. */
+  show_on_web?: boolean | null
   /** Atributos custom PÚBLICos (name/value) — se muestran en "Good to know". */
   attributes?: Array<{ name: string; value: unknown; is_public?: boolean }> | null
   location_details: HiLocationDetails | null
