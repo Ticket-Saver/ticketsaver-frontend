@@ -45,8 +45,15 @@ const SaleRoute = () => {
   return label ? <SaleV2 eventLabel={label} eventId={eid} /> : <Navigate to='/events' />
 }
 
-/** Si hay sesión, debe tener el email verificado. Anónimo pasa.
- *  ponytail: verificación de teléfono deshabilitada — ya no se exige phoneVerified. */
+/** Cuentas creadas desde esta fecha deben verificar el teléfono. Las anteriores
+ *  quedan grandfathered: se registraron cuando el SMS estaba deshabilitado y
+ *  mandarlas a /verify-phone las dejaría fuera del sitio. */
+const PHONE_VERIFICATION_SINCE = Date.parse('2026-08-22T00:00:00Z')
+
+export const needsPhoneVerification = (user: { phoneVerified: boolean; createdAt: string }) =>
+  !user.phoneVerified && Date.parse(user.createdAt) >= PHONE_VERIFICATION_SINCE
+
+/** Si hay sesión, debe estar verificada (email, y teléfono si la cuenta es nueva). */
 const VerifiedGate = () => {
   const { status, user } = useAuth()
   const location = useLocation()
@@ -58,6 +65,9 @@ const VerifiedGate = () => {
   // Usuarios migrados con contraseña temporal: forzar cambio antes de seguir.
   if (user && user.mustChangePassword) {
     return <Navigate to='/reset-password' replace />
+  }
+  if (user && needsPhoneVerification(user)) {
+    return <Navigate to='/verify-phone' state={{ returnTo }} replace />
   }
   return <Outlet />
 }

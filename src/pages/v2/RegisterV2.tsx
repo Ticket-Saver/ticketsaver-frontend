@@ -66,7 +66,7 @@ export default function RegisterV2() {
   return (
     <AuthShell
       title='Create your account'
-      subtitle="You'll need to verify your email before you can log in."
+      subtitle="You'll need to verify your email and phone before you can log in."
       footer={
         <>
           Already have an account?{' '}

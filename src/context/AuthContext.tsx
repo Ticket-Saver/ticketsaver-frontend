@@ -21,6 +21,8 @@ export interface AuthUser {
   pendingPhone: string | null
   /** true para usuarios migrados con contraseña temporal; el gate fuerza el cambio. */
   mustChangePassword: boolean
+  /** ISO de alta en Supabase; el gate solo exige teléfono a las cuentas nuevas. */
+  createdAt: string
 }
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
@@ -34,7 +36,8 @@ const toAuthUser = (u: User): AuthUser => ({
   emailVerified: Boolean(u.email_confirmed_at),
   phoneVerified: Boolean(u.phone_confirmed_at),
   pendingPhone: (u.user_metadata?.pending_phone as string | undefined) ?? null,
-  mustChangePassword: u.user_metadata?.must_change_password === true
+  mustChangePassword: u.user_metadata?.must_change_password === true,
+  createdAt: u.created_at
 })
 
 export interface RegisterInput {
