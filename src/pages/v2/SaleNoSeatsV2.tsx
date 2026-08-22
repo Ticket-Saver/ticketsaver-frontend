@@ -209,6 +209,13 @@ export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
     addItem(item)
   }
 
+  // El × del resumen borra la fila entera; el stepper de la tabla baja de a uno.
+  const removeSummaryRow = (key: string) => {
+    cart
+      .filter((c) => String(c.rowKey ?? c.ticketId) === key)
+      .forEach((c) => removeItem(c.ticketId))
+  }
+
   const decrementRow = (row: TicketRow) => {
     const ofRow = cart.filter((c) => c.rowKey === row.key)
     if (ofRow.length === 0) return
@@ -349,6 +356,7 @@ export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
             ctaDisabled={disabledCta}
             onCheckout={handleCheckout}
             onBack={() => navigate(event.detailHref)}
+            onRemoveItem={removeSummaryRow}
           />
         </div>
       </main>
@@ -363,6 +371,7 @@ export default function SaleNoSeatsV2({ event }: SaleNoSeatsV2Props) {
         ctaDisabled={disabledCta}
         onCheckout={handleCheckout}
         onBack={() => navigate(event.detailHref)}
+        onRemoveItem={removeSummaryRow}
       />
     </LayoutV2>
   )

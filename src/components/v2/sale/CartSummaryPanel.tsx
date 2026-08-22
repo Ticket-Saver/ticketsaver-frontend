@@ -55,6 +55,54 @@ export interface CartSummaryItem {
   tax?: number
 }
 
+/** Fila del listado, compartida por el sidebar y el bottom sheet. */
+const SummaryItemRow = ({
+  item,
+  onRemoveItem
+}: {
+  item: CartSummaryItem
+  onRemoveItem?: (id: string) => void
+}) => {
+  const b = breakdownPerItem(item)
+  return (
+    <li className='rounded-glass-sm bg-white/[0.04] border border-white/[0.08] px-3 py-2.5'>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='min-w-0 flex-1'>
+          <div className='font-display text-[12.5px] font-semibold text-white truncate'>
+            {item.label}
+          </div>
+          {item.sublabel && (
+            <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>{item.sublabel}</div>
+          )}
+        </div>
+        <div className='flex items-start gap-2 shrink-0'>
+          <span className='font-display text-[13px] font-bold text-white tabular-nums'>
+            ${b.total.toFixed(2)}
+          </span>
+          {onRemoveItem && (
+            <button
+              type='button'
+              aria-label={`Remove ${item.label}`}
+              onClick={() => onRemoveItem(item.id)}
+              className='grid h-6 w-6 place-items-center rounded-pill bg-white/[0.06] border border-white/10 text-white/55 hover:text-accent-coral hover:bg-white/[0.10] transition'
+            >
+              <svg width='10' height='10' viewBox='0 0 12 12' aria-hidden>
+                <path
+                  d='m3 3 6 6m0-6-6 6'
+                  stroke='currentColor'
+                  strokeWidth='1.6'
+                  strokeLinecap='round'
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+      <ItemBreakdownRows b={b} />
+    </li>
+  )
+}
+
 interface BaseProps {
   items: CartSummaryItem[]
   /** Subtotal + fees + taxes + total computados por `computePricing`. */
@@ -69,6 +117,12 @@ interface BaseProps {
   helperText?: string
   /** Override del título del panel. */
   title?: string
+  /**
+   * Quita el item del carrito. Recibe el `id` del `CartSummaryItem`, que en
+   * asientos es un ticket y en GA es la fila agrupada — cada página decide qué
+   * borra. Sin este prop no se renderiza el botón.
+   */
+  onRemoveItem?: (id: string) => void
 }
 
 const PriceRow = ({
@@ -132,7 +186,8 @@ export const CartSidebar = (props: BaseProps) => {
     onCheckout,
     onBack,
     helperText,
-    title
+    title,
+    onRemoveItem
   } = props
 
   return (
@@ -157,32 +212,9 @@ export const CartSidebar = (props: BaseProps) => {
           <EmptyHint />
         ) : (
           <ul className='space-y-2'>
-            {items.map((item) => {
-              const b = breakdownPerItem(item)
-              return (
-                <li
-                  key={item.id}
-                  className='rounded-glass-sm bg-white/[0.04] border border-white/[0.08] px-3 py-2.5'
-                >
-                  <div className='flex items-start justify-between gap-3'>
-                    <div className='min-w-0 flex-1'>
-                      <div className='font-display text-[12.5px] font-semibold text-white truncate'>
-                        {item.label}
-                      </div>
-                      {item.sublabel && (
-                        <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>
-                          {item.sublabel}
-                        </div>
-                      )}
-                    </div>
-                    <span className='font-display text-[13px] font-bold text-white tabular-nums shrink-0'>
-                      ${b.total.toFixed(2)}
-                    </span>
-                  </div>
-                  <ItemBreakdownRows b={b} />
-                </li>
-              )
-            })}
+            {items.map((item) => (
+              <SummaryItemRow key={item.id} item={item} onRemoveItem={onRemoveItem} />
+            ))}
           </ul>
         )}
         {helperText && items.length > 0 && (
@@ -213,8 +245,18 @@ export const CartSidebar = (props: BaseProps) => {
 }
 
 export const CartMobileSheet = (props: BaseProps) => {
-  const { items, breakdown, count, ctaLabel, ctaDisabled, onCheckout, onBack, helperText, title } =
-    props
+  const {
+    items,
+    breakdown,
+    count,
+    ctaLabel,
+    ctaDisabled,
+    onCheckout,
+    onBack,
+    helperText,
+    title,
+    onRemoveItem
+  } = props
   const [expanded, setExpanded] = useState(false)
   const hasItems = items.length > 0
 
@@ -277,32 +319,9 @@ export const CartMobileSheet = (props: BaseProps) => {
         {expanded && hasItems && (
           <div className='max-h-[50vh] overflow-y-auto border-t border-white/[0.08] px-4 py-3 space-y-3'>
             <ul className='space-y-2'>
-              {items.map((item) => {
-                const b = breakdownPerItem(item)
-                return (
-                  <li
-                    key={item.id}
-                    className='rounded-glass-sm bg-white/[0.04] border border-white/[0.08] px-3 py-2.5'
-                  >
-                    <div className='flex items-start justify-between gap-3'>
-                      <div className='min-w-0 flex-1'>
-                        <div className='font-display text-[12.5px] font-semibold text-white truncate'>
-                          {item.label}
-                        </div>
-                        {item.sublabel && (
-                          <div className='text-[10.5px] text-white/55 mt-0.5 truncate'>
-                            {item.sublabel}
-                          </div>
-                        )}
-                      </div>
-                      <span className='font-display text-[13px] font-bold text-white tabular-nums shrink-0'>
-                        ${b.total.toFixed(2)}
-                      </span>
-                    </div>
-                    <ItemBreakdownRows b={b} />
-                  </li>
-                )
-              })}
+              {items.map((item) => (
+                <SummaryItemRow key={item.id} item={item} onRemoveItem={onRemoveItem} />
+              ))}
             </ul>
 
             <div className='pt-3 border-t border-white/[0.08]'>

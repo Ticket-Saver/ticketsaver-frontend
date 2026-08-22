@@ -617,7 +617,8 @@ export default function SeatPickerV2({
           ctaDisabled={disabledCta}
           onCheckout={handleCheckout}
           onBack={onBack}
-          helperText='Tap a selected seat to remove it.'
+          onRemoveItem={removeItem}
+          helperText='Tap a selected seat, or the ×, to remove it.'
         />
       </div>
 
@@ -631,7 +632,8 @@ export default function SeatPickerV2({
         ctaDisabled={disabledCta}
         onCheckout={handleCheckout}
         onBack={onBack}
-        helperText='Tap a selected seat to remove it.'
+        onRemoveItem={removeItem}
+        helperText='Tap a selected seat, or the ×, to remove it.'
       />
     </>
   )
