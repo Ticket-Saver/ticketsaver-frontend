@@ -224,7 +224,9 @@ export const hiEventToUIEvent = (hi: HiEventPublic, context: { hero?: boolean } 
 
     ticketUrl: undefined,
     isExternal: false,
-    hidden: false,
+    // show_on_web=false: el panel lo sacó del listado/home. Sigue en `all`, así que
+    // el deep-link (detalle, /sale, cola, checkout) resuelve igual.
+    hidden: hi.show_on_web === false,
     expired,
     requiresQueue: false,
     map: hi.map ?? null,
