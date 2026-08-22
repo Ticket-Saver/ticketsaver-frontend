@@ -122,16 +122,15 @@ export default function SeatingMapV2({
       .join(' ')
   }
 
-  // Etiqueta de una sub-sección de balcón/loge: separa zona + lado + color, sin pegar
-  // palabras ni repetir la zona. `balconyleftcenter` + `blue` → "Balcony Left Center Blue".
-  const zoneSideLabel = (position: string, color: string): string => {
+  // Etiqueta de una sub-sección de balcón/loge: separa zona + lado, sin pegar palabras ni
+  // repetir la zona. `balconyleftcenter` → "Balcony Left Center". El color NO va: es
+  // nomenclatura interna de hiEvents y el comprador solo debe ver la sección.
+  const zoneSideLabel = (position: string): string => {
     const pos = position.toLowerCase()
     const zone = ['balcony', 'loge'].find((z) => pos.startsWith(z)) || ''
     const side = pos.slice(zone.length) // 'left' | 'right' | 'leftcenter' | …
     const zoneLabel = zone ? zone[0].toUpperCase() + zone.slice(1) : ''
-    return [zoneLabel, side && toTitleCaseFromKebab(side), color && toTitleCaseFromKebab(color)]
-      .filter(Boolean)
-      .join(' ')
+    return [zoneLabel, side && toTitleCaseFromKebab(side)].filter(Boolean).join(' ')
   }
 
   useEffect(() => {
@@ -174,17 +173,7 @@ export default function SeatingMapV2({
             }
           > = {}
           const knownPositions = new Set(['left', 'right', 'center', 'leftcenter', 'rightcenter'])
-          const knownColors = new Set([
-            'orange',
-            'cyan',
-            'red',
-            'green',
-            'purple',
-            'blue',
-            'yellow',
-            'pink',
-            'brown'
-          ])
+          const knownColors = SECTION_COLOR_TOKENS
           for (const [label, value] of Object.entries(rangesJson)) {
             // Skip non-string values (map1/map2 no usan metadata especial)
             if (typeof value !== 'string') {
@@ -1252,7 +1241,11 @@ export default function SeatingMapV2({
             // Rango suelto sin grupo (poco común en map1/map2).
             const list = computeSeatsForRangeKey(key, parsed.row || undefined)
             if (list.length > 0) {
-              onSelectSection({ label: toTitleCaseFromKebab(key), seats: list, groupId: key })
+              onSelectSection({
+                label: toTitleCaseFromKebab(stripColorTokens(key)),
+                seats: list,
+                groupId: key
+              })
             }
             return
           }
@@ -1261,7 +1254,7 @@ export default function SeatingMapV2({
           // (`balcony-blue`); `?group=balconyright-blue` devuelve 0. La zona NO va en def.zone
           // (queda vacío): va embebida en el prefijo de position (balconyright → balcony). Cada
           // asiento trae `position` (balconyleft/right/…), así que cargamos el grupo real del API
-          // y filtramos por el lado clickeado. Etiqueta limpia ("Balcony Right Blue"); groupId
+          // y filtramos por el lado clickeado. Etiqueta limpia ("Balcony Right"); groupId
           // queda en el grupo real del API para el refetch de disponibilidad.
           const clickedDef = ranges[key]
           const pos = (clickedDef?.position || '').toLowerCase()
@@ -1277,7 +1270,7 @@ export default function SeatingMapV2({
             : groupSeats
 
           onSelectSection({
-            label: zone ? zoneSideLabel(pos, color) : toTitleCaseFromKebab(apiGroup),
+            label: zone ? zoneSideLabel(pos) : toTitleCaseFromKebab(stripColorTokens(apiGroup)),
             seats: sideSeats.length > 0 ? sideSeats : groupSeats,
             groupId: apiGroup
           })
@@ -1430,6 +1423,39 @@ const RANGE_COLORS: Record<string, string> = {
   azul: '#3B82F6',
   blue: '#3B82F6'
 }
+
+/**
+ * Tokens de color que hiEvents mete en los ids del ranges (`left-green`, `balcony-blue`).
+ * Son nomenclatura INTERNA — nunca se muestran al comprador: `stripColorTokens` los saca
+ * del nombre de la sección. La leyenda de precios sí los sigue usando (color → "desde $X").
+ */
+const SECTION_COLOR_TOKENS = new Set([
+  'orange',
+  'cyan',
+  'red',
+  'green',
+  'lgreen',
+  'purple',
+  'blue',
+  'yellow',
+  'pink',
+  'brown',
+  'celeste',
+  'rojo',
+  'verde',
+  'morado',
+  'anaranjado',
+  'amarillo',
+  'rosa',
+  'azul'
+])
+
+/** Quita los tokens de color de un id kebab: `balconyleft-blue-HH` → `balconyleft-HH`. */
+const stripColorTokens = (key: string): string =>
+  key
+    .split('-')
+    .filter((t) => t && !SECTION_COLOR_TOKENS.has(t.toLowerCase()))
+    .join('-')
 
 /** Nombre legible por color (mientras no llegó el price_range real del backend). */
 const COLOR_LABELS: Record<string, string> = {
