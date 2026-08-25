@@ -9,6 +9,7 @@ import {
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import supabase from '../components/supabaseClient'
+import { hiEventsService } from '../services/hiEventsService'
 
 export interface AuthUser {
   id: string
@@ -162,13 +163,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error
   }, [])
 
-  const verifyPhone = useCallback(async (phone: string, code: string) => {
-    const { error } = await requireSupabase().auth.verifyOtp({
-      phone,
-      token: code,
-      type: 'phone_change'
-    })
-    if (error) throw error
+  /**
+   * Valida contra NUESTRO backend, que guardó el OTP que mandó por SNS y sella
+   * phone_confirmed_at vía Admin API. El verify de Supabase no se usa: en el
+   * flujo phone_change devuelve otp_expired incluso a un segundo de emitido el
+   * código y con el hash correcto guardado en auth.users.
+   */
+  const verifyPhone = useCallback(async (_phone: string, code: string) => {
+    await hiEventsService.verifyPhoneOtp(code)
+    // El JWT en mano todavía dice phone_confirmed_at: null; lo refrescamos para
+    // que el gate del Router vea el teléfono ya confirmado.
+    await requireSupabase().auth.refreshSession()
   }, [])
 
   const resendOtp = useCallback(
