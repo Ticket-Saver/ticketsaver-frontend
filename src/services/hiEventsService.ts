@@ -535,6 +535,18 @@ export const hiEventsService = {
     await requestAsCustomer<unknown>('PUT', HIEVENTS_CONFIG.endpoints.customerMe(), payload)
   },
 
+  /**
+   * Valida el OTP contra el código que el backend mandó por SNS y confirma el
+   * teléfono en Supabase (POST /customer-auth/verify-phone). NO usa el verify de
+   * Supabase: su flujo phone_change devuelve otp_expired aun con el token recién
+   * emitido y el hash correcto en auth.users.
+   */
+  async verifyPhoneOtp(code: string): Promise<void> {
+    await requestAsCustomer<unknown>('POST', HIEVENTS_CONFIG.endpoints.customerVerifyPhone(), {
+      code
+    })
+  },
+
   // --- Reventa (marketplace) ---
 
   /** Mis tickets listados en reventa. */
