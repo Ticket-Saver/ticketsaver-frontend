@@ -34,7 +34,7 @@ export default function HiddenEmailModal() {
     try {
       await hiEventsService.updateMyProfile({ email })
       await refresh()
-      toast.show({ variant: 'success', message: "Done — you should see your tickets now." })
+      toast.show({ variant: 'success', message: 'Done — you should see your tickets now.' })
       handleDismiss()
     } catch (err) {
       toast.show({
@@ -60,8 +60,8 @@ export default function HiddenEmailModal() {
             Find your tickets
           </h2>
           <p className='text-[12px] text-white/55 mt-1'>
-            You signed in with a hidden Apple email, so we can't match it to your purchase.
-            Enter the email you used to buy your tickets.
+            You signed in with a hidden Apple email, so we can't match it to your purchase. Enter
+            the email you used to buy your tickets.
           </p>
         </div>
         <Field label='Purchase email'>

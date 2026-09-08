@@ -90,7 +90,7 @@ export default function MyProfileV2() {
               </Field>
             </div>
             {isHiddenEmail && (
-              <Field label="Purchase email (the one you used to buy tickets)">
+              <Field label='Purchase email (the one you used to buy tickets)'>
                 <input
                   type='email'
                   value={purchaseEmail}
@@ -119,7 +119,8 @@ export default function MyProfileV2() {
             />
             {isHiddenEmail && (
               <li className='py-3 text-[12px] text-white/55'>
-                This is a hidden Apple email. If you don't see your tickets, click Edit and enter the email you used to buy them.
+                This is a hidden Apple email. If you don't see your tickets, click Edit and enter
+                the email you used to buy them.
               </li>
             )}
             <ProfileRow
