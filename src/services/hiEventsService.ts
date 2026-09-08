@@ -531,7 +531,7 @@ export const hiEventsService = {
   },
 
   /** Actualiza first_name/last_name del customer logueado (PUT /customer-auth/me). */
-  async updateMyProfile(payload: { first_name?: string; last_name?: string }): Promise<void> {
+  async updateMyProfile(payload: { first_name?: string; last_name?: string; email?: string }): Promise<void> {
     await requestAsCustomer<unknown>('PUT', HIEVENTS_CONFIG.endpoints.customerMe(), payload)
   },
 
