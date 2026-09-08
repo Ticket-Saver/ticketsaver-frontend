@@ -34,12 +34,12 @@ export default function HiddenEmailModal() {
     try {
       await hiEventsService.updateMyProfile({ email })
       await refresh()
-      toast.show({ variant: 'success', message: 'Listo — ya deberías ver tus tickets.' })
+      toast.show({ variant: 'success', message: "Done — you should see your tickets now." })
       handleDismiss()
     } catch (err) {
       toast.show({
         variant: 'error',
-        message: err instanceof Error ? err.message : 'No pudimos guardar tu email.'
+        message: err instanceof Error ? err.message : "We couldn't save your email."
       })
     } finally {
       setSaving(false)
@@ -51,34 +51,34 @@ export default function HiddenEmailModal() {
       open={open}
       onClose={handleDismiss}
       side='bottom'
-      ariaLabel='Encontrá tus tickets'
+      ariaLabel='Find your tickets'
       closeOnBackdrop={false}
     >
       <div className='p-5 lg:p-6 space-y-4 bg-brand-ink'>
         <div>
           <h2 className='font-display text-base lg:text-lg font-semibold text-white'>
-            Encontrá tus tickets
+            Find your tickets
           </h2>
           <p className='text-[12px] text-white/55 mt-1'>
-            Iniciaste sesión con un email oculto de Apple, así que no podemos relacionarlo con tu
-            compra. Ingresá el email que usaste para comprar tus tickets.
+            You signed in with a hidden Apple email, so we can't match it to your purchase.
+            Enter the email you used to buy your tickets.
           </p>
         </div>
-        <Field label='Email de compra'>
+        <Field label='Purchase email'>
           <input
             type='email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder='vos@ejemplo.com'
+            placeholder='you@example.com'
             className={inputClass}
           />
         </Field>
         <div className='flex gap-2 justify-end pt-1'>
           <Button variant='ghost' size='sm' onClick={handleDismiss} disabled={saving}>
-            Ahora no
+            Skip for now
           </Button>
           <Button variant='primary' size='sm' onClick={handleSave} disabled={saving || !email}>
-            {saving ? 'Guardando…' : 'Guardar'}
+            {saving ? 'Saving…' : 'Save'}
           </Button>
         </div>
       </div>
