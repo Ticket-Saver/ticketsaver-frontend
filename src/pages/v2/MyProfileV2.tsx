@@ -12,18 +12,26 @@ export default function MyProfileV2() {
   const [editing, setEditing] = useState(false)
   const [firstName, setFirstName] = useState(user?.firstName ?? '')
   const [lastName, setLastName] = useState(user?.lastName ?? '')
+  const [purchaseEmail, setPurchaseEmail] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const isHiddenEmail = user?.email?.toLowerCase().endsWith('@privaterelay.appleid.com') ?? false
 
   const startEdit = () => {
     setFirstName(user?.firstName ?? '')
     setLastName(user?.lastName ?? '')
+    setPurchaseEmail('')
     setEditing(true)
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await hiEventsService.updateMyProfile({ first_name: firstName, last_name: lastName })
+      await hiEventsService.updateMyProfile({
+        first_name: firstName,
+        last_name: lastName,
+        ...(purchaseEmail ? { email: purchaseEmail } : {})
+      })
       await refresh()
       setEditing(false)
       toast.show({ variant: 'success', message: 'Profile updated.' })
@@ -81,6 +89,17 @@ export default function MyProfileV2() {
                 />
               </Field>
             </div>
+            {isHiddenEmail && (
+              <Field label="Purchase email (the one you used to buy tickets)">
+                <input
+                  type='email'
+                  value={purchaseEmail}
+                  onChange={(e) => setPurchaseEmail(e.target.value)}
+                  placeholder='you@example.com'
+                  className={inputClass}
+                />
+              </Field>
+            )}
             <div className='flex gap-2 justify-end pt-1'>
               <Button variant='ghost' size='sm' onClick={() => setEditing(false)} disabled={saving}>
                 Cancel
@@ -98,6 +117,11 @@ export default function MyProfileV2() {
               value={user?.email ?? '—'}
               badge={user?.emailVerified ? 'Verified' : 'Unverified'}
             />
+            {isHiddenEmail && (
+              <li className='py-3 text-[12px] text-white/55'>
+                This is a hidden Apple email. If you don't see your tickets, click Edit and enter the email you used to buy them.
+              </li>
+            )}
             <ProfileRow
               label='Phone'
               value={user?.phone ?? '—'}

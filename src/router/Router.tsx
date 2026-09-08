@@ -37,6 +37,7 @@ import { useParams } from 'react-router-dom'
 import { VenuesProvider } from '../router/venuesContext'
 import { EventsProvider } from '../router/eventsContext'
 import { CartProvider } from '../router/cartContext'
+import HiddenEmailModal from '../components/v2/HiddenEmailModal'
 
 const SaleRoute = () => {
   const { label } = useParams<{ label: string }>()
@@ -82,7 +83,12 @@ const RequireAuth = () => {
       <Navigate to='/login' state={{ returnTo: location.pathname + location.search }} replace />
     )
   }
-  return <Outlet />
+  return (
+    <>
+      <HiddenEmailModal />
+      <Outlet />
+    </>
+  )
 }
 
 export const AppRouter = () => (
