@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Header from '../components/v2/Header'
 import Footer from '../components/v2/Footer'
 import CartDrawer from '../components/v2/cart/CartDrawer'
+import CookieConsentBanner from '../components/v2/CookieConsentBanner'
 import BackgroundLayer from '../components/ui/BackgroundLayer'
 import { cn } from '../types/ui'
 import type { MeshPalette } from '../components/ui/MeshBackground'
@@ -64,6 +65,7 @@ export default function LayoutV2({
       {!hideFooter && <Footer />}
 
       <CartDrawer />
+      <CookieConsentBanner />
     </div>
   )
 }

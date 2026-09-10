@@ -17,6 +17,7 @@ import type { HiQueueSettingsPublic } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
 import { trackMetaPixel, trackGooglePixel } from '../../lib/tracking/pixels'
+import { useCookieConsent } from '../../hooks/useCookieConsent'
 import type { Availability, UIEvent } from '../../types/uiEvent'
 import type {
   HiAvailability,
@@ -215,12 +216,21 @@ export default function EventDetailV2() {
   const organizerName = detail?.organizer?.name
 
   // Pixeles de marketing del organizador (Meta/YouTube) para ESTE evento. Se
-  // disparan solo cuando cambia el evento/pixel, no en cada re-render.
+  // disparan cuando cambia el evento/pixel, y también si el usuario acepta
+  // cookies de marketing mientras sigue en esta misma página (consent.marketing
+  // en las deps): trackMetaPixel/trackGooglePixel son no-op sin consentimiento,
+  // así que re-correr el efecto es lo que dispara el PageView recién entonces.
+  const consent = useCookieConsent()
   useEffect(() => {
     if (!detail?.settings) return
     trackMetaPixel(detail.settings.meta_pixel_id, 'PageView')
     trackGooglePixel(detail.settings.youtube_pixel_id, 'page_view')
-  }, [detail?.id, detail?.settings?.meta_pixel_id, detail?.settings?.youtube_pixel_id])
+  }, [
+    detail?.id,
+    detail?.settings?.meta_pixel_id,
+    detail?.settings?.youtube_pixel_id,
+    consent.marketing
+  ])
 
   const dates = useMemo(() => getDatesForEvent(visible, event), [visible, event])
   const datesForArtist = dates.length > 0 ? dates : event ? [event] : []

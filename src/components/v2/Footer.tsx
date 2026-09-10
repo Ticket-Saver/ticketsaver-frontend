@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../ui'
+import { requestReopenCookieSettings } from '../../lib/consent/cookieConsent'
 
 interface FooterLink {
   label: string
@@ -155,6 +156,13 @@ export default function Footer() {
             <TrustBadge>PCI DSS</TrustBadge>
             <TrustBadge>Powered by Stripe</TrustBadge>
             <TrustBadge>SSL secured</TrustBadge>
+            <button
+              type='button'
+              onClick={requestReopenCookieSettings}
+              className='hover:text-white transition underline-offset-2 hover:underline'
+            >
+              Cookies
+            </button>
           </div>
           <div className='flex gap-4 font-display tracking-[0.12em] uppercase'>
             <span>EN</span>
