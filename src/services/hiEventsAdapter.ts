@@ -231,6 +231,8 @@ export const hiEventToUIEvent = (hi: HiEventPublic, context: { hero?: boolean } 
     requiresQueue: false,
     map: hi.map ?? null,
     seriesId: hi.series_id ?? null,
+    metaPixelId: hi.settings?.meta_pixel_id ?? null,
+    youtubePixelId: hi.settings?.youtube_pixel_id ?? null,
     presale: {
       enabled: hi.presale_enabled ?? false,
       startsAt: hi.presale_starts_at ?? null,

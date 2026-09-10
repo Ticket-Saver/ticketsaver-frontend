@@ -16,6 +16,7 @@ import { hiEventsService } from '../../services/hiEventsService'
 import type { HiQueueSettingsPublic } from '../../services/hiEventsService'
 import { hiEventToUIEvent } from '../../services/hiEventsAdapter'
 import { coverSeed } from '../../lib/covers/coverHash'
+import { trackMetaPixel, trackGooglePixel } from '../../lib/tracking/pixels'
 import type { Availability, UIEvent } from '../../types/uiEvent'
 import type {
   HiAvailability,
@@ -212,6 +213,14 @@ export default function EventDetailV2() {
   // La dirección vive en settings.location_details (el top-level viene null).
   const address = formatAddress(detail?.settings?.location_details ?? detail?.location_details)
   const organizerName = detail?.organizer?.name
+
+  // Pixeles de marketing del organizador (Meta/YouTube) para ESTE evento. Se
+  // disparan solo cuando cambia el evento/pixel, no en cada re-render.
+  useEffect(() => {
+    if (!detail?.settings) return
+    trackMetaPixel(detail.settings.meta_pixel_id, 'PageView')
+    trackGooglePixel(detail.settings.youtube_pixel_id, 'page_view')
+  }, [detail?.id, detail?.settings?.meta_pixel_id, detail?.settings?.youtube_pixel_id])
 
   const dates = useMemo(() => getDatesForEvent(visible, event), [visible, event])
   const datesForArtist = dates.length > 0 ? dates : event ? [event] : []

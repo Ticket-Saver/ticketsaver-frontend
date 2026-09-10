@@ -11,6 +11,7 @@ import { useSessionTimer } from '../../../hooks/useSessionTimer'
 import { coverSeed } from '../../../lib/covers/coverHash'
 import { cn } from '../../../types/ui'
 import glass from '../../../styles/effects/glass.module.css'
+import { trackMetaPixel, trackGooglePixel } from '../../../lib/tracking/pixels'
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
@@ -84,6 +85,20 @@ export default function CheckoutV2() {
       navigate('/events', { replace: true })
     }
   }, [cart.length, navigate])
+
+  // Pixel de marketing del organizador (Meta/YouTube): arranque del checkout.
+  // Se dispara una sola vez por evento, no en cada re-render del formulario.
+  useEffect(() => {
+    if (!event || cart.length === 0) return
+    const value = round2(pricing.total)
+    trackMetaPixel(event.metaPixelId, 'InitiateCheckout', {
+      value,
+      currency: 'USD',
+      num_items: cart.length
+    })
+    trackGooglePixel(event.youtubePixelId, 'begin_checkout', { value, currency: 'USD' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.eventId])
 
   // Mantener cart_checkout en localStorage sincronizado por si el
   // webhook / ReturnPage legacy lo necesita.

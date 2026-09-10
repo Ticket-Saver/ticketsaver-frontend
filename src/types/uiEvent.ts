@@ -74,6 +74,11 @@ export interface UIEvent {
    */
   seriesId?: number | null
 
+  /** Pixel de Meta y tracking de YouTube/Google del organizador (marketing propio
+   *  del evento). Vienen de event.settings en HiEvents; ver services/hiEventsAdapter. */
+  metaPixelId?: string | null
+  youtubePixelId?: string | null
+
   /**
    * Preventa con código de acceso. El código nunca llega al front; solo el estado.
    * - active: ventana de preventa abierta ahora → al comprar se exige el código.
