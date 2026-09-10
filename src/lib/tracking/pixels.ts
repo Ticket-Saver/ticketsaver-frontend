@@ -24,7 +24,10 @@ const ensureMetaPixelLoader = (): void => {
   if (window.fbq) return
   const n: Window['fbq'] = Object.assign(
     function (...args: unknown[]) {
-      const self = window.fbq as unknown as { callMethod?: (...a: unknown[]) => void; queue: unknown[][] }
+      const self = window.fbq as unknown as {
+        callMethod?: (...a: unknown[]) => void
+        queue: unknown[][]
+      }
       if (self.callMethod) self.callMethod(...args)
       else self.queue.push(args)
     },
