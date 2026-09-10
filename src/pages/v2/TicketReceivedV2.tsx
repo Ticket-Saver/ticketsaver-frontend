@@ -12,6 +12,7 @@ import { hiEventsService } from '../../services/hiEventsService'
 import type { HiOrder } from '../../types/hievents'
 import { coverHash, coverSeed } from '../../lib/covers/coverHash'
 import { ticketSection } from '../../lib/ticketSection'
+import { trackMetaPixel, trackGooglePixel } from '../../lib/tracking/pixels'
 import gradients from '../../styles/effects/gradients.module.css'
 import type { UIEvent } from '../../types/uiEvent'
 
@@ -89,6 +90,7 @@ export default function TicketReceivedV2() {
   const [customerEmail, setCustomerEmail] = useState<string>(snapshot?.customer?.email ?? '')
   const [order, setOrder] = useState<HiOrder | null>(null)
   const confirmRan = useRef(false)
+  const pixelFiredRef = useRef(false)
 
   // Confirma el pago contra HiEvents en background y limpia el carrito. El
   // `ranRef` evita la doble ejecución del StrictMode SIN un flag `mounted`
@@ -133,6 +135,29 @@ export default function TicketReceivedV2() {
     if (snapshot?.eventInfo?.id) return byLabel(snapshot.eventInfo.id)
     return undefined
   }, [snapshot, byLabel])
+
+  // Pixel de marketing del organizador (Meta/YouTube): conversión de compra.
+  // Se pide el detalle fresco del evento (no el de la lista) para tener el
+  // pixel al día, y se dispara UNA sola vez por orden confirmada.
+  useEffect(() => {
+    if (pixelFiredRef.current || !order || !event?.eventId) return
+    pixelFiredRef.current = true
+    ;(async () => {
+      try {
+        const fresh = await hiEventsService.getEvent(event.eventId)
+        const value = order.total_gross ?? 0
+        const currency = order.currency ?? 'USD'
+        trackMetaPixel(fresh.settings?.meta_pixel_id, 'Purchase', { value, currency })
+        trackGooglePixel(fresh.settings?.youtube_pixel_id, 'purchase', {
+          value,
+          currency,
+          transaction_id: order.short_id
+        })
+      } catch {
+        // Best-effort: el pixel nunca bloquea la confirmación de compra.
+      }
+    })()
+  }, [order, event?.eventId])
 
   // Reload del snapshot por si llegamos justo cuando el cart se está
   // limpiando (en dev/StrictMode).

@@ -59,6 +59,11 @@ export interface HiEventSettings {
   // La Location del panel se guarda acá (event_settings), NO en el top-level
   // location_details del evento (ese viene null). Fuente de verdad de venue/ciudad.
   location_details?: HiLocationDetails | null
+  /** Pixel de Meta (Facebook/Instagram Ads) del organizador. Vinculado al evento
+   *  comercial: si es multi-fecha, HiEvents lo replica a todas las fechas de la serie. */
+  meta_pixel_id?: string | null
+  /** Tracking de Google/YouTube Ads del organizador. Mismo alcance que meta_pixel_id. */
+  youtube_pixel_id?: string | null
   [key: string]: unknown
 }
 
