@@ -24,11 +24,27 @@ const DEFAULT_STATE: ConsentState = { analytics: false, marketing: false, decide
 type Listener = (state: ConsentState) => void
 const listeners = new Set<Listener>()
 
+/**
+ * Global Privacy Control: señal del navegador (activada por el usuario a nivel
+ * sistema) que la CPRA de California obliga a tratar como un pedido válido de
+ * "no vender/compartir mi información", sin que el usuario tenga que hacer
+ * nada más en el sitio. Si no hay una decisión guardada todavía, se respeta
+ * automáticamente como opt-out — no reemplaza una decisión que el usuario ya
+ * tomó a mano.
+ */
+const hasGlobalPrivacyControl = (): boolean =>
+  typeof navigator !== 'undefined' &&
+  (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
+
 const readStored = (): ConsentState => {
   if (typeof window === 'undefined') return DEFAULT_STATE
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return DEFAULT_STATE
+    if (!raw) {
+      return hasGlobalPrivacyControl()
+        ? { analytics: false, marketing: false, decided: true }
+        : DEFAULT_STATE
+    }
     const parsed = JSON.parse(raw) as Partial<ConsentState>
     return {
       analytics: !!parsed.analytics,
@@ -72,6 +88,15 @@ export const rejectNonEssentialConsent = (): void =>
 
 export const saveConsent = (partial: { analytics: boolean; marketing: boolean }): void =>
   persist({ ...partial, decided: true })
+
+/**
+ * "Do Not Sell or Share My Personal Information" (CCPA/CPRA) — un solo click,
+ * sin pasar por el panel completo. Apaga "marketing" (los pixeles de
+ * Meta/YouTube, que comparten datos con esos terceros para publicidad) y
+ * conserva la preferencia de "analíticas" si ya la habían elegido.
+ */
+export const optOutOfSharing = (): void =>
+  persist({ analytics: state.decided ? state.analytics : false, marketing: false, decided: true })
 
 // --- Reabrir el panel de configuración (link "Cookies" del footer) ---
 const REOPEN_EVENT = 'ts:reopen-cookie-settings'
