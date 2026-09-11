@@ -27,6 +27,15 @@ const SECTIONS: LegalSectionData[] = [
     body: 'We may disclose your information to trusted third-party providers who help us deliver services, process payments or analyze performance. They are bound by confidentiality agreements.\n\nWe will not sell, rent or lease your personal information to third parties for marketing without your consent.'
   },
   {
+    id: 'cookies',
+    title: 'Cookies and your privacy choices',
+    body: 'We use three categories of cookies. Necessary cookies keep your cart and checkout session working and are always on. With your permission, we also use analytics cookies to understand how the site is used, and marketing cookies — pixels that event organizers use (for example, Meta/Facebook and YouTube) to measure their own advertising campaigns for their event. Marketing cookies are never loaded until you consent.\n\nYou can accept, reject or customize these categories at any time from the "Cookies" link at the bottom of any page. If your browser sends a Global Privacy Control signal, we treat it as a valid opt-out automatically.',
+    bullets: [
+      'Manage your preferences anytime: "Cookies" link in the footer.',
+      'California residents: use "Do Not Sell or Share My Personal Information" in the footer for a one-click opt-out of marketing pixels.'
+    ]
+  },
+  {
     id: 'compliance',
     title: 'Privacy compliance',
     body: 'Our practices are designed to comply with applicable privacy laws, including GDPR and CCPA. By using our website and services, you consent to the collection, use and disclosure of your information as described here.'

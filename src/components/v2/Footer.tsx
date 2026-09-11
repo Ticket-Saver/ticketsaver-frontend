@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../ui'
-import { requestReopenCookieSettings } from '../../lib/consent/cookieConsent'
+import { requestReopenCookieSettings, optOutOfSharing } from '../../lib/consent/cookieConsent'
 
 interface FooterLink {
   label: string
@@ -79,6 +79,13 @@ const SOCIALS: { label: string; href: string; icon: JSX.Element }[] = [
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [optedOut, setOptedOut] = useState(false)
+
+  const handleOptOut = () => {
+    optOutOfSharing()
+    setOptedOut(true)
+    window.setTimeout(() => setOptedOut(false), 4000)
+  }
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -162,6 +169,13 @@ export default function Footer() {
               className='hover:text-white transition underline-offset-2 hover:underline'
             >
               Cookies
+            </button>
+            <button
+              type='button'
+              onClick={handleOptOut}
+              className='hover:text-white transition underline-offset-2 hover:underline'
+            >
+              {optedOut ? 'Preferences saved ✓' : 'Do Not Sell or Share My Personal Information'}
             </button>
           </div>
           <div className='flex gap-4 font-display tracking-[0.12em] uppercase'>
