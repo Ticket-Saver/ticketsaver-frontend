@@ -64,7 +64,8 @@ export const subscribeConsent = (fn: Listener): (() => void) => {
   return () => listeners.delete(fn)
 }
 
-export const acceptAllConsent = (): void => persist({ analytics: true, marketing: true, decided: true })
+export const acceptAllConsent = (): void =>
+  persist({ analytics: true, marketing: true, decided: true })
 
 export const rejectNonEssentialConsent = (): void =>
   persist({ analytics: false, marketing: false, decided: true })
