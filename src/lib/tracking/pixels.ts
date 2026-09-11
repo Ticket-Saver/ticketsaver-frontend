@@ -5,7 +5,13 @@
  * Cada evento comercial trae su propio meta_pixel_id/youtube_pixel_id (ver
  * hiEventsAdapter). Estas funciones son no-op si el evento no tiene pixel
  * configurado, así que es seguro llamarlas siempre.
+ *
+ * CONSENTIMIENTO: ningún script de terceros se carga sin consentimiento de
+ * "marketing" (ver src/lib/consent/cookieConsent.ts) — no es solo informar
+ * después, el script ni siquiera se inyecta en el DOM hasta que el usuario
+ * acepta. Sin decisión tomada, o con "rechazar", estas funciones no hacen nada.
  */
+import { hasMarketingConsent } from '../consent/cookieConsent'
 
 declare global {
   interface Window {
@@ -48,7 +54,7 @@ export const trackMetaPixel = (
   eventName: string,
   params?: Record<string, unknown>
 ): void => {
-  if (!pixelId || typeof window === 'undefined') return
+  if (!pixelId || typeof window === 'undefined' || !hasMarketingConsent()) return
   ensureMetaPixelLoader()
   window.fbq?.('init', pixelId)
   if (params) window.fbq?.('track', eventName, params)
@@ -82,7 +88,7 @@ export const trackGooglePixel = (
   eventName: string,
   params?: Record<string, unknown>
 ): void => {
-  if (!trackingId || typeof window === 'undefined') return
+  if (!trackingId || typeof window === 'undefined' || !hasMarketingConsent()) return
   ensureGtagLoader(trackingId)
   window.gtag?.('event', eventName, params ?? {})
 }
