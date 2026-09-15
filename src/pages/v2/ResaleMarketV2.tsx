@@ -38,7 +38,9 @@ export default function ResaleMarketV2() {
     () =>
       resaleEvents
         .map((re) => ({ re, ui: byId(String(re.event_id)) }))
-        .filter((x): x is { re: HiResaleEvent; ui: UIEvent } => Boolean(x.ui)),
+        // `byId` lee de `all`, que incluye los ocultos (show_on_web=false). Este es
+        // un listado, así que se filtran igual que en el home y en /events.
+        .filter((x): x is { re: HiResaleEvent; ui: UIEvent } => Boolean(x.ui) && !x.ui!.hidden),
     [resaleEvents, byId]
   )
 
