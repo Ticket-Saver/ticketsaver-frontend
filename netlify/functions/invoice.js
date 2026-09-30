@@ -9,7 +9,7 @@ import { cons } from 'effect/List'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
-exports.handler = async function (event, _context) {
+export const handler = async function (event, _context) {
   let customerId // Declara customerId aquí para asegurarte de que esté disponible en toda la función
 
   if (event.httpMethod !== 'POST') {
