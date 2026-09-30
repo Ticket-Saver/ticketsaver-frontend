@@ -51,11 +51,13 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
       stage_direction?: 'north' | 'south' | 'east' | 'west'
       reversed_sections?: string[]
       seat_types?: Record<string, string[]>
+      front_rows?: string[]
     }
     return {
       stageDirection: m.stage_direction ?? 'north',
       reversedSections: m.reversed_sections ?? [],
-      seatTypes: m.seat_types ?? {}
+      seatTypes: m.seat_types ?? {},
+      frontRows: m.front_rows ?? []
     }
   }, [mapAsset])
 
@@ -175,6 +177,7 @@ export default function SaleV2({ eventLabel, eventId }: SaleV2Props) {
             sectionLayout={mapLayout && section.groupId ? mapLayout[section.groupId] : undefined}
             stageDirection={mapMeta.stageDirection}
             seatTypes={mapMeta.seatTypes}
+            frontRows={mapMeta.frontRows}
             reversed={
               !!section.groupId &&
               mapMeta.reversedSections.some(

@@ -42,6 +42,8 @@ interface SeatPickerV2Props {
   reversed?: boolean
   /** Asientos especiales por tipo (metadata.seat_types): tipo → lista de ids. */
   seatTypes?: Record<string, string[]>
+  /** Filas que van antes que la A, pegadas al escenario (metadata.front_rows). */
+  frontRows?: string[]
   onBack: () => void
 }
 
@@ -73,6 +75,7 @@ export default function SeatPickerV2({
   stageDirection = 'north',
   reversed = false,
   seatTypes = {},
+  frontRows = [],
   onBack
 }: SeatPickerV2Props) {
   const navigate = useNavigate()
@@ -186,13 +189,15 @@ export default function SeatPickerV2({
     return acc
   }, [section.seats])
 
-  const rows = useMemo(
-    () =>
-      Object.keys(seatsByRow).sort((a, b) =>
-        a.length !== b.length ? a.length - b.length : a.localeCompare(b)
-      ),
-    [seatsByRow]
-  )
+  // metadata.front_rows (ej. "AA" en san_jose) va antes que A, pegada al escenario.
+  const rows = useMemo(() => {
+    const front = (r: string) => (frontRows.includes(r.trim()) ? 0 : 1)
+    return Object.keys(seatsByRow).sort(
+      (a, b) =>
+        front(a) - front(b) ||
+        (a.length !== b.length ? a.length - b.length : a.localeCompare(b))
+    )
+  }, [seatsByRow, frontRows])
 
   // Asiento por (fila|número) — para ubicar cada butaca del molde.
   const seatByKey = useMemo(() => {
