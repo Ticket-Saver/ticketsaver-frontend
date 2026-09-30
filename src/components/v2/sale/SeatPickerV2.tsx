@@ -531,7 +531,8 @@ export default function SeatPickerV2({
                 {/* Secciones que no entran arrancan alejadas (todas las filas visibles) con
                     zoom/pan como el mapa; si entran, se ve igual que antes (escala 1). */}
                 <ZoomPanContainer
-                  className='min-w-0 flex-1'
+                  // flex-1 en columna (flex-basis 0%) pisaría el height calculado → alto 0.
+                  className={stageVerticalAxis ? 'w-full' : 'min-w-0 flex-1'}
                   fitMaxHeight={460}
                   maxScale={3}
                   ariaLabel='Seats. Scroll or pinch to zoom, drag to pan.'
