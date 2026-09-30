@@ -27,7 +27,7 @@ const ORGANIZER_TOKEN = process.env.HIEVENTS_ORGANIZER_TOKEN || ''
 const INSECURE_TLS = String(process.env.PROXY_INSECURE_TLS || '').toLowerCase() === 'true'
 const SHOULD_DISABLE_TLS_VERIFY = INSECURE_TLS && API_ORIGIN.startsWith('https://')
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   if (typeof fetch !== 'function') {
     return {
       statusCode: 500,
