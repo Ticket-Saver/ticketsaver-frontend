@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlassCard, Pill, useToast } from '../../ui'
 import SeatLegend from './SeatLegend'
+import ZoomPanContainer from './ZoomPanContainer'
 import SeatIcon from './SeatIconV2'
 import { CartSidebar, CartMobileSheet, type CartSummaryItem } from './CartSummaryPanel'
 import { useSessionTimer } from '../../../hooks/useSessionTimer'
@@ -527,8 +528,15 @@ export default function SeatPickerV2({
                   />
                 </div>
 
-                <div className='min-w-0 flex-1 overflow-auto'>
-                  <div className='mx-auto flex w-max min-w-full flex-col items-center gap-1.5 py-3'>
+                {/* Secciones que no entran arrancan alejadas (todas las filas visibles) con
+                    zoom/pan como el mapa; si entran, se ve igual que antes (escala 1). */}
+                <ZoomPanContainer
+                  className='min-w-0 flex-1'
+                  fitMaxHeight={460}
+                  maxScale={3}
+                  ariaLabel='Seats. Scroll or pinch to zoom, drag to pan.'
+                >
+                  <div className='flex w-max flex-col items-center gap-1.5 py-3'>
                     {rowsForRender.map((row) => {
                       const layoutRow = sectionLayout?.[row]
                         ? reversed
@@ -593,7 +601,7 @@ export default function SeatPickerV2({
                       )
                     })}
                   </div>
-                </div>
+                </ZoomPanContainer>
               </div>
             )}
 
