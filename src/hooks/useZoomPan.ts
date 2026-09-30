@@ -100,6 +100,12 @@ export function useZoomPan(opts: UseZoomPanOptions = {}): UseZoomPanResult {
 
   const reset = useCallback(() => setState({ scale: initialScale, tx: 0, ty: 0 }), [initialScale])
 
+  // initialScale puede cambiar después del mount (ZoomPanContainer con fitMaxHeight lo
+  // calcula al medir el contenido) → re-encuadramos.
+  useEffect(() => {
+    setState({ scale: initialScale, tx: 0, ty: 0 })
+  }, [initialScale])
+
   const zoomIn = useCallback(() => {
     const s = stateRef.current
     setStateClamped({ scale: s.scale + step })
@@ -164,9 +170,16 @@ export function useZoomPan(opts: UseZoomPanOptions = {}): UseZoomPanResult {
       }))
     }
 
-    const onMouseUp = () => {
+    const onMouseUp = (e: MouseEvent) => {
+      const p = panRef.current
       panRef.current = null
       el.style.cursor = ''
+      // Un drag que termina sobre un asiento/sección no debe contar como click.
+      if (p && Math.hypot(e.clientX - p.startX, e.clientY - p.startY) > 5) {
+        const swallow = (ev: MouseEvent) => ev.stopPropagation()
+        window.addEventListener('click', swallow, { capture: true, once: true })
+        setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 0)
+      }
     }
 
     const onTouchStart = (e: TouchEvent) => {

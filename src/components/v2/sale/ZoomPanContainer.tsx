@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useZoomPan, type UseZoomPanOptions } from '../../../hooks/useZoomPan'
 import { cn } from '../../../types/ui'
 
@@ -12,6 +12,11 @@ interface ZoomPanContainerProps extends UseZoomPanOptions {
    * contenedor.
    */
   ariaLabel?: string
+  /**
+   * Modo "encuadrar": el contenedor toma el alto del contenido (tope en este valor, px)
+   * y arranca alejado lo justo para que entre completo. Sin esto el alto lo fija className.
+   */
+  fitMaxHeight?: number
 }
 
 export default function ZoomPanContainer({
@@ -20,9 +25,44 @@ export default function ZoomPanContainer({
   className,
   contentClassName,
   ariaLabel = 'Zoomable map',
+  fitMaxHeight,
   ...options
 }: ZoomPanContainerProps) {
-  const { containerRef, state, reset, zoomIn, zoomOut } = useZoomPan(options)
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const [fit, setFit] = useState<{ scale: number; height: number } | null>(null)
+  const initialScale = fit?.scale ?? options.initialScale ?? 1
+  const { containerRef, state, reset, zoomIn, zoomOut } = useZoomPan({
+    ...options,
+    initialScale,
+    minScale: Math.min(options.minScale ?? 0.5, initialScale)
+  })
+
+  const fitting = fitMaxHeight !== undefined
+  // En modo fit: si el contenido entra entero no hay zoom que ofrecer; si no entra, los
+  // controles van en fila en una franja propia debajo para no tapar asientos.
+  const controls = showControls && (!fitting || (fit !== null && fit.scale < 1))
+  const controlsStrip = fitting && controls ? 44 : 0
+
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    const content = contentRef.current
+    if (fitMaxHeight === undefined || !el || !content) return
+    const measure = () => {
+      // offsetWidth/Height ignoran el transform → tamaño natural del contenido.
+      const w = content.offsetWidth
+      const h = content.offsetHeight
+      if (!w || !h || !el.clientWidth) return
+      const scale = Math.min(1, el.clientWidth / w, fitMaxHeight / h)
+      setFit((f) =>
+        f && Math.abs(f.scale - scale) < 0.005 ? f : { scale, height: Math.ceil(h * scale) }
+      )
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    ro.observe(content)
+    return () => ro.disconnect()
+  }, [fitMaxHeight, containerRef])
 
   return (
     <div
@@ -30,10 +70,16 @@ export default function ZoomPanContainer({
       role='region'
       aria-label={ariaLabel}
       className={cn('relative overflow-hidden touch-none select-none cursor-grab', className)}
+      style={fitting && fit ? { height: fit.height + controlsStrip } : undefined}
     >
-      <div className={cn('absolute inset-0 grid place-items-center', contentClassName)}>
+      <div
+        className={cn('absolute inset-0 grid place-items-center', contentClassName)}
+        style={controlsStrip ? { bottom: controlsStrip } : undefined}
+      >
         <div
+          ref={contentRef}
           style={{
+            width: fitting ? 'max-content' : undefined,
             transform: `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`,
             transformOrigin: 'center center',
             willChange: 'transform'
@@ -43,8 +89,13 @@ export default function ZoomPanContainer({
         </div>
       </div>
 
-      {showControls && (
-        <div className='absolute bottom-3 right-3 flex flex-col gap-1.5 z-10'>
+      {controls && (
+        <div
+          className={cn(
+            'absolute right-3 flex gap-1.5 z-10',
+            controlsStrip ? 'bottom-1.5 flex-row' : 'bottom-3 flex-col'
+          )}
+        >
           <ZoomButton label='Zoom in' onClick={zoomIn}>
             <PlusIcon />
           </ZoomButton>
@@ -57,7 +108,7 @@ export default function ZoomPanContainer({
         </div>
       )}
 
-      {state.scale !== 1 && (
+      {Math.abs(state.scale - initialScale) > 0.005 && (
         <div
           className='absolute top-3 left-3 z-10 px-2 py-0.5 rounded-pill bg-black/50 border border-white/15 text-white text-[10px] font-display tabular-nums backdrop-blur-glass'
           aria-live='polite'
