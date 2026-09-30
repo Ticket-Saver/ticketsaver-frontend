@@ -73,11 +73,14 @@ export default function ZoomPanContainer({
       style={fitting && fit ? { height: fit.height + controlsStrip } : undefined}
     >
       <div
-        className={cn('absolute inset-0 grid place-items-center', contentClassName)}
+        // flex (no grid): si el contenido desborda, se reparte parejo a ambos lados; en grid la
+        // pista crece desde arriba/izquierda y el encuadre queda corrido.
+        className={cn('absolute inset-0 flex items-center justify-center', contentClassName)}
         style={controlsStrip ? { bottom: controlsStrip } : undefined}
       >
         <div
           ref={contentRef}
+          className='shrink-0'
           style={{
             width: fitting ? 'max-content' : undefined,
             transform: `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`,
