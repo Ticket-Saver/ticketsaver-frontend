@@ -194,8 +194,7 @@ export default function SeatPickerV2({
     const front = (r: string) => (frontRows.includes(r.trim()) ? 0 : 1)
     return Object.keys(seatsByRow).sort(
       (a, b) =>
-        front(a) - front(b) ||
-        (a.length !== b.length ? a.length - b.length : a.localeCompare(b))
+        front(a) - front(b) || (a.length !== b.length ? a.length - b.length : a.localeCompare(b))
     )
   }, [seatsByRow, frontRows])
 
