@@ -199,7 +199,11 @@ const SeatField = ({ label, value }: { label: string; value: string }) => (
     <div className='text-[8.5px] uppercase tracking-[0.16em] font-display font-bold text-white/60'>
       {label}
     </div>
-    <div className='mt-0.5 font-display text-base font-bold text-white tabular-nums tracking-[-0.02em]'>
+    {/* translate='no': el traductor del navegador convertía la fila "HH" en "S.S" (His Holiness → Su Santidad). */}
+    <div
+      translate='no'
+      className='mt-0.5 font-display text-base font-bold text-white tabular-nums tracking-[-0.02em]'
+    >
       {value}
     </div>
   </div>
