@@ -10,9 +10,9 @@ export interface UseUserTicketsResult {
   authenticated: boolean
   /** Todos los eventos con tickets del usuario. */
   events: HiUserTicketsEvent[]
-  /** Eventos futuros (fecha >= ahora) ordenados por fecha ascendente. */
+  /** Eventos que no terminaron (fin >= ahora) ordenados por fecha ascendente. */
   upcoming: HiUserTicketsEvent[]
-  /** Eventos pasados (fecha < ahora) ordenados por fecha descendente. */
+  /** Eventos terminados (fin < ahora) ordenados por fecha descendente. */
   past: HiUserTicketsEvent[]
   totalEvents: number
   totalTickets: number
@@ -23,6 +23,16 @@ export interface UseUserTicketsResult {
 const dateMs = (e: HiUserTicketsEvent): number => {
   const t = e.date ? Date.parse(e.date) : NaN
   return Number.isNaN(t) ? 0 : t
+}
+
+// ponytail: sin end_date se asume que el show dura hasta 6 h después de empezar.
+const FALLBACK_DURATION_MS = 6 * 60 * 60 * 1000
+
+/** Un evento sigue "upcoming" hasta que TERMINA, no cuando empieza: quien llega tarde
+ *  tiene que encontrar su ticket arriba, no en "Past". */
+const endMs = (e: HiUserTicketsEvent): number => {
+  const t = e.endDate ? Date.parse(e.endDate) : NaN
+  return Number.isNaN(t) ? dateMs(e) + FALLBACK_DURATION_MS : t
 }
 
 /**
@@ -69,8 +79,8 @@ export function useUserTickets(): UseUserTicketsResult {
 
   return useMemo(() => {
     const now = Date.now()
-    const upcoming = events.filter((e) => dateMs(e) >= now).sort((a, b) => dateMs(a) - dateMs(b))
-    const past = events.filter((e) => dateMs(e) < now).sort((a, b) => dateMs(b) - dateMs(a))
+    const upcoming = events.filter((e) => endMs(e) >= now).sort((a, b) => dateMs(a) - dateMs(b))
+    const past = events.filter((e) => endMs(e) < now).sort((a, b) => dateMs(b) - dateMs(a))
     const totalTickets = events.reduce((acc, e) => acc + (e.tickets?.length ?? 0), 0)
 
     return {
