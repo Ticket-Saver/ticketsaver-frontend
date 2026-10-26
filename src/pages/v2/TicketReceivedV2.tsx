@@ -83,7 +83,7 @@ const parseSeatLabel = (label?: string): { row?: string; seat?: string } => {
 export default function TicketReceivedV2() {
   const navigate = useNavigate()
   const { venueId, orderShortId } = useParams<{ venueId?: string; orderShortId?: string }>()
-  const { byLabel } = useUIEvents()
+  const { byLabel, byId } = useUIEvents()
   const { clear: clearCart } = useCart()
 
   const [snapshot, setSnapshot] = useState<CartCheckoutSnapshot | null>(() => readCartSnapshot())
@@ -131,10 +131,13 @@ export default function TicketReceivedV2() {
     })()
   }, [venueId, orderShortId, clearCart])
 
-  const event = useMemo<UIEvent | undefined>(() => {
-    if (snapshot?.eventInfo?.id) return byLabel(snapshot.eventInfo.id)
-    return undefined
-  }, [snapshot, byLabel])
+  // MULTIFECHA: el slug se repite entre horarios y `byLabel` devuelve siempre el más
+  // temprano. `venueId` de la URL es el eventId numérico de la orden → ese manda. Sin
+  // esto, compradores de las 18:30 veían (y guardaban en Wallet) el boleto con las 16:00.
+  const event = useMemo<UIEvent | undefined>(
+    () => byId(venueId) ?? byLabel(snapshot?.eventInfo?.id),
+    [venueId, snapshot, byId, byLabel]
+  )
 
   // Pixel de marketing del organizador (Meta/YouTube): conversión de compra.
   // Se pide el detalle fresco del evento (no el de la lista) para tener el
